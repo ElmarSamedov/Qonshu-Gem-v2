@@ -1,0 +1,6 @@
+{
+  "name": "Qonşu",
+  "description": "A local platform for mutual aid and sharing within specific districts of Baku.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

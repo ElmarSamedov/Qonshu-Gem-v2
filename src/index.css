@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-border: hsl(215 27.9% 16.9%);
+  --color-input: hsl(215 27.9% 16.9%);
+  --color-ring: hsl(216 12.2% 83.9%);
+  --color-background: #0f172a;
+  --color-foreground: hsl(210 40% 98%);
+
+  --color-primary: hsl(210 40% 98%);
+  --color-primary-foreground: hsl(222.2 47.4% 1.2%);
+
+  --color-secondary: hsl(217.2 32.6% 17.5%);
+  --color-secondary-foreground: hsl(210 40% 98%);
+
+  --color-destructive: hsl(0 62.8% 30.6%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+
+  --color-muted: hsl(217.2 32.6% 17.5%);
+  --color-muted-foreground: hsl(215 20.2% 65.1%);
+
+  --color-accent: hsl(217.2 32.6% 17.5%);
+  --color-accent-foreground: hsl(210 40% 98%);
+
+  --color-popover: hsl(222.2 84% 4.9%);
+  --color-popover-foreground: hsl(210 40% 98%);
+
+  --color-card: rgba(255, 255, 255, 0.05);
+  --color-card-foreground: hsl(210 40% 98%);
+
+  --radius-lg: 1.5rem;
+  --radius-md: calc(1.5rem - 2px);
+  --radius-sm: calc(1.5rem - 4px);
+}
+
+body {
+  background: radial-gradient(circle at top left, #f8fafc, #e2e8f0);
+  background-color: #f8fafc;
+  color: #0f172a;
+  min-height: 100vh;
+}
+
+.dark body {
+  background: radial-gradient(circle at top left, #1e293b, #0f172a);
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.senior-mode .text-xs { font-size: 1rem !important; line-height: 1.5rem !important; }
+.senior-mode .text-sm { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+.senior-mode .text-base { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+.senior-mode .text-lg { font-size: 1.5rem !important; line-height: 2rem !important; }
+.senior-mode .text-xl { font-size: 1.875rem !important; line-height: 2.25rem !important; }
+.senior-mode .text-2xl { font-size: 2.25rem !important; line-height: 2.5rem !important; }

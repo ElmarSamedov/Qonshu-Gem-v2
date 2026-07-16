@@ -1,0 +1,3323 @@
+[
+  {
+    "id": "nat_1",
+    "name_en": "Europe",
+    "name_ru": "Европа",
+    "name_az": "Avropa",
+    "level": 1,
+    "parent_id": null
+  },
+  {
+    "id": "nat_2",
+    "name_en": "Slavic peoples",
+    "name_ru": "Славянские народы",
+    "name_az": "Slavyan xalqları",
+    "level": 2,
+    "parent_id": "nat_1"
+  },
+  {
+    "id": "nat_3",
+    "name_en": "Eastern Slavs",
+    "name_ru": "Восточные славяне",
+    "name_az": "Şərq slavyanları",
+    "level": 3,
+    "parent_id": "nat_2"
+  },
+  {
+    "id": "nat_4",
+    "name_en": "Russians",
+    "name_ru": "Русские",
+    "name_az": "Ruslar",
+    "level": 4,
+    "parent_id": "nat_3",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_5",
+    "name_en": "Ukrainians",
+    "name_ru": "Украинцы",
+    "name_az": "Ukraynalılar",
+    "level": 4,
+    "parent_id": "nat_3",
+    "iso_codes": [
+      "UA"
+    ]
+  },
+  {
+    "id": "nat_6",
+    "name_en": "Belarusians",
+    "name_ru": "Белорусы",
+    "name_az": "Belaruslar",
+    "level": 4,
+    "parent_id": "nat_3",
+    "iso_codes": [
+      "BY"
+    ]
+  },
+  {
+    "id": "nat_7",
+    "name_en": "Western Slavs",
+    "name_ru": "Западные славяне",
+    "name_az": "Qərb slavyanları",
+    "level": 3,
+    "parent_id": "nat_2"
+  },
+  {
+    "id": "nat_8",
+    "name_en": "Poles",
+    "name_ru": "Поляки",
+    "name_az": "Polyaklar",
+    "level": 4,
+    "parent_id": "nat_7",
+    "iso_codes": [
+      "PL"
+    ]
+  },
+  {
+    "id": "nat_9",
+    "name_en": "Czechs",
+    "name_ru": "Чехи",
+    "name_az": "Çexlər",
+    "level": 4,
+    "parent_id": "nat_7",
+    "iso_codes": [
+      "CZ"
+    ]
+  },
+  {
+    "id": "nat_10",
+    "name_en": "Slovaks",
+    "name_ru": "Словаки",
+    "name_az": "Slovaklar",
+    "level": 4,
+    "parent_id": "nat_7",
+    "iso_codes": [
+      "SK"
+    ]
+  },
+  {
+    "id": "nat_11",
+    "name_en": "Sorbs",
+    "name_ru": "Лужичане",
+    "name_az": "Sorblar",
+    "level": 4,
+    "parent_id": "nat_7",
+    "iso_codes": [
+      "DE"
+    ]
+  },
+  {
+    "id": "nat_12",
+    "name_en": "Kashubians",
+    "name_ru": "Кашубы",
+    "name_az": "Kaşublar",
+    "level": 4,
+    "parent_id": "nat_7",
+    "iso_codes": [
+      "PL"
+    ]
+  },
+  {
+    "id": "nat_13",
+    "name_en": "Silesians",
+    "name_ru": "Силезцы",
+    "name_az": "Sileziyalılar",
+    "level": 4,
+    "parent_id": "nat_7",
+    "iso_codes": [
+      "PL"
+    ]
+  },
+  {
+    "id": "nat_14",
+    "name_en": "Southern Slavs",
+    "name_ru": "Южные славяне",
+    "name_az": "Cənub slavyanları",
+    "level": 3,
+    "parent_id": "nat_2"
+  },
+  {
+    "id": "nat_15",
+    "name_en": "Serbs",
+    "name_ru": "Сербы",
+    "name_az": "Serblər",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "RS",
+      "BA"
+    ]
+  },
+  {
+    "id": "nat_16",
+    "name_en": "Croats",
+    "name_ru": "Хорваты",
+    "name_az": "Xorvatlar",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "HR",
+      "BA"
+    ]
+  },
+  {
+    "id": "nat_17",
+    "name_en": "Bosniaks",
+    "name_ru": "Босняки",
+    "name_az": "Bosniyalılar",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "BA"
+    ]
+  },
+  {
+    "id": "nat_18",
+    "name_en": "Montenegrins",
+    "name_ru": "Черногорцы",
+    "name_az": "Monteneqrolular",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "ME"
+    ]
+  },
+  {
+    "id": "nat_19",
+    "name_en": "Macedonians",
+    "name_ru": "Македонцы",
+    "name_az": "Makedonlar",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "MK"
+    ]
+  },
+  {
+    "id": "nat_20",
+    "name_en": "Bulgarians",
+    "name_ru": "Болгары",
+    "name_az": "Bolqarlar",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "BG"
+    ]
+  },
+  {
+    "id": "nat_21",
+    "name_en": "Slovenes",
+    "name_ru": "Словенцы",
+    "name_az": "Slovenlər",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "SI"
+    ]
+  },
+  {
+    "id": "nat_22",
+    "name_en": "Bunjevci",
+    "name_ru": "Буневцы",
+    "name_az": "Bunyevslər",
+    "level": 4,
+    "parent_id": "nat_14",
+    "iso_codes": [
+      "RS"
+    ]
+  },
+  {
+    "id": "nat_23",
+    "name_en": "Germanic peoples",
+    "name_ru": "Германские народы",
+    "name_az": "German xalqları",
+    "level": 2,
+    "parent_id": "nat_1"
+  },
+  {
+    "id": "nat_24",
+    "name_en": "North Germanic",
+    "name_ru": "Северогерманские народы",
+    "name_az": "Şimali germanlar",
+    "level": 3,
+    "parent_id": "nat_23"
+  },
+  {
+    "id": "nat_25",
+    "name_en": "Swedes",
+    "name_ru": "Шведы",
+    "name_az": "İsveçlilər",
+    "level": 4,
+    "parent_id": "nat_24",
+    "iso_codes": [
+      "SE"
+    ]
+  },
+  {
+    "id": "nat_26",
+    "name_en": "Norwegians",
+    "name_ru": "Норвежцы",
+    "name_az": "Norveçlilər",
+    "level": 4,
+    "parent_id": "nat_24",
+    "iso_codes": [
+      "NO"
+    ]
+  },
+  {
+    "id": "nat_27",
+    "name_en": "Danes",
+    "name_ru": "Датчане",
+    "name_az": "Danimarkalılar",
+    "level": 4,
+    "parent_id": "nat_24",
+    "iso_codes": [
+      "DK"
+    ]
+  },
+  {
+    "id": "nat_28",
+    "name_en": "Icelanders",
+    "name_ru": "Исландцы",
+    "name_az": "İslandlar",
+    "level": 4,
+    "parent_id": "nat_24",
+    "iso_codes": [
+      "IS"
+    ]
+  },
+  {
+    "id": "nat_29",
+    "name_en": "Faroese",
+    "name_ru": "Фарерцы",
+    "name_az": "Farerlər",
+    "level": 4,
+    "parent_id": "nat_24",
+    "iso_codes": [
+      "FO"
+    ]
+  },
+  {
+    "id": "nat_30",
+    "name_en": "West Germanic",
+    "name_ru": "Западногерманские народы",
+    "name_az": "Qərbi germanlar",
+    "level": 3,
+    "parent_id": "nat_23"
+  },
+  {
+    "id": "nat_31",
+    "name_en": "Germans",
+    "name_ru": "Немцы",
+    "name_az": "Almanlar",
+    "level": 4,
+    "parent_id": "nat_30",
+    "iso_codes": [
+      "DE"
+    ]
+  },
+  {
+    "id": "nat_32",
+    "name_en": "English",
+    "name_ru": "Англичане",
+    "name_az": "İngilislər",
+    "level": 4,
+    "parent_id": "nat_30",
+    "iso_codes": [
+      "GB"
+    ]
+  },
+  {
+    "id": "nat_33",
+    "name_en": "Dutch",
+    "name_ru": "Голландцы",
+    "name_az": "Niderlandlılar",
+    "level": 4,
+    "parent_id": "nat_30",
+    "iso_codes": [
+      "NL"
+    ]
+  },
+  {
+    "id": "nat_34",
+    "name_en": "Flemish",
+    "name_ru": "Фламандцы",
+    "name_az": "Flamandlar",
+    "level": 4,
+    "parent_id": "nat_30",
+    "iso_codes": [
+      "BE"
+    ]
+  },
+  {
+    "id": "nat_35",
+    "name_en": "Afrikaners",
+    "name_ru": "Африканеры",
+    "name_az": "Afrikanerlər",
+    "level": 4,
+    "parent_id": "nat_30",
+    "iso_codes": [
+      "ZA"
+    ]
+  },
+  {
+    "id": "nat_36",
+    "name_en": "Frisians",
+    "name_ru": "Фризы",
+    "name_az": "Frizlər",
+    "level": 4,
+    "parent_id": "nat_30",
+    "iso_codes": [
+      "NL",
+      "DE"
+    ]
+  },
+  {
+    "id": "nat_37",
+    "name_en": "Romance peoples",
+    "name_ru": "Романские народы",
+    "name_az": "Roman xalqları",
+    "level": 2,
+    "parent_id": "nat_1"
+  },
+  {
+    "id": "nat_38",
+    "name_en": "Italians",
+    "name_ru": "Итальянцы",
+    "name_az": "İtalyanlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "IT"
+    ]
+  },
+  {
+    "id": "nat_39",
+    "name_en": "Spaniards",
+    "name_ru": "Испанцы",
+    "name_az": "İspanlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "ES"
+    ]
+  },
+  {
+    "id": "nat_40",
+    "name_en": "French",
+    "name_ru": "Французы",
+    "name_az": "Fransızlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "FR"
+    ]
+  },
+  {
+    "id": "nat_41",
+    "name_en": "Portuguese",
+    "name_ru": "Португальцы",
+    "name_az": "Portuqallar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "PT"
+    ]
+  },
+  {
+    "id": "nat_42",
+    "name_en": "Romanians",
+    "name_ru": "Румыны",
+    "name_az": "Rumınlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "RO"
+    ]
+  },
+  {
+    "id": "nat_43",
+    "name_en": "Moldovans",
+    "name_ru": "Молдаване",
+    "name_az": "Moldovanlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "MD"
+    ]
+  },
+  {
+    "id": "nat_44",
+    "name_en": "Catalans",
+    "name_ru": "Каталонцы",
+    "name_az": "Katalonlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "ES"
+    ]
+  },
+  {
+    "id": "nat_45",
+    "name_en": "Galicians",
+    "name_ru": "Галисийцы",
+    "name_az": "Qalisiya xalqı",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "ES"
+    ]
+  },
+  {
+    "id": "nat_46",
+    "name_en": "Occitans",
+    "name_ru": "Окситанцы",
+    "name_az": "Oksitanlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "FR"
+    ]
+  },
+  {
+    "id": "nat_47",
+    "name_en": "Aromanians",
+    "name_ru": "Аромуны",
+    "name_az": "Aromunlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "GR",
+      "AL"
+    ]
+  },
+  {
+    "id": "nat_48",
+    "name_en": "Corsicans",
+    "name_ru": "Корсиканцы",
+    "name_az": "Korsikalılar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "FR"
+    ]
+  },
+  {
+    "id": "nat_49",
+    "name_en": "Sardinians",
+    "name_ru": "Сардинцы",
+    "name_az": "Sardiniyalılar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "IT"
+    ]
+  },
+  {
+    "id": "nat_50",
+    "name_en": "Sicilians",
+    "name_ru": "Сицилийцы",
+    "name_az": "Siciliyalılar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "IT"
+    ]
+  },
+  {
+    "id": "nat_51",
+    "name_en": "Walloons",
+    "name_ru": "Валлоны",
+    "name_az": "Vallonlar",
+    "level": 3,
+    "parent_id": "nat_37",
+    "iso_codes": [
+      "BE"
+    ]
+  },
+  {
+    "id": "nat_52",
+    "name_en": "Celtic peoples",
+    "name_ru": "Кельтские народы",
+    "name_az": "Kelt xalqları",
+    "level": 2,
+    "parent_id": "nat_1"
+  },
+  {
+    "id": "nat_53",
+    "name_en": "Irish",
+    "name_ru": "Ирландцы",
+    "name_az": "İrlandlar",
+    "level": 3,
+    "parent_id": "nat_52",
+    "iso_codes": [
+      "IE",
+      "GB"
+    ]
+  },
+  {
+    "id": "nat_54",
+    "name_en": "Scots",
+    "name_ru": "Шотландцы",
+    "name_az": "Şotlandlar",
+    "level": 3,
+    "parent_id": "nat_52",
+    "iso_codes": [
+      "GB"
+    ]
+  },
+  {
+    "id": "nat_55",
+    "name_en": "Welsh",
+    "name_ru": "Валлийцы",
+    "name_az": "Uelslilər",
+    "level": 3,
+    "parent_id": "nat_52",
+    "iso_codes": [
+      "GB"
+    ]
+  },
+  {
+    "id": "nat_56",
+    "name_en": "Bretons",
+    "name_ru": "Бретонцы",
+    "name_az": "Bretonlar",
+    "level": 3,
+    "parent_id": "nat_52",
+    "iso_codes": [
+      "FR"
+    ]
+  },
+  {
+    "id": "nat_57",
+    "name_en": "Cornish",
+    "name_ru": "Корнцы",
+    "name_az": "Kornlar",
+    "level": 3,
+    "parent_id": "nat_52",
+    "iso_codes": [
+      "GB"
+    ]
+  },
+  {
+    "id": "nat_58",
+    "name_en": "Manx",
+    "name_ru": "Мэнцы",
+    "name_az": "Menkslər",
+    "level": 3,
+    "parent_id": "nat_52",
+    "iso_codes": [
+      "IM"
+    ]
+  },
+  {
+    "id": "nat_59",
+    "name_en": "Baltic peoples",
+    "name_ru": "Балтийские народы",
+    "name_az": "Balt xalqları",
+    "level": 2,
+    "parent_id": "nat_1"
+  },
+  {
+    "id": "nat_60",
+    "name_en": "Lithuanians",
+    "name_ru": "Литовцы",
+    "name_az": "Litvalılar",
+    "level": 3,
+    "parent_id": "nat_59",
+    "iso_codes": [
+      "LT"
+    ]
+  },
+  {
+    "id": "nat_61",
+    "name_en": "Latvians",
+    "name_ru": "Латыши",
+    "name_az": "Latışlar",
+    "level": 3,
+    "parent_id": "nat_59",
+    "iso_codes": [
+      "LV"
+    ]
+  },
+  {
+    "id": "nat_62",
+    "name_en": "Finno-Ugric peoples",
+    "name_ru": "Финно-угорские народы",
+    "name_az": "Fin-uqor xalqları",
+    "level": 2,
+    "parent_id": "nat_1"
+  },
+  {
+    "id": "nat_63",
+    "name_en": "Finnic peoples",
+    "name_ru": "Финно-пермские народы",
+    "name_az": "Fin xalqları",
+    "level": 3,
+    "parent_id": "nat_62"
+  },
+  {
+    "id": "nat_64",
+    "name_en": "Finns",
+    "name_ru": "Финны",
+    "name_az": "Finlər",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "FI"
+    ]
+  },
+  {
+    "id": "nat_65",
+    "name_en": "Estonians",
+    "name_ru": "Эстонцы",
+    "name_az": "Estonlar",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "EE"
+    ]
+  },
+  {
+    "id": "nat_66",
+    "name_en": "Karelians",
+    "name_ru": "Карелы",
+    "name_az": "Karellər",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_67",
+    "name_en": "Sami",
+    "name_ru": "Саамы",
+    "name_az": "Saamlar",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "NO",
+      "SE",
+      "FI",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_68",
+    "name_en": "Komi",
+    "name_ru": "Коми",
+    "name_az": "Komi",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_69",
+    "name_en": "Udmurts",
+    "name_ru": "Удмурты",
+    "name_az": "Udmurtlar",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_70",
+    "name_en": "Mari",
+    "name_ru": "Марийцы",
+    "name_az": "Marilər",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_71",
+    "name_en": "Mordvins",
+    "name_ru": "Мордва",
+    "name_az": "Mordvalar",
+    "level": 4,
+    "parent_id": "nat_63",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_72",
+    "name_en": "Ugric peoples",
+    "name_ru": "Угорские народы",
+    "name_az": "Uqor xalqları",
+    "level": 3,
+    "parent_id": "nat_62"
+  },
+  {
+    "id": "nat_73",
+    "name_en": "Hungarians",
+    "name_ru": "Венгры",
+    "name_az": "Macarlar",
+    "level": 4,
+    "parent_id": "nat_72",
+    "iso_codes": [
+      "HU"
+    ]
+  },
+  {
+    "id": "nat_74",
+    "name_en": "Khanty",
+    "name_ru": "Ханты",
+    "name_az": "Xantılar",
+    "level": 4,
+    "parent_id": "nat_72",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_75",
+    "name_en": "Mansi",
+    "name_ru": "Манси",
+    "name_az": "Mansilər",
+    "level": 4,
+    "parent_id": "nat_72",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_76",
+    "name_en": "Basques",
+    "name_ru": "Баски",
+    "name_az": "Basklar",
+    "level": 2,
+    "parent_id": "nat_1",
+    "iso_codes": [
+      "ES",
+      "FR"
+    ]
+  },
+  {
+    "id": "nat_77",
+    "name_en": "Greeks",
+    "name_ru": "Греки",
+    "name_az": "Yunanlar",
+    "level": 2,
+    "parent_id": "nat_1",
+    "iso_codes": [
+      "GR",
+      "CY"
+    ]
+  },
+  {
+    "id": "nat_78",
+    "name_en": "Albanians",
+    "name_ru": "Албанцы",
+    "name_az": "Albanlar",
+    "level": 2,
+    "parent_id": "nat_1",
+    "iso_codes": [
+      "AL",
+      "XK",
+      "MK"
+    ]
+  },
+  {
+    "id": "nat_79",
+    "name_en": "Armenians",
+    "name_ru": "Армяне",
+    "name_az": "Ermənilər",
+    "level": 2,
+    "parent_id": "nat_1",
+    "iso_codes": [
+      "AM"
+    ]
+  },
+  {
+    "id": "nat_80",
+    "name_en": "Georgians",
+    "name_ru": "Грузины",
+    "name_az": "Gürcülər",
+    "level": 2,
+    "parent_id": "nat_1",
+    "iso_codes": [
+      "GE"
+    ]
+  },
+  {
+    "id": "nat_81",
+    "name_en": "Caucasus",
+    "name_ru": "Кавказ",
+    "name_az": "Qafqaz",
+    "level": 1,
+    "parent_id": null
+  },
+  {
+    "id": "nat_82",
+    "name_en": "Nakh-Dagestanian",
+    "name_ru": "Нахско-дагестанские народы",
+    "name_az": "Nax-Dağıstan xalqları",
+    "level": 2,
+    "parent_id": "nat_81"
+  },
+  {
+    "id": "nat_83",
+    "name_en": "Avars",
+    "name_ru": "Аварцы",
+    "name_az": "Avarlar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU",
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_84",
+    "name_en": "Lezgins",
+    "name_ru": "Лезгины",
+    "name_az": "Ləzgilər",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU",
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_85",
+    "name_en": "Chechens",
+    "name_ru": "Чеченцы",
+    "name_az": "Çeçenlər",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_86",
+    "name_en": "Ingush",
+    "name_ru": "Ингуши",
+    "name_az": "İnquşlar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_87",
+    "name_en": "Dargins",
+    "name_ru": "Даргинцы",
+    "name_az": "Dargilər",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_88",
+    "name_en": "Laks",
+    "name_ru": "Лакцы",
+    "name_az": "Laklar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_89",
+    "name_en": "Tabasarans",
+    "name_ru": "Табасараны",
+    "name_az": "Tabasaranlar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_90",
+    "name_en": "Rutuls",
+    "name_ru": "Рутульцы",
+    "name_az": "Rutullar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU",
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_91",
+    "name_en": "Tsakhurs",
+    "name_ru": "Цахуры",
+    "name_az": "Saxurlar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU",
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_92",
+    "name_en": "Aghuls",
+    "name_ru": "Агулы",
+    "name_az": "Aqullar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_93",
+    "name_en": "Udis",
+    "name_ru": "Удины",
+    "name_az": "Udilər",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "AZ",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_94",
+    "name_en": "Kryts",
+    "name_ru": "Крызы",
+    "name_az": "Qrızlar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_95",
+    "name_en": "Khinalugs",
+    "name_ru": "Хиналугцы",
+    "name_az": "Xınalıqlar",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_96",
+    "name_en": "Budukh",
+    "name_ru": "Будухи",
+    "name_az": "Buduqlular",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_97",
+    "name_en": "Archi",
+    "name_ru": "Арчинцы",
+    "name_az": "Arçilər",
+    "level": 3,
+    "parent_id": "nat_82",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_98",
+    "name_en": "Abkhaz-Adyghe",
+    "name_ru": "Абхазо-адыгские народы",
+    "name_az": "Abxaz-Adıq xalqları",
+    "level": 2,
+    "parent_id": "nat_81"
+  },
+  {
+    "id": "nat_99",
+    "name_en": "Circassians",
+    "name_ru": "Черкесы (Адыги)",
+    "name_az": "Çərkəzlər",
+    "level": 3,
+    "parent_id": "nat_98",
+    "iso_codes": [
+      "RU",
+      "TR"
+    ]
+  },
+  {
+    "id": "nat_100",
+    "name_en": "Kabardians",
+    "name_ru": "Кабардинцы",
+    "name_az": "Kabardinlər",
+    "level": 3,
+    "parent_id": "nat_98",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_101",
+    "name_en": "Adyghe",
+    "name_ru": "Адыгейцы",
+    "name_az": "Adıgeylər",
+    "level": 3,
+    "parent_id": "nat_98",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_102",
+    "name_en": "Abkhazians",
+    "name_ru": "Абхазы",
+    "name_az": "Abxazlar",
+    "level": 3,
+    "parent_id": "nat_98",
+    "iso_codes": [
+      "GE",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_103",
+    "name_en": "Abazins",
+    "name_ru": "Абазины",
+    "name_az": "Abazinlər",
+    "level": 3,
+    "parent_id": "nat_98",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_104",
+    "name_en": "Kartvelian",
+    "name_ru": "Картвельские народы",
+    "name_az": "Kartvel xalqları",
+    "level": 2,
+    "parent_id": "nat_81"
+  },
+  {
+    "id": "nat_105",
+    "name_en": "Georgians",
+    "name_ru": "Грузины",
+    "name_az": "Gürcülər",
+    "level": 3,
+    "parent_id": "nat_104",
+    "iso_codes": [
+      "GE"
+    ]
+  },
+  {
+    "id": "nat_106",
+    "name_en": "Svans",
+    "name_ru": "Сваны",
+    "name_az": "Svanlar",
+    "level": 3,
+    "parent_id": "nat_104",
+    "iso_codes": [
+      "GE"
+    ]
+  },
+  {
+    "id": "nat_107",
+    "name_en": "Mingrelians",
+    "name_ru": "Мегрелы",
+    "name_az": "Meqrellər",
+    "level": 3,
+    "parent_id": "nat_104",
+    "iso_codes": [
+      "GE"
+    ]
+  },
+  {
+    "id": "nat_108",
+    "name_en": "Laz",
+    "name_ru": "Лазы",
+    "name_az": "Lazlar",
+    "level": 3,
+    "parent_id": "nat_104",
+    "iso_codes": [
+      "TR",
+      "GE"
+    ]
+  },
+  {
+    "id": "nat_109",
+    "name_en": "Turkic peoples",
+    "name_ru": "Тюркские народы",
+    "name_az": "Türk xalqları",
+    "level": 1,
+    "parent_id": null
+  },
+  {
+    "id": "nat_110",
+    "name_en": "Oghuz group",
+    "name_ru": "Огузская группа",
+    "name_az": "Oğuz qrupu",
+    "level": 2,
+    "parent_id": "nat_109"
+  },
+  {
+    "id": "nat_111",
+    "name_en": "Azerbaijanis",
+    "name_ru": "Азербайджанцы",
+    "name_az": "Azərbaycanlılar",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "AZ",
+      "IR",
+      "RU",
+      "GE",
+      "TR"
+    ]
+  },
+  {
+    "id": "nat_112",
+    "name_en": "Turks",
+    "name_ru": "Турки",
+    "name_az": "Türklər",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "TR",
+      "DE"
+    ]
+  },
+  {
+    "id": "nat_113",
+    "name_en": "Turkmens",
+    "name_ru": "Туркмены",
+    "name_az": "Türkmənlər",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "TM",
+      "IR",
+      "AF"
+    ]
+  },
+  {
+    "id": "nat_114",
+    "name_en": "Gagauz",
+    "name_ru": "Гагаузы",
+    "name_az": "Qaqauzlar",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "MD"
+    ]
+  },
+  {
+    "id": "nat_115",
+    "name_en": "Qashqai",
+    "name_ru": "Кашкайцы",
+    "name_az": "Qaşqaylar",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_116",
+    "name_en": "Afshars",
+    "name_ru": "Афшары",
+    "name_az": "Əfşarlar",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "IR",
+      "TR",
+      "AF"
+    ]
+  },
+  {
+    "id": "nat_117",
+    "name_en": "Khorasani Turks",
+    "name_ru": "Хорасанские тюрки",
+    "name_az": "Xorasan türkləri",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_118",
+    "name_en": "Shahsevan",
+    "name_ru": "Шахсевены",
+    "name_az": "Şahsevənlər",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "IR",
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_119",
+    "name_en": "Turkomans",
+    "name_ru": "Туркоманы",
+    "name_az": "İraq türkmanları",
+    "level": 3,
+    "parent_id": "nat_110",
+    "iso_codes": [
+      "IQ",
+      "SY"
+    ]
+  },
+  {
+    "id": "nat_120",
+    "name_en": "Kipchak group",
+    "name_ru": "Кыпчакская группа",
+    "name_az": "Qıpçaq qrupu",
+    "level": 2,
+    "parent_id": "nat_109"
+  },
+  {
+    "id": "nat_121",
+    "name_en": "Kazakhs",
+    "name_ru": "Казахи",
+    "name_az": "Qazaxlar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "KZ",
+      "CN",
+      "UZ",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_122",
+    "name_en": "Tatars",
+    "name_ru": "Татары",
+    "name_az": "Tatarlar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_123",
+    "name_en": "Bashkirs",
+    "name_ru": "Башкиры",
+    "name_az": "Başqırdlar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_124",
+    "name_en": "Kyrgyz",
+    "name_ru": "Кыргызы",
+    "name_az": "Qırğızlar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "KG",
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_125",
+    "name_en": "Karakalpaks",
+    "name_ru": "Каракалпаки",
+    "name_az": "Qaraqalpaqlar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "UZ"
+    ]
+  },
+  {
+    "id": "nat_126",
+    "name_en": "Kumyks",
+    "name_ru": "Кумыки",
+    "name_az": "Qumuqlar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_127",
+    "name_en": "Karachays",
+    "name_ru": "Карачаевцы",
+    "name_az": "Qaraçaylar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_128",
+    "name_en": "Balkars",
+    "name_ru": "Балкарцы",
+    "name_az": "Balkarlar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_129",
+    "name_en": "Nogais",
+    "name_ru": "Ногайцы",
+    "name_az": "Noqaylar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_130",
+    "name_en": "Crimean Tatars",
+    "name_ru": "Крымские татары",
+    "name_az": "Krım tatarları",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "UA",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_131",
+    "name_en": "Karaims",
+    "name_ru": "Караимы",
+    "name_az": "Qaraimlər",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "LT",
+      "UA",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_132",
+    "name_en": "Krymchaks",
+    "name_ru": "Крымчаки",
+    "name_az": "Krımçaklar",
+    "level": 3,
+    "parent_id": "nat_120",
+    "iso_codes": [
+      "UA",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_133",
+    "name_en": "Karluk group",
+    "name_ru": "Карлукская группа",
+    "name_az": "Qarluq qrupu",
+    "level": 2,
+    "parent_id": "nat_109"
+  },
+  {
+    "id": "nat_134",
+    "name_en": "Uzbeks",
+    "name_ru": "Узбеки",
+    "name_az": "Özbəklər",
+    "level": 3,
+    "parent_id": "nat_133",
+    "iso_codes": [
+      "UZ",
+      "AF",
+      "TJ",
+      "KG"
+    ]
+  },
+  {
+    "id": "nat_135",
+    "name_en": "Uyghurs",
+    "name_ru": "Уйгуры",
+    "name_az": "Uyğurlar",
+    "level": 3,
+    "parent_id": "nat_133",
+    "iso_codes": [
+      "CN",
+      "KZ"
+    ]
+  },
+  {
+    "id": "nat_136",
+    "name_en": "Ili Turki",
+    "name_ru": "Илийские тюрки",
+    "name_az": "İli türkləri",
+    "level": 3,
+    "parent_id": "nat_133",
+    "iso_codes": [
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_137",
+    "name_en": "Siberian Turkic",
+    "name_ru": "Сибирские тюрки",
+    "name_az": "Sibir türkləri",
+    "level": 2,
+    "parent_id": "nat_109"
+  },
+  {
+    "id": "nat_138",
+    "name_en": "Yakuts (Sakha)",
+    "name_ru": "Якуты (Саха)",
+    "name_az": "Yakutlar (Saxa)",
+    "level": 3,
+    "parent_id": "nat_137",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_139",
+    "name_en": "Tuvans",
+    "name_ru": "Тувинцы",
+    "name_az": "Tuvalar",
+    "level": 3,
+    "parent_id": "nat_137",
+    "iso_codes": [
+      "RU",
+      "MN"
+    ]
+  },
+  {
+    "id": "nat_140",
+    "name_en": "Altai",
+    "name_ru": "Алтайцы",
+    "name_az": "Altaylar",
+    "level": 3,
+    "parent_id": "nat_137",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_141",
+    "name_en": "Khakas",
+    "name_ru": "Хакасы",
+    "name_az": "Xakaslar",
+    "level": 3,
+    "parent_id": "nat_137",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_142",
+    "name_en": "Shor",
+    "name_ru": "Шорцы",
+    "name_az": "Şorlar",
+    "level": 3,
+    "parent_id": "nat_137",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_143",
+    "name_en": "Dolgan",
+    "name_ru": "Долганы",
+    "name_az": "Dolqanlar",
+    "level": 3,
+    "parent_id": "nat_137",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_144",
+    "name_en": "Chulyms",
+    "name_ru": "Чулымцы",
+    "name_az": "Çulımlar",
+    "level": 3,
+    "parent_id": "nat_137",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_145",
+    "name_en": "Asia & Middle East",
+    "name_ru": "Азия и Ближний Восток",
+    "name_az": "Asiya və Yaxın Şərq",
+    "level": 1,
+    "parent_id": null
+  },
+  {
+    "id": "nat_146",
+    "name_en": "Semitic peoples",
+    "name_ru": "Семитские народы",
+    "name_az": "Semit xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_147",
+    "name_en": "Arabs",
+    "name_ru": "Арабы",
+    "name_az": "Ərəblər",
+    "level": 3,
+    "parent_id": "nat_146",
+    "iso_codes": [
+      "SA",
+      "EG",
+      "IQ",
+      "SY",
+      "AE"
+    ]
+  },
+  {
+    "id": "nat_148",
+    "name_en": "Jews",
+    "name_ru": "Евреи",
+    "name_az": "Yəhudilər",
+    "level": 3,
+    "parent_id": "nat_146",
+    "iso_codes": [
+      "IL",
+      "US"
+    ]
+  },
+  {
+    "id": "nat_149",
+    "name_en": "Assyrians",
+    "name_ru": "Ассирийцы",
+    "name_az": "Assuriyalılar",
+    "level": 3,
+    "parent_id": "nat_146",
+    "iso_codes": [
+      "IQ",
+      "SY",
+      "IR",
+      "TR"
+    ]
+  },
+  {
+    "id": "nat_150",
+    "name_en": "Mandaeans",
+    "name_ru": "Мандеи",
+    "name_az": "Mandeylər",
+    "level": 3,
+    "parent_id": "nat_146",
+    "iso_codes": [
+      "IQ",
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_151",
+    "name_en": "Samaritans",
+    "name_ru": "Самаритяне",
+    "name_az": "Samariyalılar",
+    "level": 3,
+    "parent_id": "nat_146",
+    "iso_codes": [
+      "IL",
+      "PS"
+    ]
+  },
+  {
+    "id": "nat_152",
+    "name_en": "Iranic peoples",
+    "name_ru": "Иранские народы",
+    "name_az": "İran xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_153",
+    "name_en": "Persians",
+    "name_ru": "Персы",
+    "name_az": "Farslar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_154",
+    "name_en": "Kurds",
+    "name_ru": "Курды",
+    "name_az": "Kürdlər",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "TR",
+      "IQ",
+      "IR",
+      "SY"
+    ]
+  },
+  {
+    "id": "nat_155",
+    "name_en": "Pashtuns",
+    "name_ru": "Пуштуны",
+    "name_az": "Puştunlar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "AF",
+      "PK"
+    ]
+  },
+  {
+    "id": "nat_156",
+    "name_en": "Baloch",
+    "name_ru": "Белуджи",
+    "name_az": "Bəluclar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "PK",
+      "IR",
+      "AF"
+    ]
+  },
+  {
+    "id": "nat_157",
+    "name_en": "Tajiks",
+    "name_ru": "Таджики",
+    "name_az": "Taciklər",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "TJ",
+      "AF",
+      "UZ"
+    ]
+  },
+  {
+    "id": "nat_158",
+    "name_en": "Lurs",
+    "name_ru": "Луры",
+    "name_az": "Lurlar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_159",
+    "name_en": "Gilaks",
+    "name_ru": "Гилянцы",
+    "name_az": "Giləklər",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_160",
+    "name_en": "Mazanderanis",
+    "name_ru": "Мазендеранцы",
+    "name_az": "Mazandaranlılar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_161",
+    "name_en": "Talysh",
+    "name_ru": "Талыши",
+    "name_az": "Talışlar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "IR",
+      "AZ"
+    ]
+  },
+  {
+    "id": "nat_162",
+    "name_en": "Ossetians",
+    "name_ru": "Осетины",
+    "name_az": "Osetinlər",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "RU",
+      "GE"
+    ]
+  },
+  {
+    "id": "nat_163",
+    "name_en": "Pamiris",
+    "name_ru": "Памирцы",
+    "name_az": "Pamirlilər",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "TJ",
+      "AF"
+    ]
+  },
+  {
+    "id": "nat_164",
+    "name_en": "Zazas",
+    "name_ru": "Заза",
+    "name_az": "Zazalar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "TR"
+    ]
+  },
+  {
+    "id": "nat_165",
+    "name_en": "Tats",
+    "name_ru": "Таты",
+    "name_az": "Tatlar",
+    "level": 3,
+    "parent_id": "nat_152",
+    "iso_codes": [
+      "AZ",
+      "RU",
+      "IR"
+    ]
+  },
+  {
+    "id": "nat_166",
+    "name_en": "Indo-Aryan peoples",
+    "name_ru": "Индоарийские народы",
+    "name_az": "Hind-ari xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_167",
+    "name_en": "Hindustanis",
+    "name_ru": "Хиндустанцы",
+    "name_az": "Hindustanlılar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_168",
+    "name_en": "Bengalis",
+    "name_ru": "Бенгальцы",
+    "name_az": "Benqallar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "BD",
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_169",
+    "name_en": "Punjabis",
+    "name_ru": "Пенджабцы",
+    "name_az": "Pəncablılar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "PK",
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_170",
+    "name_en": "Marathi",
+    "name_ru": "Маратхи",
+    "name_az": "Marathilər",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_171",
+    "name_en": "Gujaratis",
+    "name_ru": "Гуджаратцы",
+    "name_az": "Qucaratlılar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_172",
+    "name_en": "Odia",
+    "name_ru": "Ория",
+    "name_az": "Oriyalar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_173",
+    "name_en": "Sindhis",
+    "name_ru": "Синдхи",
+    "name_az": "Sindhilər",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "PK",
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_174",
+    "name_en": "Sinhalese",
+    "name_ru": "Сингалы",
+    "name_az": "Sinhalar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "LK"
+    ]
+  },
+  {
+    "id": "nat_175",
+    "name_en": "Nepali",
+    "name_ru": "Непальцы",
+    "name_az": "Nepallılar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "NP"
+    ]
+  },
+  {
+    "id": "nat_176",
+    "name_en": "Romani",
+    "name_ru": "Цыгане",
+    "name_az": "Qaraçılar",
+    "level": 3,
+    "parent_id": "nat_166",
+    "iso_codes": [
+      "RO",
+      "BG",
+      "ES",
+      "TR"
+    ]
+  },
+  {
+    "id": "nat_177",
+    "name_en": "Dravidian peoples",
+    "name_ru": "Дравидийские народы",
+    "name_az": "Dravid xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_178",
+    "name_en": "Telugu",
+    "name_ru": "Телугу",
+    "name_az": "Teluqu",
+    "level": 3,
+    "parent_id": "nat_177",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_179",
+    "name_en": "Tamils",
+    "name_ru": "Тамилы",
+    "name_az": "Tamillər",
+    "level": 3,
+    "parent_id": "nat_177",
+    "iso_codes": [
+      "IN",
+      "LK"
+    ]
+  },
+  {
+    "id": "nat_180",
+    "name_en": "Kannadigas",
+    "name_ru": "Каннара",
+    "name_az": "Kannadalar",
+    "level": 3,
+    "parent_id": "nat_177",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_181",
+    "name_en": "Malayalis",
+    "name_ru": "Малаяли",
+    "name_az": "Malayalilər",
+    "level": 3,
+    "parent_id": "nat_177",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_182",
+    "name_en": "Brahui",
+    "name_ru": "Брагуи",
+    "name_az": "Brahui",
+    "level": 3,
+    "parent_id": "nat_177",
+    "iso_codes": [
+      "PK"
+    ]
+  },
+  {
+    "id": "nat_183",
+    "name_en": "Sino-Tibetan peoples",
+    "name_ru": "Сино-тибетские народы",
+    "name_az": "Çin-Tibet xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_184",
+    "name_en": "Han Chinese",
+    "name_ru": "Ханьцы (Китайцы)",
+    "name_az": "Xan (Çinlilər)",
+    "level": 3,
+    "parent_id": "nat_183",
+    "iso_codes": [
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_185",
+    "name_en": "Tibetans",
+    "name_ru": "Тибетцы",
+    "name_az": "Tibetlilər",
+    "level": 3,
+    "parent_id": "nat_183",
+    "iso_codes": [
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_186",
+    "name_en": "Burmese",
+    "name_ru": "Бирманцы",
+    "name_az": "Birmalılar",
+    "level": 3,
+    "parent_id": "nat_183",
+    "iso_codes": [
+      "MM"
+    ]
+  },
+  {
+    "id": "nat_187",
+    "name_en": "Karen",
+    "name_ru": "Карены",
+    "name_az": "Karenlər",
+    "level": 3,
+    "parent_id": "nat_183",
+    "iso_codes": [
+      "MM",
+      "TH"
+    ]
+  },
+  {
+    "id": "nat_188",
+    "name_en": "Yi (Lolo)",
+    "name_ru": "И (Лоло)",
+    "name_az": "Yi",
+    "level": 3,
+    "parent_id": "nat_183",
+    "iso_codes": [
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_189",
+    "name_en": "Austroasiatic peoples",
+    "name_ru": "Австроазиатские народы",
+    "name_az": "Avstroasiya xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_190",
+    "name_en": "Vietnamese",
+    "name_ru": "Вьетнамцы",
+    "name_az": "Vyetnamlılar",
+    "level": 3,
+    "parent_id": "nat_189",
+    "iso_codes": [
+      "VN"
+    ]
+  },
+  {
+    "id": "nat_191",
+    "name_en": "Khmer",
+    "name_ru": "Кхмеры",
+    "name_az": "Kxmerlər",
+    "level": 3,
+    "parent_id": "nat_189",
+    "iso_codes": [
+      "KH"
+    ]
+  },
+  {
+    "id": "nat_192",
+    "name_en": "Mon",
+    "name_ru": "Моны",
+    "name_az": "Monlar",
+    "level": 3,
+    "parent_id": "nat_189",
+    "iso_codes": [
+      "MM",
+      "TH"
+    ]
+  },
+  {
+    "id": "nat_193",
+    "name_en": "Munda",
+    "name_ru": "Мунда",
+    "name_az": "Munda",
+    "level": 3,
+    "parent_id": "nat_189",
+    "iso_codes": [
+      "IN"
+    ]
+  },
+  {
+    "id": "nat_194",
+    "name_en": "Austronesian peoples (Asia)",
+    "name_ru": "Австронезийские народы (Азия)",
+    "name_az": "Avstroneziya xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_195",
+    "name_en": "Javanese",
+    "name_ru": "Яванцы",
+    "name_az": "Yavalılar",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_196",
+    "name_en": "Sundanese",
+    "name_ru": "Сунданцы",
+    "name_az": "Sundanlılar",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_197",
+    "name_en": "Malays",
+    "name_ru": "Малайцы",
+    "name_az": "Malaylar",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "MY",
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_198",
+    "name_en": "Tagalog",
+    "name_ru": "Тагалы",
+    "name_az": "Taqaloqlar",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "PH"
+    ]
+  },
+  {
+    "id": "nat_199",
+    "name_en": "Visayans",
+    "name_ru": "Висайя",
+    "name_az": "Visayalar",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "PH"
+    ]
+  },
+  {
+    "id": "nat_200",
+    "name_en": "Madurese",
+    "name_ru": "Мадурцы",
+    "name_az": "Maduriyalılar",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_201",
+    "name_en": "Minangkabau",
+    "name_ru": "Минангкабау",
+    "name_az": "Minanqkabaular",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_202",
+    "name_en": "Buginese",
+    "name_ru": "Бугисы",
+    "name_az": "Bugislər",
+    "level": 3,
+    "parent_id": "nat_194",
+    "iso_codes": [
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_203",
+    "name_en": "Mongolic peoples",
+    "name_ru": "Монгольские народы",
+    "name_az": "Monqol xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_204",
+    "name_en": "Mongols",
+    "name_ru": "Монголы",
+    "name_az": "Monqollar",
+    "level": 3,
+    "parent_id": "nat_203",
+    "iso_codes": [
+      "MN",
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_205",
+    "name_en": "Buryats",
+    "name_ru": "Буряты",
+    "name_az": "Buryatlar",
+    "level": 3,
+    "parent_id": "nat_203",
+    "iso_codes": [
+      "RU",
+      "MN"
+    ]
+  },
+  {
+    "id": "nat_206",
+    "name_en": "Kalmyks",
+    "name_ru": "Калмыки",
+    "name_az": "Kalmıklar",
+    "level": 3,
+    "parent_id": "nat_203",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_207",
+    "name_en": "Oirats",
+    "name_ru": "Ойраты",
+    "name_az": "Oyratlar",
+    "level": 3,
+    "parent_id": "nat_203",
+    "iso_codes": [
+      "MN",
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_208",
+    "name_en": "Daur",
+    "name_ru": "Дауры",
+    "name_az": "Daurlar",
+    "level": 3,
+    "parent_id": "nat_203",
+    "iso_codes": [
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_209",
+    "name_en": "Tungusic peoples",
+    "name_ru": "Тунгусо-маньчжурские народы",
+    "name_az": "Tunqus-mancur xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_210",
+    "name_en": "Manchu",
+    "name_ru": "Маньчжуры",
+    "name_az": "Mancurlar",
+    "level": 3,
+    "parent_id": "nat_209",
+    "iso_codes": [
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_211",
+    "name_en": "Evenks",
+    "name_ru": "Эвенки",
+    "name_az": "Evenklər",
+    "level": 3,
+    "parent_id": "nat_209",
+    "iso_codes": [
+      "RU",
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_212",
+    "name_en": "Evens",
+    "name_ru": "Эвены",
+    "name_az": "Evenlər",
+    "level": 3,
+    "parent_id": "nat_209",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_213",
+    "name_en": "Nanai",
+    "name_ru": "Нанайцы",
+    "name_az": "Nanaylar",
+    "level": 3,
+    "parent_id": "nat_209",
+    "iso_codes": [
+      "RU",
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_214",
+    "name_en": "Japonic peoples",
+    "name_ru": "Японо-рюкюские народы",
+    "name_az": "Yapon-Ryukyu xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_215",
+    "name_en": "Japanese",
+    "name_ru": "Японцы",
+    "name_az": "Yaponlar",
+    "level": 3,
+    "parent_id": "nat_214",
+    "iso_codes": [
+      "JP"
+    ]
+  },
+  {
+    "id": "nat_216",
+    "name_en": "Ryukyuans",
+    "name_ru": "Рюкюсцы",
+    "name_az": "Ryukyular",
+    "level": 3,
+    "parent_id": "nat_214",
+    "iso_codes": [
+      "JP"
+    ]
+  },
+  {
+    "id": "nat_217",
+    "name_en": "Koreanic peoples",
+    "name_ru": "Корейцы",
+    "name_az": "Koreyalılar",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_218",
+    "name_en": "Koreans",
+    "name_ru": "Корейцы",
+    "name_az": "Koreyalılar",
+    "level": 3,
+    "parent_id": "nat_217",
+    "iso_codes": [
+      "KR",
+      "KP",
+      "CN"
+    ]
+  },
+  {
+    "id": "nat_219",
+    "name_en": "Paleo-Siberian",
+    "name_ru": "Палеоазиатские народы",
+    "name_az": "Paleo-Sibir xalqları",
+    "level": 2,
+    "parent_id": "nat_145"
+  },
+  {
+    "id": "nat_220",
+    "name_en": "Chukchi",
+    "name_ru": "Чукчи",
+    "name_az": "Çukçalar",
+    "level": 3,
+    "parent_id": "nat_219",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_221",
+    "name_en": "Koryaks",
+    "name_ru": "Коряки",
+    "name_az": "Koryaklar",
+    "level": 3,
+    "parent_id": "nat_219",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_222",
+    "name_en": "Nivkhs",
+    "name_ru": "Нивхи",
+    "name_az": "Nivxlər",
+    "level": 3,
+    "parent_id": "nat_219",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_223",
+    "name_en": "Yukaghirs",
+    "name_ru": "Юкагиры",
+    "name_az": "Yukaqirlər",
+    "level": 3,
+    "parent_id": "nat_219",
+    "iso_codes": [
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_224",
+    "name_en": "Ainu",
+    "name_ru": "Айны",
+    "name_az": "Aynular",
+    "level": 3,
+    "parent_id": "nat_219",
+    "iso_codes": [
+      "JP",
+      "RU"
+    ]
+  },
+  {
+    "id": "nat_225",
+    "name_en": "Africa",
+    "name_ru": "Африка",
+    "name_az": "Afrika",
+    "level": 1,
+    "parent_id": null
+  },
+  {
+    "id": "nat_226",
+    "name_en": "Afroasiatic (Africa)",
+    "name_ru": "Афразийские народы",
+    "name_az": "Afro-asiya xalqları",
+    "level": 2,
+    "parent_id": "nat_225"
+  },
+  {
+    "id": "nat_227",
+    "name_en": "Berbers (Amazigh)",
+    "name_ru": "Берберы (Амазиги)",
+    "name_az": "Bərbərlər (Amaziqlər)",
+    "level": 3,
+    "parent_id": "nat_226",
+    "iso_codes": [
+      "MA",
+      "DZ",
+      "LY",
+      "ML",
+      "NE"
+    ]
+  },
+  {
+    "id": "nat_228",
+    "name_en": "Tuareg",
+    "name_ru": "Туареги",
+    "name_az": "Tuareqlər",
+    "level": 3,
+    "parent_id": "nat_226",
+    "iso_codes": [
+      "ML",
+      "NE",
+      "DZ",
+      "LY"
+    ]
+  },
+  {
+    "id": "nat_229",
+    "name_en": "Oromo",
+    "name_ru": "Оромо",
+    "name_az": "Oromolar",
+    "level": 3,
+    "parent_id": "nat_226",
+    "iso_codes": [
+      "ET"
+    ]
+  },
+  {
+    "id": "nat_230",
+    "name_en": "Somalis",
+    "name_ru": "Сомалийцы",
+    "name_az": "Somalilər",
+    "level": 3,
+    "parent_id": "nat_226",
+    "iso_codes": [
+      "SO",
+      "ET",
+      "KE"
+    ]
+  },
+  {
+    "id": "nat_231",
+    "name_en": "Amhara",
+    "name_ru": "Амхара",
+    "name_az": "Amharalar",
+    "level": 3,
+    "parent_id": "nat_226",
+    "iso_codes": [
+      "ET"
+    ]
+  },
+  {
+    "id": "nat_232",
+    "name_en": "Tigrayans",
+    "name_ru": "Тыграй",
+    "name_az": "Tiqraylar",
+    "level": 3,
+    "parent_id": "nat_226",
+    "iso_codes": [
+      "ET",
+      "ER"
+    ]
+  },
+  {
+    "id": "nat_233",
+    "name_en": "Hausa",
+    "name_ru": "Хауса",
+    "name_az": "Hausalar",
+    "level": 3,
+    "parent_id": "nat_226",
+    "iso_codes": [
+      "NG",
+      "NE"
+    ]
+  },
+  {
+    "id": "nat_234",
+    "name_en": "Niger-Congo peoples",
+    "name_ru": "Нигеро-конголезские народы",
+    "name_az": "Niger-Konqo xalqları",
+    "level": 2,
+    "parent_id": "nat_225"
+  },
+  {
+    "id": "nat_235",
+    "name_en": "Yoruba",
+    "name_ru": "Йоруба",
+    "name_az": "Yorubalar",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "NG",
+      "BJ"
+    ]
+  },
+  {
+    "id": "nat_236",
+    "name_en": "Igbo",
+    "name_ru": "Игбо",
+    "name_az": "İqbolar",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "NG"
+    ]
+  },
+  {
+    "id": "nat_237",
+    "name_en": "Fulani",
+    "name_ru": "Фульбе (Фулани)",
+    "name_az": "Fulanilər",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "NG",
+      "GN",
+      "SN",
+      "CM"
+    ]
+  },
+  {
+    "id": "nat_238",
+    "name_en": "Akan",
+    "name_ru": "Аканы",
+    "name_az": "Akanlar",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "GH",
+      "CI"
+    ]
+  },
+  {
+    "id": "nat_239",
+    "name_en": "Zulu",
+    "name_ru": "Зулусы",
+    "name_az": "Zulular",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "ZA"
+    ]
+  },
+  {
+    "id": "nat_240",
+    "name_en": "Xhosa",
+    "name_ru": "Коса",
+    "name_az": "Kosa",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "ZA"
+    ]
+  },
+  {
+    "id": "nat_241",
+    "name_en": "Shona",
+    "name_ru": "Шона",
+    "name_az": "Şona",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "ZW"
+    ]
+  },
+  {
+    "id": "nat_242",
+    "name_en": "Kikuyu",
+    "name_ru": "Кикуйю",
+    "name_az": "Kikuyular",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "KE"
+    ]
+  },
+  {
+    "id": "nat_243",
+    "name_en": "Kongo",
+    "name_ru": "Конго",
+    "name_az": "Konqo xalqı",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "CD",
+      "CG",
+      "AO"
+    ]
+  },
+  {
+    "id": "nat_244",
+    "name_en": "Luba",
+    "name_ru": "Луба",
+    "name_az": "Lubalar",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "CD"
+    ]
+  },
+  {
+    "id": "nat_245",
+    "name_en": "Hutu",
+    "name_ru": "Хуту",
+    "name_az": "Xutular",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "RW",
+      "BI"
+    ]
+  },
+  {
+    "id": "nat_246",
+    "name_en": "Tutsi",
+    "name_ru": "Тутси",
+    "name_az": "Tutsilər",
+    "level": 3,
+    "parent_id": "nat_234",
+    "iso_codes": [
+      "RW",
+      "BI"
+    ]
+  },
+  {
+    "id": "nat_247",
+    "name_en": "Nilo-Saharan peoples",
+    "name_ru": "Нило-сахарские народы",
+    "name_az": "Nil-Saxara xalqları",
+    "level": 2,
+    "parent_id": "nat_225"
+  },
+  {
+    "id": "nat_248",
+    "name_en": "Luo",
+    "name_ru": "Луо",
+    "name_az": "Luo",
+    "level": 3,
+    "parent_id": "nat_247",
+    "iso_codes": [
+      "KE",
+      "TZ",
+      "UG"
+    ]
+  },
+  {
+    "id": "nat_249",
+    "name_en": "Dinka",
+    "name_ru": "Динка",
+    "name_az": "Dinkalar",
+    "level": 3,
+    "parent_id": "nat_247",
+    "iso_codes": [
+      "SS"
+    ]
+  },
+  {
+    "id": "nat_250",
+    "name_en": "Nuer",
+    "name_ru": "Нуэр",
+    "name_az": "Nuerlər",
+    "level": 3,
+    "parent_id": "nat_247",
+    "iso_codes": [
+      "SS"
+    ]
+  },
+  {
+    "id": "nat_251",
+    "name_en": "Maasai",
+    "name_ru": "Масаи",
+    "name_az": "Masailər",
+    "level": 3,
+    "parent_id": "nat_247",
+    "iso_codes": [
+      "KE",
+      "TZ"
+    ]
+  },
+  {
+    "id": "nat_252",
+    "name_en": "Kanuri",
+    "name_ru": "Канури",
+    "name_az": "Kanurilər",
+    "level": 3,
+    "parent_id": "nat_247",
+    "iso_codes": [
+      "NG",
+      "TD",
+      "NE"
+    ]
+  },
+  {
+    "id": "nat_253",
+    "name_en": "Songhai",
+    "name_ru": "Сонгай",
+    "name_az": "Sonqaylar",
+    "level": 3,
+    "parent_id": "nat_247",
+    "iso_codes": [
+      "ML",
+      "NE"
+    ]
+  },
+  {
+    "id": "nat_254",
+    "name_en": "Khoisan peoples",
+    "name_ru": "Койсанские народы",
+    "name_az": "Koysan xalqları",
+    "level": 2,
+    "parent_id": "nat_225"
+  },
+  {
+    "id": "nat_255",
+    "name_en": "San (Bushmen)",
+    "name_ru": "Сан (Бушмены)",
+    "name_az": "San (Buşmenlər)",
+    "level": 3,
+    "parent_id": "nat_254",
+    "iso_codes": [
+      "BW",
+      "NA",
+      "ZA"
+    ]
+  },
+  {
+    "id": "nat_256",
+    "name_en": "Khoekhoe (Hottentots)",
+    "name_ru": "Кхой-кхой (Готтентоты)",
+    "name_az": "Koy-Koy (Hottentotlar)",
+    "level": 3,
+    "parent_id": "nat_254",
+    "iso_codes": [
+      "NA",
+      "ZA"
+    ]
+  },
+  {
+    "id": "nat_257",
+    "name_en": "Americas",
+    "name_ru": "Америка (Северная и Южная)",
+    "name_az": "Amerika",
+    "level": 1,
+    "parent_id": null
+  },
+  {
+    "id": "nat_258",
+    "name_en": "North American Indigenous",
+    "name_ru": "Индейцы Северной Америки",
+    "name_az": "Şimali Amerika Yerliləri",
+    "level": 2,
+    "parent_id": "nat_257"
+  },
+  {
+    "id": "nat_259",
+    "name_en": "Navajo",
+    "name_ru": "Навахо",
+    "name_az": "Navaxo",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US"
+    ]
+  },
+  {
+    "id": "nat_260",
+    "name_en": "Cherokee",
+    "name_ru": "Чероки",
+    "name_az": "Çeroki",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US"
+    ]
+  },
+  {
+    "id": "nat_261",
+    "name_en": "Ojibwe",
+    "name_ru": "Оджибве",
+    "name_az": "Ocibve",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US",
+      "CA"
+    ]
+  },
+  {
+    "id": "nat_262",
+    "name_en": "Cree",
+    "name_ru": "Кри",
+    "name_az": "Kri",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "CA"
+    ]
+  },
+  {
+    "id": "nat_263",
+    "name_en": "Inuit",
+    "name_ru": "Инуиты (Эскимосы)",
+    "name_az": "İnuitlər",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "CA",
+      "GL",
+      "US"
+    ]
+  },
+  {
+    "id": "nat_264",
+    "name_en": "Apache",
+    "name_ru": "Апачи",
+    "name_az": "Apaçilər",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US"
+    ]
+  },
+  {
+    "id": "nat_265",
+    "name_en": "Lakota",
+    "name_ru": "Лакота (Сиу)",
+    "name_az": "Lakota (Siu)",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US"
+    ]
+  },
+  {
+    "id": "nat_266",
+    "name_en": "Iroquois",
+    "name_ru": "Ирокезы",
+    "name_az": "İrokezlər",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US",
+      "CA"
+    ]
+  },
+  {
+    "id": "nat_267",
+    "name_en": "Comanche",
+    "name_ru": "Команчи",
+    "name_az": "Komançilər",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US"
+    ]
+  },
+  {
+    "id": "nat_268",
+    "name_en": "Pueblo",
+    "name_ru": "Пуэбло",
+    "name_az": "Pueblo",
+    "level": 3,
+    "parent_id": "nat_258",
+    "iso_codes": [
+      "US"
+    ]
+  },
+  {
+    "id": "nat_269",
+    "name_en": "Mesoamerican Indigenous",
+    "name_ru": "Индейцы Мезоамерики",
+    "name_az": "Mezoamerika Yerliləri",
+    "level": 2,
+    "parent_id": "nat_257"
+  },
+  {
+    "id": "nat_270",
+    "name_en": "Nahua (Aztecs)",
+    "name_ru": "Нахуа (Ацтеки)",
+    "name_az": "Nahua (Asteklər)",
+    "level": 3,
+    "parent_id": "nat_269",
+    "iso_codes": [
+      "MX"
+    ]
+  },
+  {
+    "id": "nat_271",
+    "name_en": "Maya",
+    "name_ru": "Майя",
+    "name_az": "Mayyalılar",
+    "level": 3,
+    "parent_id": "nat_269",
+    "iso_codes": [
+      "MX",
+      "GT",
+      "BZ"
+    ]
+  },
+  {
+    "id": "nat_272",
+    "name_en": "Zapotecs",
+    "name_ru": "Сапотеки",
+    "name_az": "Zapoteklər",
+    "level": 3,
+    "parent_id": "nat_269",
+    "iso_codes": [
+      "MX"
+    ]
+  },
+  {
+    "id": "nat_273",
+    "name_en": "Mixtecs",
+    "name_ru": "Миштеки",
+    "name_az": "Mişteklər",
+    "level": 3,
+    "parent_id": "nat_269",
+    "iso_codes": [
+      "MX"
+    ]
+  },
+  {
+    "id": "nat_274",
+    "name_en": "South American Indigenous",
+    "name_ru": "Индейцы Южной Америки",
+    "name_az": "Cənubi Amerika Yerliləri",
+    "level": 2,
+    "parent_id": "nat_257"
+  },
+  {
+    "id": "nat_275",
+    "name_en": "Quechua (Inca)",
+    "name_ru": "Кечуа (Инки)",
+    "name_az": "Keçua (İnklər)",
+    "level": 3,
+    "parent_id": "nat_274",
+    "iso_codes": [
+      "PE",
+      "BO",
+      "EC"
+    ]
+  },
+  {
+    "id": "nat_276",
+    "name_en": "Aymara",
+    "name_ru": "Аймара",
+    "name_az": "Aymara",
+    "level": 3,
+    "parent_id": "nat_274",
+    "iso_codes": [
+      "BO",
+      "PE"
+    ]
+  },
+  {
+    "id": "nat_277",
+    "name_en": "Mapuche",
+    "name_ru": "Мапуче (Арауканы)",
+    "name_az": "Mapuçe",
+    "level": 3,
+    "parent_id": "nat_274",
+    "iso_codes": [
+      "CL",
+      "AR"
+    ]
+  },
+  {
+    "id": "nat_278",
+    "name_en": "Guarani",
+    "name_ru": "Гуарани",
+    "name_az": "Quarani",
+    "level": 3,
+    "parent_id": "nat_274",
+    "iso_codes": [
+      "PY",
+      "BR",
+      "AR"
+    ]
+  },
+  {
+    "id": "nat_279",
+    "name_en": "Yanomami",
+    "name_ru": "Яномами",
+    "name_az": "Yanomami",
+    "level": 3,
+    "parent_id": "nat_274",
+    "iso_codes": [
+      "BR",
+      "VE"
+    ]
+  },
+  {
+    "id": "nat_280",
+    "name_en": "Tupi",
+    "name_ru": "Тупи",
+    "name_az": "Tupi",
+    "level": 3,
+    "parent_id": "nat_274",
+    "iso_codes": [
+      "BR"
+    ]
+  },
+  {
+    "id": "nat_281",
+    "name_en": "Wayuu",
+    "name_ru": "Ваюу",
+    "name_az": "Vayuu",
+    "level": 3,
+    "parent_id": "nat_274",
+    "iso_codes": [
+      "CO",
+      "VE"
+    ]
+  },
+  {
+    "id": "nat_282",
+    "name_en": "Oceania",
+    "name_ru": "Океания",
+    "name_az": "Okeaniya",
+    "level": 1,
+    "parent_id": null
+  },
+  {
+    "id": "nat_283",
+    "name_en": "Polynesians",
+    "name_ru": "Полинезийцы",
+    "name_az": "Polineziyalılar",
+    "level": 2,
+    "parent_id": "nat_282"
+  },
+  {
+    "id": "nat_284",
+    "name_en": "Native Hawaiians",
+    "name_ru": "Гавайцы",
+    "name_az": "Havaylılar",
+    "level": 3,
+    "parent_id": "nat_283",
+    "iso_codes": [
+      "US"
+    ]
+  },
+  {
+    "id": "nat_285",
+    "name_en": "Māori",
+    "name_ru": "Маори",
+    "name_az": "Maorilər",
+    "level": 3,
+    "parent_id": "nat_283",
+    "iso_codes": [
+      "NZ"
+    ]
+  },
+  {
+    "id": "nat_286",
+    "name_en": "Samoans",
+    "name_ru": "Самоанцы",
+    "name_az": "Samoalılar",
+    "level": 3,
+    "parent_id": "nat_283",
+    "iso_codes": [
+      "WS",
+      "AS"
+    ]
+  },
+  {
+    "id": "nat_287",
+    "name_en": "Tongans",
+    "name_ru": "Тонганцы",
+    "name_az": "Tonqalılar",
+    "level": 3,
+    "parent_id": "nat_283",
+    "iso_codes": [
+      "TO"
+    ]
+  },
+  {
+    "id": "nat_288",
+    "name_en": "Tahitians",
+    "name_ru": "Таитяне",
+    "name_az": "Taitililər",
+    "level": 3,
+    "parent_id": "nat_283",
+    "iso_codes": [
+      "PF"
+    ]
+  },
+  {
+    "id": "nat_289",
+    "name_en": "Micronesians",
+    "name_ru": "Микронезийцы",
+    "name_az": "Mikroneziyalılar",
+    "level": 2,
+    "parent_id": "nat_282"
+  },
+  {
+    "id": "nat_290",
+    "name_en": "Chamorro",
+    "name_ru": "Чаморро",
+    "name_az": "Çamorro",
+    "level": 3,
+    "parent_id": "nat_289",
+    "iso_codes": [
+      "GU",
+      "MP"
+    ]
+  },
+  {
+    "id": "nat_291",
+    "name_en": "Marshallese",
+    "name_ru": "Маршалльцы",
+    "name_az": "Marşallılar",
+    "level": 3,
+    "parent_id": "nat_289",
+    "iso_codes": [
+      "MH"
+    ]
+  },
+  {
+    "id": "nat_292",
+    "name_en": "Palauans",
+    "name_ru": "Палауанцы",
+    "name_az": "Palaulular",
+    "level": 3,
+    "parent_id": "nat_289",
+    "iso_codes": [
+      "PW"
+    ]
+  },
+  {
+    "id": "nat_293",
+    "name_en": "Melanesians",
+    "name_ru": "Меланезийцы",
+    "name_az": "Melaneziyalılar",
+    "level": 2,
+    "parent_id": "nat_282"
+  },
+  {
+    "id": "nat_294",
+    "name_en": "Fijians",
+    "name_ru": "Фиджийцы",
+    "name_az": "Ficililər",
+    "level": 3,
+    "parent_id": "nat_293",
+    "iso_codes": [
+      "FJ"
+    ]
+  },
+  {
+    "id": "nat_295",
+    "name_en": "Kanak",
+    "name_ru": "Канаки",
+    "name_az": "Kanaklar",
+    "level": 3,
+    "parent_id": "nat_293",
+    "iso_codes": [
+      "NC"
+    ]
+  },
+  {
+    "id": "nat_296",
+    "name_en": "Ni-Vanuatu",
+    "name_ru": "Ни-вануату",
+    "name_az": "Ni-Vanuatu",
+    "level": 3,
+    "parent_id": "nat_293",
+    "iso_codes": [
+      "VU"
+    ]
+  },
+  {
+    "id": "nat_297",
+    "name_en": "Papuan peoples",
+    "name_ru": "Папуасы",
+    "name_az": "Papuaslar",
+    "level": 2,
+    "parent_id": "nat_282"
+  },
+  {
+    "id": "nat_298",
+    "name_en": "Huli",
+    "name_ru": "Хули",
+    "name_az": "Huli",
+    "level": 3,
+    "parent_id": "nat_297",
+    "iso_codes": [
+      "PG"
+    ]
+  },
+  {
+    "id": "nat_299",
+    "name_en": "Asmat",
+    "name_ru": "Асматы",
+    "name_az": "Asmatlar",
+    "level": 3,
+    "parent_id": "nat_297",
+    "iso_codes": [
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_300",
+    "name_en": "Dani",
+    "name_ru": "Дани",
+    "name_az": "Dani",
+    "level": 3,
+    "parent_id": "nat_297",
+    "iso_codes": [
+      "ID"
+    ]
+  },
+  {
+    "id": "nat_301",
+    "name_en": "Australian Aboriginals",
+    "name_ru": "Австралийские аборигены",
+    "name_az": "Avstraliya aborigenləri",
+    "level": 2,
+    "parent_id": "nat_282"
+  },
+  {
+    "id": "nat_302",
+    "name_en": "Pitjantjatjara",
+    "name_ru": "Питянтятяра",
+    "name_az": "Pitcantcatyara",
+    "level": 3,
+    "parent_id": "nat_301",
+    "iso_codes": [
+      "AU"
+    ]
+  },
+  {
+    "id": "nat_303",
+    "name_en": "Arrernte",
+    "name_ru": "Аранда",
+    "name_az": "Arrernte",
+    "level": 3,
+    "parent_id": "nat_301",
+    "iso_codes": [
+      "AU"
+    ]
+  },
+  {
+    "id": "nat_304",
+    "name_en": "Noongar",
+    "name_ru": "Нунгар",
+    "name_az": "Nunqar",
+    "level": 3,
+    "parent_id": "nat_301",
+    "iso_codes": [
+      "AU"
+    ]
+  }
+]
