@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, Store, Calendar, Bell, MessageCircle, User, Shield, BarChart2, HeartHandshake, Briefcase, ShoppingBag, Users } from 'lucide-react';
+import { Home, Store, Calendar, Bell, MessageCircle, User, Shield, BarChart2, HeartHandshake, Briefcase, ShoppingBag, Users, Sun, Moon } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useSettingsStore } from '../store/useSettingsStore';
+import { useThemeStore } from '../store/useThemeStore';
 import { t } from '../lib/i18n';
 import LanguageSelector from './LanguageSelector';
 import LocationSwitcher from './LocationSwitcher';
@@ -32,6 +33,7 @@ export default function Layout() {
   ];
   const { language } = useLanguageStore();
   const { seniorMode } = useSettingsStore();
+  const { theme, toggleTheme } = useThemeStore();
 
   
   const isGuest = user?.role === 'guest';
@@ -135,75 +137,38 @@ export default function Layout() {
               </button>
               
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden z-50">
-                  <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center">
+                <div className="absolute left-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-black/15 dark:border-white/15 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/[0.02] dark:bg-white/[0.02]">
                     <h3 className="font-bold text-slate-900 dark:text-white">Notifications</h3>
-                    <button onClick={() => setShowNotifications(false)} className="text-xs text-indigo-500 hover:text-indigo-600 font-medium">Mark all as read</button>
+                    <button onClick={() => setShowNotifications(false)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold">Mark all as read</button>
                   </div>
-                  <div className="max-h-80 overflow-y-auto">
+                  <div className="max-h-80 overflow-y-auto divide-y divide-black/5 dark:divide-white/5">
                     {simulatedNotifications.map(notif => (
-                      <div key={notif.id} className={`p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${notif.unread ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}>
+                      <div key={notif.id} className={`p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${notif.unread ? 'bg-indigo-500/10 dark:bg-indigo-500/20' : ''}`}>
                         <div className="flex justify-between items-start mb-1">
-                          <h4 className={`text-sm font-semibold ${notif.unread ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-900 dark:text-white'}`}>{notif.title}</h4>
-                          <span className="text-xs text-slate-500">{notif.time}</span>
+                          <h4 className={`text-sm font-bold ${notif.unread ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-950 dark:text-white'}`}>{notif.title}</h4>
+                          <span className="text-[10px] text-slate-500 font-semibold">{notif.time}</span>
                         </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">{notif.message}</p>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{notif.message}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
             </div>
-            
-            <div className="flex items-center space-x-2 border-l border-black/10 dark:border-white/10 pl-4">
-              <span className="font-semibold text-slate-800 dark:text-slate-200">{t('layout.ghost_mode', language)}</span>
-            </div>
           </div>
-          
+
+          {/* Night Mode switcher */}
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Night Mode</span>
             <button 
-              onClick={() => {
-                if (!user?.isAnonymous) {
-                  setShowPaymentModal(true);
-                } else {
-                  updateUser({ isAnonymous: false, name: user?.originalName || 'New Neighbor', avatar: user?.originalAvatar });
-                }
-              }}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${user?.isAnonymous ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+              onClick={toggleTheme}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${theme === 'dark' ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+              title="Toggle Night Mode"
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user?.isAnonymous ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
-
-            {showPaymentModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-black/10 dark:border-white/10">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('layout.activate_ghost', language)}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">{t('layout.ghost_mode_desc', language)}</p>
-                  
-                  <div className="space-y-4 mb-6">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{t('layout.total', language)}</span>
-                        <span className="font-bold text-xl text-slate-900 dark:text-white">$5.00<span className="text-sm text-slate-500">/mo</span></span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-3">
-                    <button 
-                      onClick={() => setShowPaymentModal(false)}
-                      className="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-xl transition-colors"
-                    >{t('layout.cancel', language)}</button>
-                    <button 
-                      onClick={() => {
-                        updateUser({ isAnonymous: true, originalName: user?.name, originalAvatar: user?.avatar, name: 'Anonymous', avatar: undefined });
-                        setShowPaymentModal(false);
-                      }}
-                      className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
-                    >{t('layout.pay_activate', language)}</button>
-                  </div>
-                </div>
-              </div>
-            )}
+          </div>
   
         </div>
         <div className="p-4 sm:p-8">

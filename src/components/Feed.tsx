@@ -133,8 +133,8 @@ export default function Feed() {
     
     const newPost: any = {
       id: Date.now(),
-      author: postAnonymously ? 'Anonymous' : (user?.isAnonymous ? 'Anonymous' : (user?.name || 'You')),
-      avatar: postAnonymously ? null : (user?.isAnonymous ? null : (user?.avatar || null)),
+      author: user?.name || 'You',
+      avatar: user?.avatar || null,
       type: postType,
       content: postDraftContent,
       time: 'Just now',
@@ -254,16 +254,6 @@ export default function Feed() {
               </div>
             )}
             
-            <div className="flex items-center space-x-2 mb-4">
-              <input type="checkbox" id="anon-post" checked={postAnonymously} onChange={(e) => {
-                if(e.target.checked) {
-                  if(confirm('Post anonymously for a $1 one-time fee?')) setPostAnonymously(true);
-                } else {
-                  setPostAnonymously(false);
-                }
-              }} className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
-              <label htmlFor="anon-post" className="text-sm text-slate-600 dark:text-slate-400">Post anonymously ($1 fee)</label>
-            </div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
                 <Eye className="w-4 h-4" />
@@ -341,7 +331,10 @@ export default function Feed() {
             )}
             <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-2">
               <div className="flex items-center space-x-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 overflow-hidden text-slate-800 dark:text-slate-200 font-medium">
+                <div 
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 overflow-hidden text-slate-800 dark:text-slate-200 font-medium cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setSelectedNeighbor(post)}
+                >
                   {post.avatar ? (
                     <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
                   ) : (

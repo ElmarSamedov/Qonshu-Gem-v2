@@ -7,6 +7,16 @@ import { t } from '../lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Bell, ShieldCheck, MapPin, Star, AlertTriangle, Store, MessageCircle, Calendar, LogOut, CheckCircle2, XCircle, Globe, Type, Moon, Sun, BadgeCheck, Camera, Search, UserPlus, Wifi, Check, X } from 'lucide-react';
+import { 
+  generateCountryId,
+  generateCityId,
+  generateTownId,
+  generateDistrictId,
+  generateStreetId,
+  generateBuildingId,
+  generateEntranceId,
+  generateApartmentId
+} from '../lib/idGenerator';
 
 import CarNumbers from "./CarNumbers";
 import BirthdaySettings from "./BirthdaySettings";
@@ -17,12 +27,33 @@ export default function Profile() {
   const { user, logout, updateUser } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const { seniorMode, toggleSeniorMode } = useSettingsStore();
+  
+  const country = user?.country || 'Azerbaijan';
+  const countryId = user?.countryId || generateCountryId(country);
+  const city = user?.city || 'Baku';
+  const cityId = user?.cityId || generateCityId(city, countryId);
+  const town = user?.town || 'Sabail';
+  const townId = user?.townId || generateTownId(town, cityId);
+  const district = user?.district || 'Sabail';
+  const districtId = user?.districtId || generateDistrictId(district, cityId);
+  const street = user?.street || 'Nizami St';
+  const streetId = user?.streetId || generateStreetId(street, districtId);
+  const building = user?.building || '42';
+  const buildingId = user?.buildingId || generateBuildingId(building, streetId);
+  const entrance = user?.entrance || '2';
+  const entranceId = user?.entranceId || generateEntranceId(entrance, buildingId);
+  const apartment = user?.apartment || '15';
+  const apartmentId = user?.apartmentId || generateApartmentId(apartment, buildingId);
+
   const [searchPhone, setSearchPhone] = useState('');
   const [addedNeighbors, setAddedNeighbors] = useState([
     { id: 1, name: 'Aysel H.', phone: '+994501234567', distance: '10m (Next door)' },
     { id: 2, name: 'Kamran B.', phone: '+994559876543', distance: '30m (Same floor)' }
   ]);
   const [routerCode, setRouterCode] = useState('MyWiFi_Guest / Pass: qonsu123');
+  const [wifiSsid, setWifiSsid] = useState('MyWiFi_Guest');
+  const [wifiPassword, setWifiPassword] = useState('qonsu123');
+  const [showWifiToNeighbors, setShowWifiToNeighbors] = useState(true);
   const [isEditingRouter, setIsEditingRouter] = useState(false);
   const [searchResult, setSearchResult] = useState<any>(null);
 
@@ -163,29 +194,8 @@ export default function Profile() {
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">{t('profile.family_demographics', language)}</h3>
             <div className="space-y-4">
               <NationalitySelector />
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-600 dark:text-slate-400">{t('profile.num_children', language)}</label>
-                  <input 
-                    type="number" 
-                    placeholder="0" 
-                    className="w-full bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white"
-                    value={user?.childrenCount || 0}
-                    onChange={(e) => updateUser({ childrenCount: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-600 dark:text-slate-400">{t('profile.ages_example', language)}</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. 5, 8" 
-                    className="w-full bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white"
-                    value={user?.childrenAges || ''}
-                    onChange={(e) => updateUser({ childrenAges: e.target.value })}
-                  />
-                
-              </div>
             </div>
+          </div>
             
             <div className="mt-6 pt-6 border-t border-black/10 dark:border-white/10">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex justify-between items-center">
@@ -212,10 +222,52 @@ export default function Profile() {
                   <p className="text-sm text-slate-500 text-center py-4">No specific locations added yet. Add a home or workplace to unlock neighborhood features.</p>
                 )}
               </div>
-</div>
-</div>
-</div>
-<BirthdaySettings />
+            </div>
+            <BirthdaySettings />
+          </Card>
+
+          {/* Registry & Unique Object IDs */}
+          <Card className="glass-panel border-black/10 dark:border-white/10">
+            <CardHeader className="border-b border-black/10 dark:border-white/10 pb-4">
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="h-5 w-5 text-indigo-500" />
+                <CardTitle className="text-lg text-slate-900 dark:text-white">Durable Property Registry & Object IDs</CardTitle>
+              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Deterministic unique identifiers generated for each level of your property hierarchy.
+              </p>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              {user && (
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-black/5 dark:border-white/5 space-y-3">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-semibold uppercase tracking-wider">User ID (Deterministic Format)</span>
+                    <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">{user.uid}</span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="divide-y divide-black/5 dark:divide-white/5">
+                {[
+                  { name: 'Country', val: country, idVal: countryId },
+                  { name: 'City', val: city, idVal: cityId },
+                  { name: 'Town', val: town, idVal: townId },
+                  { name: 'District', val: district, idVal: districtId },
+                  { name: 'Street', val: street, idVal: streetId },
+                  { name: 'Building', val: building, idVal: buildingId },
+                  { name: 'Entrance', val: entrance, idVal: entranceId },
+                  { name: 'Apartment', val: apartment, idVal: apartmentId },
+                ].map((prop, idx) => (
+                  <div key={idx} className="py-2.5 flex justify-between items-center text-xs">
+                    <div>
+                      <span className="text-slate-500 font-medium block">{prop.name}</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{prop.val}</span>
+                    </div>
+                    <span className="font-mono text-slate-900 dark:text-white font-medium bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded border border-black/10 dark:border-white/10">{prop.idVal}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
           </Card>
 
           <Card className="glass-panel border-black/10 dark:border-white/10">
@@ -273,33 +325,76 @@ export default function Profile() {
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <Wifi className="h-5 w-5 text-blue-400" />
-                  <CardTitle className="text-lg text-slate-900 dark:text-white">{t('profile.router_code', language) || 'My Router Code'}</CardTitle>
+                  <CardTitle className="text-lg text-slate-900 dark:text-white">Wi-Fi & Router Sharing</CardTitle>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setIsEditingRouter(!isEditingRouter)}>
-                  {t('profile.edit', language) || 'Edit'}
+                  {isEditingRouter ? 'Cancel' : (t('profile.edit', language) || 'Edit')}
                 </Button>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                {t('profile.router_desc', language) || 'Visible only to your immediate neighbors (within 50m).'}
+                {t('profile.router_desc', language) || 'Choose whether to securely share your Wi-Fi details with immediate neighbors.'}
               </p>
             </CardHeader>
-            <CardContent className="p-4">
+            <CardContent className="p-4 space-y-4">
               {isEditingRouter ? (
-                <div className="space-y-2">
-                  <input 
-                    type="text" 
-                    value={routerCode} 
-                    onChange={(e) => setRouterCode(e.target.value)}
-                    className="w-full bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white"
-                  />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs text-slate-600 dark:text-slate-400 font-semibold block">Wi-Fi Network Name (SSID)</label>
+                    <input 
+                      type="text" 
+                      value={wifiSsid} 
+                      onChange={(e) => setWifiSsid(e.target.value)}
+                      className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white font-mono"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs text-slate-600 dark:text-slate-400 font-semibold block">Wi-Fi Password</label>
+                    <input 
+                      type="text" 
+                      value={wifiPassword} 
+                      onChange={(e) => setWifiPassword(e.target.value)}
+                      className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white font-mono"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">Display Password to Neighbors</span>
+                      <span className="text-xs text-slate-500">Neighbors within 50m will be able to see your password.</span>
+                    </div>
+                    <input 
+                      type="checkbox"
+                      checked={showWifiToNeighbors}
+                      onChange={(e) => setShowWifiToNeighbors(e.target.checked)}
+                      className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 animate-none"
+                    />
+                  </div>
                   <div className="flex space-x-2">
                     <Button size="sm" className="bg-indigo-600 text-white" onClick={() => setIsEditingRouter(false)}>Save</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setIsEditingRouter(false)}>Cancel</Button>
                   </div>
                 </div>
               ) : (
-                <div className="p-3 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10">
-                  <p className="font-mono text-sm text-slate-900 dark:text-white font-medium">{routerCode}</p>
+                <div className="space-y-3">
+                  <div className="p-3 bg-black/5 dark:bg-white/5 rounded-lg border border-black/10 dark:border-white/10 space-y-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500 font-medium">SSID</span>
+                      <span className="font-mono text-slate-900 dark:text-white font-bold">{wifiSsid}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500 font-medium">Password</span>
+                      {showWifiToNeighbors ? (
+                        <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">{wifiPassword}</span>
+                      ) : (
+                        <span className="font-mono text-slate-400 italic">hidden from neighbors</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-xs">
+                    <div className={`h-2.5 w-2.5 rounded-full ${showWifiToNeighbors ? 'bg-emerald-500' : 'bg-orange-400'}`} />
+                    <span className="text-slate-500 font-medium">
+                      {showWifiToNeighbors ? 'Wi-Fi Password is visible to your neighbors' : 'Wi-Fi Password is hidden from everyone'}
+                    </span>
+                  </div>
                 </div>
               )}
             </CardContent>

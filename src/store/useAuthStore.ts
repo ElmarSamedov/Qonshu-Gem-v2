@@ -1,4 +1,15 @@
 import { create } from 'zustand';
+import { 
+  generateCountryId,
+  generateCityId,
+  generateTownId,
+  generateDistrictId,
+  generateStreetId,
+  generateBuildingId,
+  generateEntranceId,
+  generateApartmentId,
+  generateUserId
+} from '../lib/idGenerator';
 
 export interface TrustScores {
   identity: number;
@@ -18,6 +29,23 @@ export interface UserLocation {
   address: string;
   verified: boolean;
   verification_method?: 'gps' | 'docs' | 'sms' | 'postcard' | 'neighbor';
+  
+  // Property detailed fields and IDs
+  country?: string;
+  countryId?: string;
+  city?: string;
+  cityId?: string;
+  town?: string;
+  townId?: string;
+  districtId?: string;
+  street?: string;
+  streetId?: string;
+  building?: string;
+  buildingId?: string;
+  entrance?: string;
+  entranceId?: string;
+  apartment?: string;
+  apartmentId?: string;
 }
 
 export interface User {
@@ -35,6 +63,24 @@ export interface User {
   is_verified: boolean; // Derived or legacy, kept for compatibility
   role: 'guest' | 'user' | 'moderator' | 'admin' | 'business';
   
+  // Detailed property fields and IDs
+  country?: string;
+  countryId?: string;
+  city?: string;
+  cityId?: string;
+  town?: string;
+  townId?: string;
+  districtId?: string;
+  street?: string;
+  streetId?: string;
+  building?: string;
+  buildingId?: string;
+  entrance?: string;
+  entranceId?: string;
+  apartment?: string;
+  apartmentId?: string;
+  registrationDate?: string;
+
   // Legacy / extra fields
   district?: string;
   address?: string;
@@ -60,7 +106,22 @@ interface AuthState {
   user: User | null;
   setUser: (user: User | null) => void;
   updateUser: (updates: Partial<User>) => void;
-  login: (email: string, pass: string, name: string) => Promise<void>;
+  login: (
+    email: string, 
+    pass: string, 
+    name: string,
+    details?: {
+      country?: string;
+      city?: string;
+      town?: string;
+      district?: string;
+      street?: string;
+      building?: string;
+      entrance?: string;
+      apartment?: string;
+      phone?: string;
+    }
+  ) => Promise<void>;
   createGuestSession: () => void;
   verifyLocation: (locationId: string, method: string) => void;
   switchLocation: (locationId: string) => void;
@@ -82,22 +143,100 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: createGuestUser(), // Start as guest
   setUser: (user) => set({ user }),
   updateUser: (updates) => set((state) => ({ user: state.user ? { ...state.user, ...updates } : null })),
-  login: async (email, pass, name) => {
+  login: async (email, pass, name, details) => {
     // Level 1 - Registered User (Identity Verified via Auth)
-    const isMilestone = true; 
+    const isMilestone = true;
+    
+    // Fallbacks to default values if registration details are empty
+    const country = details?.country || 'Azerbaijan';
+    const city = details?.city || 'Baku';
+    const town = details?.town || 'Sabail';
+    const district = details?.district || 'Sabail';
+    const street = details?.street || 'Nizami St';
+    const building = details?.building || '42';
+    const entrance = details?.entrance || '2';
+    const apartment = details?.apartment || '15';
+    const phone = details?.phone || '+994501234567';
+    const registrationDate = new Date();
+
+    // Generate property IDs
+    const countryId = generateCountryId(country);
+    const cityId = generateCityId(city, countryId);
+    const townId = generateTownId(town, cityId);
+    const districtId = generateDistrictId(district, cityId);
+    const streetId = generateStreetId(street, districtId);
+    const buildingId = generateBuildingId(building, streetId);
+    const entranceId = generateEntranceId(entrance, buildingId);
+    const apartmentId = generateApartmentId(apartment, buildingId);
+
+    // Generate user ID using custom rule
+    const customUid = generateUserId({
+      country,
+      city,
+      street,
+      apartment,
+      phone,
+      registrationDate
+    });
+
+    const primaryLocationId = 'loc-' + Date.now();
+    const primaryLocation: UserLocation = {
+      id: primaryLocationId,
+      type: 'HOME',
+      name: 'Home Address',
+      district,
+      address: `${street}, Bldg ${building}, Apt ${apartment}`,
+      verified: true, // Auto-verify primary home address for standard registration flow
+      verification_method: 'sms',
+      country,
+      countryId,
+      city,
+      cityId,
+      town,
+      townId,
+      districtId,
+      street,
+      streetId,
+      building,
+      buildingId,
+      entrance,
+      entranceId,
+      apartment,
+      apartmentId
+    };
+
     set({
       user: {
-        uid: 'user-' + Date.now(),
+        uid: customUid,
         email,
+        phone,
         name: name || 'New Neighbor',
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
         role: email.endsWith('@qonsu.dev') ? 'moderator' : 'user',
-        trust_level: 1,
-        trust_scores: { identity: 20, location: 0, community: 0, overall: 20 },
-        locations: [],
-        activeLocationId: null,
-        is_verified: false,
+        trust_level: 2, // With a verified home address, trust level is 2
+        trust_scores: { identity: 40, location: 40, community: 10, overall: 90 },
+        locations: [primaryLocation],
+        activeLocationId: primaryLocationId,
+        is_verified: true,
         isMilestoneUser: isMilestone,
+        district,
+        address: primaryLocation.address,
+        country,
+        countryId,
+        city,
+        cityId,
+        town,
+        townId,
+        districtId,
+        street,
+        streetId,
+        building,
+        buildingId,
+        entrance,
+        entranceId,
+        apartment,
+        apartmentId,
+        registrationDate: registrationDate.toISOString()
       }
     });
   },

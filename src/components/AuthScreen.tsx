@@ -14,8 +14,15 @@ export default function AuthScreen() {
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [country, setCountry] = useState('');
-  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('Azerbaijan');
+  const [city, setCity] = useState('Baku');
+  const [town, setTown] = useState('Sabail');
+  const [district, setDistrict] = useState('Sabail');
+  const [street, setStreet] = useState('Nizami St');
+  const [building, setBuilding] = useState('42');
+  const [entrance, setEntrance] = useState('2');
+  const [apartment, setApartment] = useState('15');
+  const [phone, setPhone] = useState('+994501234567');
   const [avatar, setAvatar] = useState('');
   
   const [error, setError] = useState('');
@@ -34,13 +41,23 @@ export default function AuthScreen() {
 
   const handleProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !country || !city) {
+    if (!firstName || !lastName || !country || !city || !street || !building || !apartment) {
       setError('Please fill out all required fields');
       return;
     }
     setError('');
     const fullName = `${firstName} ${lastName}`;
-    await login(email, password, fullName);
+    await login(email, password, fullName, {
+      country,
+      city,
+      town,
+      district,
+      street,
+      building,
+      entrance,
+      apartment,
+      phone
+    });
     navigate('/');
   };
 
@@ -142,24 +159,104 @@ export default function AuthScreen() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Country</label>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone Number</label>
                     <Input
                       type="text"
-                      placeholder="e.g. Azerbaijan"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
+                      placeholder="+994501234567"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                       className="bg-white dark:bg-slate-800"
                     />
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Country</label>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Azerbaijan"
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        className="bg-white dark:bg-slate-800"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">City</label>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Baku"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="bg-white dark:bg-slate-800"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Town</label>
+                      <Input
+                        type="text"
+                        placeholder="Sabail"
+                        value={town}
+                        onChange={(e) => setTown(e.target.value)}
+                        className="bg-white dark:bg-slate-800"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">District</label>
+                      <Input
+                        type="text"
+                        placeholder="Sabail"
+                        value={district}
+                        onChange={(e) => setDistrict(e.target.value)}
+                        className="bg-white dark:bg-slate-800"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">City</label>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Street</label>
                     <Input
                       type="text"
-                      placeholder="e.g. Baku"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="e.g. Nizami St"
+                      value={street}
+                      onChange={(e) => setStreet(e.target.value)}
                       className="bg-white dark:bg-slate-800"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Building</label>
+                      <Input
+                        type="text"
+                        placeholder="42"
+                        value={building}
+                        onChange={(e) => setBuilding(e.target.value)}
+                        className="bg-white dark:bg-slate-800 text-center"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Entrance</label>
+                      <Input
+                        type="text"
+                        placeholder="2"
+                        value={entrance}
+                        onChange={(e) => setEntrance(e.target.value)}
+                        className="bg-white dark:bg-slate-800 text-center"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Apartment</label>
+                      <Input
+                        type="text"
+                        placeholder="15"
+                        value={apartment}
+                        onChange={(e) => setApartment(e.target.value)}
+                        className="bg-white dark:bg-slate-800 text-center"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2 pt-2">
