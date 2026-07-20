@@ -7,12 +7,13 @@ import VerificationGate from './VerificationGate';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Textarea, Input } from './ui/input';
-import { Send, MapPin, AlertTriangle, Package, Heart, MessageCircle, Flag, BadgeCheck, Plus, X, Crop, Type, Smile, Image as ImageIcon, Sticker, Check, Eye, EyeOff, Pin, Share2, BarChart2 } from 'lucide-react';
+import { Send, MapPin, AlertTriangle, Package, Heart, MessageCircle, Flag, BadgeCheck, Plus, X, Crop, Type, Smile, Image as ImageIcon, Sticker, Check, Eye, EyeOff, Pin, Share2, BarChart2, Lock } from 'lucide-react';
 import { useChatStore } from '../store/useChatStore';
 import { useNavigate } from 'react-router-dom';
 
 export default function Feed() {
   const { user } = useAuthStore();
+  const isGuest = user?.role === 'guest';
   const { language } = useLanguageStore();
   const { addReport } = useModerationStore();
   const { openOrCreateChat } = useChatStore();
@@ -193,44 +194,46 @@ export default function Feed() {
       </div>
 
       {/* Moments */}
-      <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-        <div className="flex flex-col items-center space-y-1 shrink-0 snap-start">
-          <button 
-            onClick={handleUploadMoment}
-            className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-          >
-            <Plus className="w-6 h-6 text-slate-400" />
-          </button>
-          <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">Add Moment</span>
-        </div>
-        
-        {moments.map(moment => (
-          <div key={moment.id} className="flex flex-col items-center space-y-1 shrink-0 snap-start relative">
+      {!isGuest && (
+        <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+          <div className="flex flex-col items-center space-y-1 shrink-0 snap-start">
             <button 
-              onClick={() => setActiveMoment(moment)}
-              className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-500"
+              onClick={handleUploadMoment}
+              className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
-              <div className="w-full h-full rounded-full overflow-hidden border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
-                {moment.avatar ? (
-                  <img src={moment.avatar} alt={moment.author} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-bold text-slate-500">{moment.author.charAt(0)}</span>
-                )}
-              </div>
+              <Plus className="w-6 h-6 text-slate-400" />
             </button>
-            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 truncate w-16 text-center">
-              {moment.author.split(' ')[0]}
-            </span>
-            
-            {/* Reactions summary in feed */}
-            {moment.reactions.length > 0 && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-full px-1.5 py-0.5 shadow-sm border border-slate-100 dark:border-slate-700 text-[10px] flex items-center z-10 whitespace-nowrap">
-                {moment.reactions.slice(0, 3).join('')}
-              </div>
-            )}
+            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">Add Moment</span>
           </div>
-        ))}
-      </div>
+          
+          {moments.map(moment => (
+            <div key={moment.id} className="flex flex-col items-center space-y-1 shrink-0 snap-start relative">
+              <button 
+                onClick={() => setActiveMoment(moment)}
+                className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-500"
+              >
+                <div className="w-full h-full rounded-full overflow-hidden border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                  {moment.avatar && !isGuest ? (
+                    <img src={moment.avatar} alt={isGuest ? 'Neighbor' : moment.author} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-slate-500">{(isGuest ? 'Neighbor' : moment.author).charAt(0)}</span>
+                  )}
+                </div>
+              </button>
+              <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 truncate w-16 text-center">
+                {isGuest ? 'Neighbor' : moment.author.split(' ')[0]}
+              </span>
+              
+              {/* Reactions summary in feed */}
+              {moment.reactions.length > 0 && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-full px-1.5 py-0.5 shadow-sm border border-slate-100 dark:border-slate-700 text-[10px] flex items-center z-10 whitespace-nowrap">
+                  {moment.reactions.slice(0, 3).join('')}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <VerificationGate>
         <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl">
@@ -326,7 +329,7 @@ export default function Feed() {
             {post.pinned && (
               <div className="bg-indigo-500/10 px-4 py-1 flex items-center space-x-2 border-b border-indigo-500/10">
                 <Pin className="h-3 w-3 text-indigo-500" />
-                <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Pinned by {post.author}</span>
+                <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Pinned by {isGuest ? 'Neighbor' : post.author}</span>
               </div>
             )}
             <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-2">
@@ -335,22 +338,26 @@ export default function Feed() {
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 overflow-hidden text-slate-800 dark:text-slate-200 font-medium cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => setSelectedNeighbor(post)}
                 >
-                  {post.avatar ? (
-                    <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
+                  {post.avatar && !isGuest ? (
+                    <img src={post.avatar} alt={isGuest ? 'Neighbor' : post.author} className="w-full h-full object-cover" />
                   ) : (
-                    post.author.charAt(0)
+                    (isGuest ? 'Neighbor' : post.author).charAt(0)
                   )}
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1 cursor-pointer hover:underline" onClick={() => setSelectedNeighbor(post)}>
-                    {post.author}
-                    {post.verified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
+                    {isGuest ? 'Neighbor' : post.author}
+                    {!isGuest && post.verified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
                   </h4>
                   <div className="flex items-center space-x-1 text-xs text-slate-600 dark:text-slate-400">
                     {getTypeIcon(post.type)}
                     <span className="uppercase tracking-wider font-bold">{t(('common.' + post.type) as any, language)}</span>
-                    <span>•</span>
-                    <span>{post.time}</span>
+                    {!isGuest && (
+                      <>
+                        <span>•</span>
+                        <span>{post.time}</span>
+                      </>
+                    )}
                     <span>•</span>
                     <span className="capitalize">{post.locationScope}</span>
                   </div>
@@ -380,7 +387,7 @@ export default function Feed() {
                   variant="ghost" 
                   size="sm" 
                   className="h-8 w-8 p-0 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-                  onClick={() => addReport({ type: 'post', contentId: post.id, content: post.content, author: post.author, reason: 'Flagged by user' })}
+                  onClick={() => addReport({ type: 'post', contentId: post.id, content: post.content, author: isGuest ? 'Neighbor' : post.author, reason: 'Flagged by user' })}
                   title="Report post"
                 >
                   <Flag className="h-4 w-4" />
@@ -438,7 +445,7 @@ export default function Feed() {
                   {post.comments.map(comment => (
                     <div key={comment.id} className="bg-black/5 dark:bg-white/5 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white">{comment.author}</span>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white">{isGuest ? 'Neighbor' : comment.author}</span>
                       </div>
                       <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
                       
@@ -459,14 +466,21 @@ export default function Feed() {
                       )}
                     </div>
                   ))}
-                  <VerificationGate compact={true}>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-white text-xs font-medium shrink-0 overflow-hidden">
-                        {user?.avatar ? <img src={user.avatar} alt="You" className="w-full h-full object-cover" /> : user?.name.charAt(0)}
-                      </div>
-                      <Input placeholder="Write a comment..." className="h-8 text-sm bg-white dark:bg-slate-900" />
+                  {isGuest ? (
+                    <div className="flex items-center space-x-2 mt-2 p-2 bg-slate-500/5 rounded-lg border border-slate-500/10">
+                      <Lock className="w-3.5 h-3.5 text-slate-500 mr-1 shrink-0" />
+                      <span className="text-xs text-slate-500">Register or sign in to comment on posts</span>
                     </div>
-                  </VerificationGate>
+                  ) : (
+                    <VerificationGate compact={true}>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-white text-xs font-medium shrink-0 overflow-hidden">
+                          {user?.avatar ? <img src={user.avatar} alt="You" className="w-full h-full object-cover" /> : user?.name.charAt(0)}
+                        </div>
+                        <Input placeholder="Write a comment..." className="h-8 text-sm bg-white dark:bg-slate-900" />
+                      </div>
+                    </VerificationGate>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -554,25 +568,27 @@ export default function Feed() {
             <div className="px-6 pb-6">
               <div className="flex justify-between items-end -mt-12 mb-4">
                 <div className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
-                  {selectedNeighbor.avatar ? (
+                  {selectedNeighbor.avatar && !isGuest ? (
                     <img src={selectedNeighbor.avatar} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-4xl font-bold text-slate-400">{selectedNeighbor.author.charAt(0)}</span>
+                    <span className="text-4xl font-bold text-slate-400">{(isGuest ? 'Neighbor' : selectedNeighbor.author).charAt(0)}</span>
                   )}
                 </div>
-                <Button 
-                  onClick={() => { 
-                    openOrCreateChat(`neighbor-${selectedNeighbor.author}`, selectedNeighbor.author, 'neighbor'); 
-                    navigate('/chat'); 
-                  }} 
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-full px-6"
-                >
-                  Message
-                </Button>
+                {!isGuest && (
+                  <Button 
+                    onClick={() => { 
+                      openOrCreateChat(`neighbor-${selectedNeighbor.author}`, selectedNeighbor.author, 'neighbor'); 
+                      navigate('/chat'); 
+                    }} 
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-full px-6"
+                  >
+                    Message
+                  </Button>
+                )}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                {selectedNeighbor.author}
-                {selectedNeighbor.verified && <BadgeCheck className="w-5 h-5 text-blue-500" />}
+                {isGuest ? 'Neighbor' : selectedNeighbor.author}
+                {!isGuest && selectedNeighbor.verified && <BadgeCheck className="w-5 h-5 text-blue-500" />}
               </h2>
               <p className="text-slate-500 dark:text-slate-400 mt-1">{t('feed.resident_in', language)} {selectedNeighbor.locationScope === 'neighborhood' ? t('common.neighborhood', language).toLowerCase() : t('common.building', language).toLowerCase()}</p>
               
@@ -603,16 +619,16 @@ export default function Feed() {
           <div className="flex items-center justify-between p-4 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/60 to-transparent">
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 rounded-full overflow-hidden border border-white">
-                {activeMoment.avatar ? (
+                {activeMoment.avatar && !isGuest ? (
                   <img src={activeMoment.avatar} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-slate-800 flex items-center justify-center text-white font-bold">
-                    {activeMoment.author.charAt(0)}
+                    {(isGuest ? 'Neighbor' : activeMoment.author).charAt(0)}
                   </div>
                 )}
               </div>
-              <span className="text-white font-medium">{activeMoment.author}</span>
-              {activeMoment.verified && <BadgeCheck className="w-4 h-4 text-blue-400" />}
+              <span className="text-white font-medium">{isGuest ? 'Neighbor' : activeMoment.author}</span>
+              {!isGuest && activeMoment.verified && <BadgeCheck className="w-4 h-4 text-blue-400" />}
             </div>
             <button onClick={() => setActiveMoment(null)} className="text-white hover:bg-white/20 p-2 rounded-full">
               <X className="w-6 h-6" />

@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { HeartHandshake, MapPin, Clock, Plus, X, MessageCircle, BadgeCheck } from 'lucide-react';
+import { HeartHandshake, MapPin, Clock, Plus, X, MessageCircle, BadgeCheck, Lock } from 'lucide-react';
 import VerificationGate from './VerificationGate';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
 import { useChatStore } from '../store/useChatStore';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface HelpRequest {
   id: number;
@@ -22,6 +23,8 @@ interface HelpRequest {
 }
 
 export default function MutualAid() {
+  const { user } = useAuthStore();
+  const isGuest = user?.role === 'guest';
   const [showForm, setShowForm] = useState(false);
   const [newRequest, setNewRequest] = useState({ title: '', description: '', type: 'service' as const });
   const { language } = useLanguageStore();
@@ -223,20 +226,24 @@ export default function MutualAid() {
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-xs text-slate-600 dark:text-slate-400 font-medium">
-                    <span className="text-slate-700 dark:text-slate-300 mr-1">{req.author}</span>
-                    {req.verified && <BadgeCheck className="h-3 w-3 text-blue-500 mr-2" />}
+                    <span className="text-slate-700 dark:text-slate-300 mr-1">{isGuest ? 'Neighbor' : req.author}</span>
+                    {!isGuest && req.verified && <BadgeCheck className="h-3 w-3 text-blue-500 mr-2" />}
                   </div>
-                  <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {req.distance} {t('aid.away', language)}
-                  </div>
-                  <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {req.time}
-                  </div>
+                  {!isGuest && (
+                    <>
+                      <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {req.distance} {t('aid.away', language)}
+                      </div>
+                      <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {req.time}
+                      </div>
+                    </>
+                  )}
                 </div>
                 
-                {req.status === 'open' && (
+                {req.status === 'open' && !isGuest && (
                   <Button variant="outline" size="sm" onClick={() => handleOfferHelp(req)} className="bg-black/5 dark:bg-white/5 text-rose-400 border-rose-400/30 hover:bg-rose-500/20">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     {t('aid.offer_help', language)}

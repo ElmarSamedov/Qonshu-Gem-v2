@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Gift, Hammer, PartyPopper, Users, Plus, X } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Gift, Hammer, PartyPopper, Users, Plus, X, Lock } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { useAuthStore } from '../store/useAuthStore';
 import { Input } from './ui/input';
@@ -22,6 +22,7 @@ const INITIAL_EVENTS: Event[] = [
 
 export default function CalendarView() {
   const { user } = useAuthStore();
+  const isGuest = user?.role === 'guest';
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>(INITIAL_EVENTS);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -67,6 +68,7 @@ export default function CalendarView() {
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   const getDayEvents = (date: Date) => {
+    if (isGuest) return [];
     return events.filter(event => isSameDay(event.date, date));
   };
 
@@ -89,6 +91,18 @@ export default function CalendarView() {
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Calendar & Events</h2>
       </div>
 
+      {isGuest && (
+        <Card className="glass-panel border-indigo-500/20 bg-indigo-500/5">
+          <CardContent className="p-6 text-center space-y-3">
+            <Lock className="h-8 w-8 text-indigo-400 mx-auto" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Events Locked for Guests</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+              There are no events on the calendar for guests. Full community events, holiday schedules, birthdays, and building renovations will be available after registration.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="glass-panel border-black/10 dark:border-white/10">
         <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
           <div className="flex items-center space-x-2">
@@ -96,9 +110,11 @@ export default function CalendarView() {
             <CardTitle className="text-lg text-slate-900 dark:text-white">{format(currentDate, dateFormat)}</CardTitle>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={() => setShowEventForm(!showEventForm)} className="border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10 h-8">
-              <Plus className="h-4 w-4 mr-1" /> Add Event
-            </Button>
+            {!isGuest && (
+              <Button variant="outline" size="sm" onClick={() => setShowEventForm(!showEventForm)} className="border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10 h-8">
+                <Plus className="h-4 w-4 mr-1" /> Add Event
+              </Button>
+            )}
             <Button variant="outline" size="icon" onClick={prevMonth} className="h-8 w-8 rounded-full">
               <ChevronLeft className="h-4 w-4" />
             </Button>

@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Tag, MapPin, Plus, X, HandHeart, RefreshCw, Flag, Eye, ThumbsUp } from 'lucide-react';
+import { Tag, MapPin, Plus, X, HandHeart, RefreshCw, Flag, Eye, ThumbsUp, Lock } from 'lucide-react';
 import { useModerationStore } from '../store/useModerationStore';
 import VerificationGate from './VerificationGate';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
+import { useAuthStore } from '../store/useAuthStore';
 
 export default function Marketplace() {
+  const { user } = useAuthStore();
+  const isGuest = user?.role === 'guest';
   const { addReport } = useModerationStore();
   const { language } = useLanguageStore();
   const [items, setItems] = useState([
@@ -197,23 +200,25 @@ export default function Marketplace() {
       </VerificationGate>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-2">
-        {sortedItems.map(item => (
-          <Card key={item.id} onClick={() => handleItemClick(item.id)} className="glass-panel overflow-hidden group cursor-pointer border-black/10 dark:border-white/10 hover:shadow-xl transition-all relative">
+        {(isGuest ? sortedItems.slice(0, 2) : sortedItems).map(item => (
+          <Card key={item.id} onClick={() => !isGuest && handleItemClick(item.id)} className="glass-panel overflow-hidden group cursor-pointer border-black/10 dark:border-white/10 hover:shadow-xl transition-all relative">
             <div className="absolute top-2 right-2 z-10 flex space-x-1">
               <div className="px-2 py-1 rounded bg-white/80 dark:bg-black/60 backdrop-blur border border-black/10 dark:border-white/10 text-[10px] font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                 {item.category}
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 w-6 p-0 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur border border-black/10 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-red-400 hover:bg-red-500/20"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addReport({ type: 'listing', contentId: item.id, content: item.title, author: 'Anonymous', reason: 'Flagged by user' });
-                }}
-              >
-                <Flag className="h-3 w-3" />
-              </Button>
+              {!isGuest && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur border border-black/10 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-red-400 hover:bg-red-500/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addReport({ type: 'listing', contentId: item.id, content: item.title, author: 'Anonymous', reason: 'Flagged by user' });
+                  }}
+                >
+                  <Flag className="h-3 w-3" />
+                </Button>
+              )}
             </div>
             <div className="aspect-[4/3] overflow-hidden rounded-t-xl">
               <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-90 group-hover:opacity-100" />
@@ -221,12 +226,18 @@ export default function Marketplace() {
             <CardContent className="p-4 bg-black/5 dark:bg-white/5 backdrop-blur-md">
               <div className="flex justify-between items-start">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate pr-2">{item.title}</h3>
-                <span className={`text-sm font-bold whitespace-nowrap ${
-                  item.type === 'giveaway' ? 'text-green-400' : 
-                  item.type === 'lend' ? 'text-blue-400' : 'text-orange-400'
-                }`}>
-                  {item.price}
-                </span>
+                {!isGuest ? (
+                  <span className={`text-sm font-bold whitespace-nowrap ${
+                    item.type === 'giveaway' ? 'text-green-400' : 
+                    item.type === 'lend' ? 'text-blue-400' : 'text-orange-400'
+                  }`}>
+                    {item.price}
+                  </span>
+                ) : (
+                  <span className="text-[10px] bg-slate-500/20 text-slate-400 px-1.5 py-0.5 rounded flex items-center border border-slate-500/30 font-medium">
+                    <Lock className="w-2.5 h-2.5 mr-0.5" /> Locked
+                  </span>
+                )}
               </div>
               <div className="mt-2 flex flex-col space-y-1">
                 <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 font-medium">
@@ -236,22 +247,43 @@ export default function Marketplace() {
                      <Tag className="h-3 w-3 mr-1 text-orange-400" />}
                     <span className="capitalize">{item.type}</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-slate-500">
-                    <span className="flex items-center"><Eye className="h-3 w-3 mr-1"/> {item.views}</span>
-                    <button onClick={(e) => handleHelpfulClick(e, item.id)} className="flex items-center hover:text-blue-500 transition-colors">
-                      <ThumbsUp className="h-3 w-3 mr-1"/> {item.helpful}
-                    </button>
+                  {!isGuest && (
+                    <div className="flex items-center space-x-2 text-slate-500">
+                      <span className="flex items-center"><Eye className="h-3 w-3 mr-1"/> {item.views}</span>
+                      <button onClick={(e) => handleHelpfulClick(e, item.id)} className="flex items-center hover:text-blue-500 transition-colors">
+                        <ThumbsUp className="h-3 w-3 mr-1"/> {item.helpful}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {isGuest && (
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium flex items-center">
+                    <Lock className="w-3 h-3 mr-1 text-slate-500 shrink-0" /> Seller info hidden
                   </div>
-                </div>
-                <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  {item.distance} {t('aid.away', language)}
-                </div>
+                )}
+                {!isGuest && (
+                  <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {item.distance} {t('aid.away', language)}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {isGuest && (
+        <Card className="glass-panel border-indigo-500/20 bg-indigo-500/5 mt-6">
+          <CardContent className="p-6 text-center space-y-3">
+            <Lock className="h-8 w-8 text-indigo-400 mx-auto" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Local Marketplace Truncated</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+              Guests can view basic marketplace listing titles, but prices, exact distances, views, and seller information are reserved for registered neighbors.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

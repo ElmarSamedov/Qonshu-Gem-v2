@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Store, MapPin, Search, CheckCircle2, Navigation, Clock, Coffee, ShoppingBag, Palette, BadgeCheck } from 'lucide-react';
+import { Store, MapPin, Search, CheckCircle2, Navigation, Clock, Coffee, ShoppingBag, Palette, BadgeCheck, Lock } from 'lucide-react';
 import VerificationGate from './VerificationGate';
 import { Input } from './ui/input';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
 import { useChatStore } from '../store/useChatStore';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface Business {
   id: number;
@@ -21,6 +22,8 @@ interface Business {
 }
 
 export default function LocalBusinesses() {
+  const { user } = useAuthStore();
+  const isGuest = user?.role === 'guest';
   const [searchTerm, setSearchTerm] = useState('');
   const { language } = useLanguageStore();
   const { openOrCreateChat } = useChatStore();
@@ -96,61 +99,79 @@ export default function LocalBusinesses() {
         />
       </div>
 
-      <VerificationGate>
-        <div className="space-y-4">
-          {filteredBusinesses.map(business => (
-            <Card key={business.id} className="glass-panel border-black/10 dark:border-white/10 hover:border-black/20 dark:border-white/20 transition-all shadow-xl group">
-              <CardContent className="p-5">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 group-hover:bg-black/10 dark:bg-white/10 transition-colors">
-                      {getCategoryIcon(business.category)}
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{business.name}</h3>
-                        <BadgeCheck className="h-5 w-5 text-blue-500" title={t('business.verified_acc', language)} />
-                      </div>
-                      <div className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-400 mb-2">
-                        <span className="px-2 py-0.5 rounded-full bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10">
-                          {business.category}
-                        </span>
-                        {business.isOpen ? (
-                          <span className="text-emerald-400 font-medium">{t('common.open', language)}</span>
-                        ) : (
-                          <span className="text-rose-400 font-medium">{t('common.closed', language)}</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 leading-relaxed">"{business.description}"</p>
-                      
-                      <div className="flex items-center space-x-4 text-sm">
-                        <div className="flex items-center text-slate-600 dark:text-slate-400">
-                          <MapPin className="h-4 w-4 mr-1.5" />
-                          {business.address} ({business.distance})
-                        </div>
-                      </div>
-                    </div>
+      {isGuest && (
+        <Card className="glass-panel border-indigo-500/20 bg-indigo-500/5 mb-4">
+          <CardContent className="p-4 text-center space-y-2">
+            <Lock className="h-5 w-5 text-indigo-400 mx-auto" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Contact Locked for Guests</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+              Guests can view local professional and business listings, but direct contact and live messaging are reserved for registered neighbors.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-4">
+        {filteredBusinesses.map(business => (
+          <Card key={business.id} className="glass-panel border-black/10 dark:border-white/10 hover:border-black/20 dark:border-white/20 transition-all shadow-xl group">
+            <CardContent className="p-5">
+              <div className="flex justify-between items-start">
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10 group-hover:bg-black/10 dark:bg-white/10 transition-colors">
+                    {getCategoryIcon(business.category)}
                   </div>
-                  
-                  <div className="flex flex-col space-y-2">
-                    <Button variant="outline" onClick={() => { openOrCreateChat(`business-${business.id}`, business.name, 'business'); navigate('/chat'); }} className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
-                      {t('common.visit', language)}
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 self-end">
-                      <Navigation className="h-4 w-4" />
-                    </Button>
+                  <div>
+                    <div className="flex items-center space-x-2 mb-1">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{business.name}</h3>
+                      <BadgeCheck className="h-5 w-5 text-blue-500" title={t('business.verified_acc', language)} />
+                    </div>
+                    <div className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-400 mb-2">
+                      <span className="px-2 py-0.5 rounded-full bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10">
+                        {business.category}
+                      </span>
+                      {business.isOpen ? (
+                        <span className="text-emerald-400 font-medium">{t('common.open', language)}</span>
+                      ) : (
+                        <span className="text-rose-400 font-medium">{t('common.closed', language)}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 leading-relaxed">"{business.description}"</p>
+                    
+                    <div className="flex items-center space-x-4 text-sm">
+                      <div className="flex items-center text-slate-600 dark:text-slate-400">
+                        <MapPin className="h-4 w-4 mr-1.5" />
+                        {business.address} ({business.distance})
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-          {filteredBusinesses.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-slate-600 dark:text-slate-400">{t('business.no_results', language)}</p>
-            </div>
-          )}
-        </div>
-      </VerificationGate>
+                
+                <div className="flex flex-col space-y-2">
+                  {isGuest ? (
+                    <Button disabled className="bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed text-xs flex items-center justify-center">
+                      <Lock className="w-3.5 h-3.5 mr-1" /> Visit
+                    </Button>
+                  ) : (
+                    <VerificationGate compact={true}>
+                      <Button variant="outline" onClick={() => { openOrCreateChat(`business-${business.id}`, business.name, 'business'); navigate('/chat'); }} className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
+                        {t('common.visit', language)}
+                      </Button>
+                    </VerificationGate>
+                  )}
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 self-end" disabled={isGuest}>
+                    <Navigation className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        {filteredBusinesses.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-slate-600 dark:text-slate-400">{t('business.no_results', language)}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

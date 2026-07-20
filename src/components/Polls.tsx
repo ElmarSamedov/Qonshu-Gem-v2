@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { BarChart2, Plus, X, Check, BadgeCheck, Eye } from 'lucide-react';
+import { BarChart2, Plus, X, Check, BadgeCheck, Eye, Lock } from 'lucide-react';
 import VerificationGate from './VerificationGate';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface PollOption {
   id: number;
@@ -25,6 +26,8 @@ interface Poll {
 }
 
 export default function Polls() {
+  const { user } = useAuthStore();
+  const isGuest = user?.role === 'guest';
   const [showForm, setShowForm] = useState(false);
   const { language } = useLanguageStore();
   const [newPollQuestion, setNewPollQuestion] = useState('');
@@ -112,6 +115,27 @@ export default function Polls() {
       return poll;
     }));
   };
+
+  if (isGuest) {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-4">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('polls.title', language)}</h2>
+        </div>
+        <Card className="glass-panel border-indigo-500/20 bg-indigo-500/5">
+          <CardContent className="p-12 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center mx-auto border border-indigo-500/25">
+              <Lock className="h-8 w-8 text-indigo-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Polls & Voting Locked</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+              Active neighborhood decision polls and votes are reserved exclusively for registered community residents. Please sign in or register to participate in current polls and voice your opinion.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">

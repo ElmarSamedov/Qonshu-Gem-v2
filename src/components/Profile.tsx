@@ -25,6 +25,7 @@ import NationalitySelector from "./NationalitySelector";
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuthStore();
+  const isGuest = user?.role === 'guest';
   const { language, setLanguage } = useLanguageStore();
   const { seniorMode, toggleSeniorMode } = useSettingsStore();
   
@@ -431,8 +432,8 @@ export default function Profile() {
               {searchResult && (
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800 flex justify-between items-center">
                   <div>
-                    <p className="font-medium text-emerald-900 dark:text-emerald-100">{searchResult.name}</p>
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400">{searchResult.distance}</p>
+                    <p className="font-medium text-emerald-900 dark:text-emerald-100">{isGuest ? 'Neighbor' : searchResult.name}</p>
+                    {!isGuest && <p className="text-xs text-emerald-600 dark:text-emerald-400">{searchResult.distance}</p>}
                   </div>
                   <Button size="sm" onClick={handleAddNeighbor} className="bg-emerald-500 hover:bg-emerald-600 text-white">
                     {t('profile.add', language) || 'Add'}
@@ -450,11 +451,11 @@ export default function Profile() {
                       <div key={neighbor.id} className="flex justify-between items-center p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                            {neighbor.name.charAt(0)}
+                            {(isGuest ? 'Neighbor' : neighbor.name).charAt(0)}
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-white">{neighbor.name}</p>
-                            <p className="text-xs text-slate-500">{neighbor.distance}</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">{isGuest ? 'Neighbor' : neighbor.name}</p>
+                            {!isGuest && <p className="text-xs text-slate-500">{neighbor.distance}</p>}
                           </div>
                         </div>
                         <Button
