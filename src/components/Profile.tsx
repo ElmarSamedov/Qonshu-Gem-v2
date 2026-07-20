@@ -60,6 +60,7 @@ export default function Profile() {
     marketplace: true,
     events: false,
     messages: true,
+    newNeighbors: true,
   });
 
   const toggleNotification = (key: keyof typeof notifications) => {
@@ -108,37 +109,53 @@ export default function Profile() {
                 <span className="text-slate-700 dark:text-slate-300">{user.district} District</span>
               </div>
               
-              <div className="mt-6 pt-6 border-t border-black/10 dark:border-white/10 space-y-3">
+              
+              <div className="mt-6 pt-6 border-t border-black/10 dark:border-white/10 space-y-4">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">{t('profile.status', language)}</span>
-                  {user.is_verified ? (
-                    <span className="flex items-center text-green-400 font-medium">
-                      <ShieldCheck className="h-4 w-4 mr-1" /> Verified
-                    </span>
-                  ) : (
-                    <span className="flex items-center text-orange-400 font-medium">
-                      <XCircle className="h-4 w-4 mr-1" /> Unverified
-                    </span>
-                  )}
-                </div>
-                {user.role === 'business' && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-600 dark:text-slate-400">{t('profile.business', language)}</span>
-                    <span className="flex items-center text-blue-400 font-medium">
-                      <CheckCircle2 className="h-4 w-4 mr-1" /> Verified
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">{t('profile.trust_rating', language)}</span>
-                  <span className="flex items-center text-yellow-400 font-medium">
-                    <Star className="h-4 w-4 mr-1 fill-yellow-400" /> {user.trust_rating}/100
+                  <span className="text-slate-600 dark:text-slate-400">Trust Level</span>
+                  <span className="flex items-center font-bold text-indigo-500">
+                    Level {user.trust_level || 0}
                   </span>
                 </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">Identity Trust</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{user.trust_scores?.identity || 0}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                    <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${Math.min(user.trust_scores?.identity || 0, 100)}%` }}></div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-1">
+                    <span className="text-slate-600 dark:text-slate-400">Location Trust</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{user.trust_scores?.location || 0}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                    <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${Math.min(user.trust_scores?.location || 0, 100)}%` }}></div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-1">
+                    <span className="text-slate-600 dark:text-slate-400">Community Trust</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{user.trust_scores?.community || 0}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                    <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${Math.min(user.trust_scores?.community || 0, 100)}%` }}></div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center text-sm pt-2 border-t border-black/10 dark:border-white/10">
+                  <span className="text-slate-600 dark:text-slate-400">Overall Trust Score</span>
+                  <span className="flex items-center text-yellow-400 font-bold text-lg">
+                    <Star className="h-4 w-4 mr-1 fill-yellow-400" /> {user.trust_scores?.overall || 0}
+                  </span>
+                </div>
+
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-600 dark:text-slate-400">{t('profile.role', language)}</span>
                   <span className="text-slate-900 dark:text-white capitalize">{user.role}</span>
                 </div>
+
               </div>
             </CardContent>
           <CarNumbers />
@@ -166,11 +183,39 @@ export default function Profile() {
                     value={user?.childrenAges || ''}
                     onChange={(e) => updateUser({ childrenAges: e.target.value })}
                   />
-                </div>
+                
               </div>
             </div>
-          </div>
-          <BirthdaySettings />
+            
+            <div className="mt-6 pt-6 border-t border-black/10 dark:border-white/10">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex justify-between items-center">
+                <span>My Locations</span>
+                <span className="text-xs font-normal text-indigo-500 cursor-pointer">+ Add Location</span>
+              </h3>
+              <div className="space-y-3">
+                {user.locations?.map(loc => (
+                  <div key={loc.id} className="flex justify-between items-center p-3 border border-black/10 dark:border-white/10 rounded-xl bg-white dark:bg-slate-900">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-semibold text-sm text-slate-900 dark:text-white">{loc.name}</span>
+                        {loc.verified ? (
+                          <span className="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-[10px] font-bold">VERIFIED</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded-full text-[10px] font-bold">UNVERIFIED</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">{loc.address} ({loc.district})</div>
+                    </div>
+                  </div>
+                ))}
+                {(!user.locations || user.locations.length === 0) && (
+                  <p className="text-sm text-slate-500 text-center py-4">No specific locations added yet. Add a home or workplace to unlock neighborhood features.</p>
+                )}
+              </div>
+</div>
+</div>
+</div>
+<BirthdaySettings />
           </Card>
 
           <Card className="glass-panel border-black/10 dark:border-white/10">
@@ -259,7 +304,8 @@ export default function Profile() {
               )}
             </CardContent>
           </Card>
-\n          {/* My Neighbors */}
+
+          {/* My Neighbors */}
           <Card className="glass-panel border-black/10 dark:border-white/10">
             <CardHeader className="border-b border-white/5 pb-4">
               <div className="flex items-center space-x-2">
@@ -316,7 +362,11 @@ export default function Profile() {
                             <p className="text-xs text-slate-500">{neighbor.distance}</p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10">
+                        <Button
+                          variant="ghost" size="sm"
+                          onClick={() => setAddedNeighbors(addedNeighbors.filter(n => n.id !== neighbor.id))}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>

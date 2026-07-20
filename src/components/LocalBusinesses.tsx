@@ -6,6 +6,8 @@ import VerificationGate from './VerificationGate';
 import { Input } from './ui/input';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
+import { useChatStore } from '../store/useChatStore';
+import { useNavigate } from 'react-router-dom';
 
 interface Business {
   id: number;
@@ -21,6 +23,8 @@ interface Business {
 export default function LocalBusinesses() {
   const [searchTerm, setSearchTerm] = useState('');
   const { language } = useLanguageStore();
+  const { openOrCreateChat } = useChatStore();
+  const navigate = useNavigate();
   
   const [businesses, setBusinesses] = useState<Business[]>([
     {
@@ -129,7 +133,7 @@ export default function LocalBusinesses() {
                   </div>
                   
                   <div className="flex flex-col space-y-2">
-                    <Button variant="outline" className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
+                    <Button variant="outline" onClick={() => { openOrCreateChat(`business-${business.id}`, business.name, 'business'); navigate('/chat'); }} className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
                       {t('common.visit', language)}
                     </Button>
                     <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 self-end">

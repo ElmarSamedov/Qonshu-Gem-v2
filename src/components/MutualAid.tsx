@@ -6,6 +6,8 @@ import { HeartHandshake, MapPin, Clock, Plus, X, MessageCircle, BadgeCheck } fro
 import VerificationGate from './VerificationGate';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
+import { useChatStore } from '../store/useChatStore';
+import { useNavigate } from 'react-router-dom';
 
 interface HelpRequest {
   id: number;
@@ -23,6 +25,14 @@ export default function MutualAid() {
   const [showForm, setShowForm] = useState(false);
   const [newRequest, setNewRequest] = useState({ title: '', description: '', type: 'service' as const });
   const { language } = useLanguageStore();
+  const { openOrCreateChat } = useChatStore();
+  const navigate = useNavigate();
+
+  const handleOfferHelp = (req: HelpRequest) => {
+    openOrCreateChat(`neighbor-${req.author}`, req.author, 'neighbor');
+    navigate('/chat');
+  };
+
   
   const [requests, setRequests] = useState<HelpRequest[]>([
     {
@@ -227,7 +237,7 @@ export default function MutualAid() {
                 </div>
                 
                 {req.status === 'open' && (
-                  <Button variant="outline" size="sm" className="bg-black/5 dark:bg-white/5 text-rose-400 border-rose-400/30 hover:bg-rose-500/20">
+                  <Button variant="outline" size="sm" onClick={() => handleOfferHelp(req)} className="bg-black/5 dark:bg-white/5 text-rose-400 border-rose-400/30 hover:bg-rose-500/20">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     {t('aid.offer_help', language)}
                   </Button>

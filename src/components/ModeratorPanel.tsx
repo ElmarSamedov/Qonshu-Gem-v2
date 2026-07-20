@@ -12,6 +12,8 @@ export default function ModeratorPanel() {
   const { reports, updateReportStatus } = useModerationStore();
   const { language } = useLanguageStore();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'verifications' | 'users' | 'reports'>('dashboard');
+  const [filterNsfw, setFilterNsfw] = useState(false);
+  const [filterArLaw, setFilterArLaw] = useState(false);
   
   const [verifications, setVerifications] = useState([
     { id: 1, name: 'Ali M.', district: 'Nasimi', document_url: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop', status: 'pending', date: '2023-10-25' },
@@ -194,62 +196,95 @@ export default function ModeratorPanel() {
         </Card>
       )}
 
-      {activeTab === 'reports' && (
-        <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-xl text-slate-900 dark:text-white">{t('mod.queue', language)}</CardTitle>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm" className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300">
-                <Filter className="h-4 w-4 mr-2" />
-                {t('mod.nsfw', language)}
-              </Button>
-              <Button variant="outline" size="sm" className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300">
-                <Filter className="h-4 w-4 mr-2" />
-                {t('mod.ar_law', language)}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {reports.filter(r => r.status === 'pending').length === 0 ? (
-              <div className="text-center py-12">
-                <Shield className="mx-auto h-12 w-12 text-slate-500 dark:text-slate-500/50 mb-4" />
-                <p className="text-lg text-slate-900 dark:text-white font-medium">{t('mod.queue_empty', language)}</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{t('mod.no_reports', language)}</p>
+      {activeTab === 'reports' && (() => {
+        const filteredPendingReports = reports
+          .filter(r => r.status === 'pending')
+          .filter(r => {
+            if (filterNsfw) {
+              const text = `${r.reason} ${r.content}`.toLowerCase();
+              return text.includes('nsfw') || text.includes('inappropriate');
+            }
+            return true;
+          })
+          .filter(r => {
+            if (filterArLaw) {
+              const text = `${r.reason} ${r.content}`.toLowerCase();
+              return text.includes('ar_law') || text.includes('ar law') || text.includes('law') || text.includes('qanun') || text.includes('закон') || text.includes('illegal');
+            }
+            return true;
+          });
+
+        return (
+          <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl text-slate-900 dark:text-white">{t('mod.queue', language)}</CardTitle>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFilterNsfw(v => !v)}
+                  className={`border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all ${filterNsfw ? 'bg-red-500/20 border-red-500/30 font-semibold' : 'bg-black/5 dark:bg-white/5'}`}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  {t('mod.nsfw', language)}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFilterArLaw(v => !v)}
+                  className={`border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all ${filterArLaw ? 'bg-red-500/20 border-red-500/30 font-semibold' : 'bg-black/5 dark:bg-white/5'}`}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  {t('mod.ar_law', language)}
+                </Button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {reports.filter(r => r.status === 'pending').map(report => (
-                  <div key={report.id} className="flex flex-col md:flex-row items-start justify-between p-5 rounded-xl border border-black/10 dark:border-white/10 bg-white/40 dark:bg-black/20 hover:bg-white/60 dark:bg-black/40 transition-all">
-                    <div className="flex flex-col w-full md:w-3/4 mb-4 md:mb-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30 uppercase tracking-wider">
-                          {report.type}
-                        </span>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">{t('mod.reported_by', language)}</p>
-                        <span className="text-slate-500 dark:text-slate-500 text-xs">•</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-500">{new Date(report.timestamp).toLocaleString()}</p>
+            </CardHeader>
+            <CardContent>
+              {filteredPendingReports.length === 0 ? (
+                <div className="text-center py-12">
+                  <Shield className="mx-auto h-12 w-12 text-slate-500 dark:text-slate-500/50 mb-4" />
+                  <p className="text-lg text-slate-900 dark:text-white font-medium">
+                    {reports.filter(r => r.status === 'pending').length === 0 ? t('mod.queue_empty', language) : 'No reports match filter criteria.'}
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {reports.filter(r => r.status === 'pending').length === 0 ? t('mod.no_reports', language) : 'Try disabling active filters.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredPendingReports.map(report => (
+                    <div key={report.id} className="flex flex-col md:flex-row items-start justify-between p-5 rounded-xl border border-black/10 dark:border-white/10 bg-white/40 dark:bg-black/20 hover:bg-white/60 dark:bg-black/40 transition-all">
+                      <div className="flex flex-col w-full md:w-3/4 mb-4 md:mb-0">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30 uppercase tracking-wider">
+                            {report.type}
+                          </span>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">{t('mod.reported_by', language)}</p>
+                          <span className="text-slate-500 dark:text-slate-500 text-xs">•</span>
+                          <p className="text-xs text-slate-500 dark:text-slate-500">{new Date(report.timestamp).toLocaleString()}</p>
+                        </div>
+                        <p className="text-slate-900 dark:text-white text-lg mb-2">"{report.content}"</p>
+                        <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10 inline-block">
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('mod.author', language)}: <span className="text-slate-900 dark:text-white">{report.author}</span></p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1"><Flag className="h-3 w-3 inline mr-1 text-red-400"/> {t('mod.reason', language)}: {report.reason}</p>
+                        </div>
                       </div>
-                      <p className="text-slate-900 dark:text-white text-lg mb-2">"{report.content}"</p>
-                      <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10 inline-block">
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('mod.author', language)}: <span className="text-slate-900 dark:text-white">{report.author}</span></p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1"><Flag className="h-3 w-3 inline mr-1 text-red-400"/> {t('mod.reason', language)}: {report.reason}</p>
+                      <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">
+                        <Button className="bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)]" onClick={() => updateReportStatus(report.id, 'resolved')}>
+                          <X className="mr-2 h-4 w-4" /> {t('mod.delete', language)}
+                        </Button>
+                        <Button variant="outline" className="text-slate-700 dark:text-slate-300 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 bg-transparent" onClick={() => updateReportStatus(report.id, 'dismissed')}>
+                          <Check className="mr-2 h-4 w-4" /> {t('mod.dismiss', language)}
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">
-                      <Button className="bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)]" onClick={() => updateReportStatus(report.id, 'resolved')}>
-                        <X className="mr-2 h-4 w-4" /> {t('mod.delete', language)}
-                      </Button>
-                      <Button variant="outline" className="text-slate-700 dark:text-slate-300 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 bg-transparent" onClick={() => updateReportStatus(report.id, 'dismissed')}>
-                        <Check className="mr-2 h-4 w-4" /> {t('mod.dismiss', language)}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {activeTab === 'users' && (
         <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl">

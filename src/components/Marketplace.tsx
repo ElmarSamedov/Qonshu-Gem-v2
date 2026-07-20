@@ -124,19 +124,19 @@ export default function Marketplace() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('market.type', language)}</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {types.map(t => (
+                    {types.map(opt => (
                       <button
-                        key={t.id}
+                        key={opt.id}
                         type="button"
-                        onClick={() => setNewItem({...newItem, type: t.id})}
+                        onClick={() => setNewItem({...newItem, type: opt.id})}
                         className={`flex items-center justify-center p-2 rounded-lg border text-sm font-medium transition-all ${
-                          newItem.type === t.id 
+                          newItem.type === opt.id 
                             ? 'bg-blue-500/20 border-blue-500 text-blue-400' 
                             : 'border-black/10 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-black/5 dark:bg-white/5'
                         }`}
                       >
-                        {t.icon}
-                        {t.label}
+                        {opt.icon}
+                        {opt.label}
                       </button>
                     ))}
                   </div>

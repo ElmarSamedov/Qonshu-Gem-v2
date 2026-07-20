@@ -8,11 +8,15 @@ import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Textarea, Input } from './ui/input';
 import { Send, MapPin, AlertTriangle, Package, Heart, MessageCircle, Flag, BadgeCheck, Plus, X, Crop, Type, Smile, Image as ImageIcon, Sticker, Check, Eye, EyeOff, Pin, Share2, BarChart2 } from 'lucide-react';
+import { useChatStore } from '../store/useChatStore';
+import { useNavigate } from 'react-router-dom';
 
 export default function Feed() {
   const { user } = useAuthStore();
   const { language } = useLanguageStore();
   const { addReport } = useModerationStore();
+  const { openOrCreateChat } = useChatStore();
+  const navigate = useNavigate();
   
   const [posts, setPosts] = useState([
     { 
@@ -47,6 +51,7 @@ export default function Feed() {
   const [postDraftImage, setPostDraftImage] = useState<string | null>(null);
   const [showCropModal, setShowCropModal] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [postType, setPostType] = useState<'feed' | 'alert' | 'question'>('feed');
   
   const [selectedNeighbor, setSelectedNeighbor] = useState<any>(null);
   const [locationFilter, setLocationFilter] = useState<'all' | 'building' | 'neighborhood'>('all');
@@ -130,7 +135,7 @@ export default function Feed() {
       id: Date.now(),
       author: postAnonymously ? 'Anonymous' : (user?.isAnonymous ? 'Anonymous' : (user?.name || 'You')),
       avatar: postAnonymously ? null : (user?.isAnonymous ? null : (user?.avatar || null)),
-      type: 'feed',
+      type: postType,
       content: postDraftContent,
       time: 'Just now',
       likes: 0,
@@ -148,6 +153,11 @@ export default function Feed() {
     setPostDraftContent('');
     setPostDraftImage(null);
     setPostAnonymously(false);
+    setPostType('feed');
+  };
+
+  const handleLike = (postId: number) => {
+    setPosts(posts.map(p => p.id === postId ? { ...p, likes: p.likes + 1 } : p));
   };
 
   const togglePin = (postId: number) => {
@@ -276,8 +286,22 @@ export default function Feed() {
             
             <div className="flex justify-between items-center">
               <div className="flex space-x-2 text-sm text-slate-600 dark:text-slate-400">
-                <Button variant="outline" size="sm" className="h-8 border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:bg-white/5 hover:text-slate-900 dark:text-white">{t('common.alert', language)}</Button>
-                <Button variant="outline" size="sm" className="h-8 border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:bg-white/5 hover:text-slate-900 dark:text-white">{t('common.question', language)}</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setPostType(p => p === 'alert' ? 'feed' : 'alert')} 
+                  className={`h-8 border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all ${postType === 'alert' ? 'bg-orange-500/20 border-orange-500 text-orange-500 font-semibold hover:bg-orange-500/30' : 'hover:bg-black/5 dark:bg-white/5 hover:text-slate-900 dark:text-white'}`}
+                >
+                  {t('common.alert', language)}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setPostType(p => p === 'question' ? 'feed' : 'question')} 
+                  className={`h-8 border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all ${postType === 'question' ? 'bg-indigo-500/20 border-indigo-500 text-indigo-500 font-semibold hover:bg-indigo-500/30' : 'hover:bg-black/5 dark:bg-white/5 hover:text-slate-900 dark:text-white'}`}
+                >
+                  {t('common.question', language)}
+                </Button>
               </div>
               <Button onClick={handlePostSubmit} size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-none shadow-lg shadow-blue-500/20">
                 <Send className="mr-2 h-4 w-4" />
@@ -381,7 +405,7 @@ export default function Feed() {
               
               <div className="mt-4 flex items-center justify-between border-t border-black/10 dark:border-white/10 pt-3 text-sm text-slate-600 dark:text-slate-400 font-medium">
                 <div className="flex items-center space-x-4">
-                  <button className="flex items-center space-x-1 hover:text-blue-400 transition-colors">
+                  <button onClick={() => handleLike(post.id)} className="flex items-center space-x-1 hover:text-blue-400 transition-colors">
                     <Heart className="h-4 w-4" />
                     <span>{post.likes} {t('common.helpful', language)}</span>
                   </button>
@@ -442,12 +466,14 @@ export default function Feed() {
                       )}
                     </div>
                   ))}
-                  <div className="flex items-center space-x-2 mt-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-white text-xs font-medium shrink-0 overflow-hidden">
-                      {user?.avatar ? <img src={user.avatar} alt="You" className="w-full h-full object-cover" /> : user?.name.charAt(0)}
+                  <VerificationGate compact={true}>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-white text-xs font-medium shrink-0 overflow-hidden">
+                        {user?.avatar ? <img src={user.avatar} alt="You" className="w-full h-full object-cover" /> : user?.name.charAt(0)}
+                      </div>
+                      <Input placeholder="Write a comment..." className="h-8 text-sm bg-white dark:bg-slate-900" />
                     </div>
-                    <Input placeholder="Write a comment..." className="h-8 text-sm bg-white dark:bg-slate-900" />
-                  </div>
+                  </VerificationGate>
                 </div>
               )}
             </CardContent>
@@ -541,7 +567,15 @@ export default function Feed() {
                     <span className="text-4xl font-bold text-slate-400">{selectedNeighbor.author.charAt(0)}</span>
                   )}
                 </div>
-                <Button className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-full px-6">Message</Button>
+                <Button 
+                  onClick={() => { 
+                    openOrCreateChat(`neighbor-${selectedNeighbor.author}`, selectedNeighbor.author, 'neighbor'); 
+                    navigate('/chat'); 
+                  }} 
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-full px-6"
+                >
+                  Message
+                </Button>
               </div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 {selectedNeighbor.author}

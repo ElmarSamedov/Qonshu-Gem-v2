@@ -1,1 +1,0 @@
-sed -i 's/import { Store, User, Send, ArrowLeft, MoreVertical, Search, Paperclip, Smile, Reply, CheckCheck }/import { Store, User, Send, ArrowLeft, MoreVertical, Search, Paperclip, Smile, Reply, CheckCheck, Users, Plus }/' src/components/Chat.tsx

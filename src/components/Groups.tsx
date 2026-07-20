@@ -32,6 +32,18 @@ export default function Groups() {
     { text: 'Hi! Ready for the meeting tomorrow?', sender: 'Leyla', time: new Date(Date.now() - 1800000) }
   ]);
   const [tab, setTab] = useState<'my_groups' | 'discover'>('my_groups');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupDesc, setNewGroupDesc] = useState('');
+
+  const handleCreateGroup = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGroupName.trim()) return;
+    setGroups([{ id: Date.now().toString(), name: newGroupName, description: newGroupDesc, members: 1, type: 'interest', isMember: true }, ...groups]);
+    setShowCreateForm(false);
+    setNewGroupName('');
+    setNewGroupDesc('');
+  };
 
   const myGroups = groups.filter(g => g.isMember);
   const discoverGroups = groups.filter(g => !g.isMember);
@@ -98,9 +110,18 @@ export default function Groups() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-4">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Groups</h2>
-        <Button variant="outline" size="sm" className="border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10">
-          <Plus className="h-4 w-4 mr-2" /> New Group
-        </Button>
+        {!showCreateForm ? (
+          <Button variant="outline" size="sm" onClick={() => setShowCreateForm(true)} className="border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10">
+            <Plus className="h-4 w-4 mr-2" /> New Group
+          </Button>
+        ) : (
+          <form onSubmit={handleCreateGroup} className="flex items-center gap-2">
+            <Input value={newGroupName} onChange={e => setNewGroupName(e.target.value)} placeholder="Group name" className="h-9 w-40" required />
+            <Input value={newGroupDesc} onChange={e => setNewGroupDesc(e.target.value)} placeholder="Description" className="h-9 w-48" />
+            <Button type="submit" size="sm">Create</Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowCreateForm(false)}>Cancel</Button>
+          </form>
+        )}
       </div>
 
       <div className="flex space-x-4 mb-6">

@@ -6,6 +6,7 @@ import { useLanguageStore } from '../store/useLanguageStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { t } from '../lib/i18n';
 import LanguageSelector from './LanguageSelector';
+import LocationSwitcher from './LocationSwitcher';
 
 export default function Layout() {
   const { user, updateUser } = useAuthStore();
@@ -32,18 +33,26 @@ export default function Layout() {
   const { language } = useLanguageStore();
   const { seniorMode } = useSettingsStore();
 
-  const navItems = [
-    { to: '/', icon: Home, label: t('nav.feed', language) },
+  
+  const isGuest = user?.role === 'guest';
+  const baseNavItems = [
+    { to: '/feed', icon: Home, label: t('nav.feed', language) },
     { to: '/mutual-aid', icon: HeartHandshake, label: t('nav.help', language) },
     { to: '/marketplace', icon: ShoppingBag, label: t('nav.market', language) },
     { to: '/businesses', icon: Store, label: t('nav.businesses', language) },
     { to: '/events', icon: Calendar, label: t('nav.events', language) },
     { to: '/polls', icon: BarChart2, label: t('nav.polls', language) },
     { to: '/recommendations', icon: Briefcase, label: t('nav.recommendations', language) },
+  ];
+
+  const authNavItems = isGuest ? [] : [
     { to: '/chat', icon: MessageCircle, label: t('nav.chat', language) },
     { to: '/groups', icon: Users, label: 'Groups' },
     { to: '/profile', icon: User, label: t('nav.profile', language) },
   ];
+
+  const navItems = [...baseNavItems, ...authNavItems];
+
 
   if (user?.role === 'moderator' || user?.role === 'admin') {
     navItems.push({ to: '/moderator', icon: Shield, label: 'Moderator' });
@@ -81,21 +90,38 @@ export default function Layout() {
           </nav>
         </div>
         
-        <div className="pt-4 border-t border-black/10 dark:border-white/10">
+        
+        
+        <div className="pt-4 border-t border-black/10 dark:border-white/10 space-y-4">
+          <LocationSwitcher />
+          {isGuest && (
+            <NavLink to="/auth" className="flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-3 font-semibold transition-colors">
+              Sign In / Register
+            </NavLink>
+          )}
           <LanguageSelector />
         </div>
+
+
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto pb-20 sm:pb-0 relative z-10">
         {/* Mobile Header */}
+        
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-black/10 dark:border-white/10 glass-panel px-4 sm:hidden">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20 text-lg font-bold text-white">Q</div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Qonşu</h1>
           </div>
-          <LanguageSelector />
+          <div className="flex items-center gap-3">
+            {isGuest && (
+              <NavLink to="/auth" className="text-xs font-bold bg-indigo-600 text-white px-3 py-1.5 rounded-lg">Sign In</NavLink>
+            )}
+            <LanguageSelector />
+          </div>
         </header>
+
 
         <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 p-3 flex justify-between items-center text-sm sm:static sm:z-auto sm:bg-transparent sm:border-none sm:px-8 sm:pt-6 sm:pb-0">
           <div className="flex items-center space-x-4">

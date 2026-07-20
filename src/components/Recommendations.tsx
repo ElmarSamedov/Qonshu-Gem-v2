@@ -6,6 +6,8 @@ import VerificationGate from './VerificationGate';
 import { Input } from './ui/input';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
+import { useChatStore } from '../store/useChatStore';
+import { useNavigate } from 'react-router-dom';
 
 interface Recommendation {
   id: number;
@@ -19,6 +21,8 @@ interface Recommendation {
 export default function Recommendations() {
   const [searchTerm, setSearchTerm] = useState('');
   const { language } = useLanguageStore();
+  const { openOrCreateChat } = useChatStore();
+  const navigate = useNavigate();
   
   const [recommendations, setRecommendations] = useState<Recommendation[]>([
     {
@@ -54,6 +58,10 @@ export default function Recommendations() {
       contact: '+994 51 333 44 55'
     }
   ]);
+
+  const handleConfirm = (id: number) => {
+    setRecommendations(recommendations.map(r => r.id === id ? { ...r, confirmations: r.confirmations + 1 } : r));
+  };
 
   const filteredRecommendations = recommendations.filter(rec => 
     rec.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -120,9 +128,14 @@ export default function Recommendations() {
                     </div>
                   </div>
                   
-                  <Button variant="outline" className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
-                    {t('common.contact', language)}
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleConfirm(rec.id)} className="text-emerald-500 hover:bg-emerald-500/10 h-9 w-9">
+                      <ThumbsUp className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" onClick={() => { openOrCreateChat(`neighbor-${rec.name}`, rec.name, 'neighbor'); navigate('/chat'); }} className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
+                      {t('common.contact', language)}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

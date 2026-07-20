@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Gift, Hammer, PartyPopper, Users, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Gift, Hammer, PartyPopper, Users, Plus, X } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { useAuthStore } from '../store/useAuthStore';
+import { Input } from './ui/input';
 
 interface Event {
   id: string;
@@ -23,6 +24,23 @@ export default function CalendarView() {
   const { user } = useAuthStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>(INITIAL_EVENTS);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState('');
+  const [newEventDate, setNewEventDate] = useState('');
+  const [newEventType, setNewEventType] = useState<Event['type']>('community');
+
+  const handleAddEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEventTitle.trim() || !newEventDate) return;
+    // We convert newEventDate to Date. Note: new Date(newEventDate) parses yyyy-mm-dd correctly.
+    // However, sometimes it is parsed as UTC midnight, which might be off by a day in local timezone depending on implementation.
+    // To be safe, we parse it with hyphens replaced or let standard Date construct it and set hours to noon to avoid off-by-one errors in local views.
+    const dateObj = new Date(newEventDate + 'T12:00:00');
+    setEvents([...events, { id: Date.now().toString(), date: dateObj, title: newEventTitle, type: newEventType, author: user?.name }]);
+    setShowEventForm(false);
+    setNewEventTitle('');
+    setNewEventDate('');
+  };
 
   // If user has a public birthday, we can dynamically add it
   React.useEffect(() => {
@@ -77,7 +95,10 @@ export default function CalendarView() {
             <CalendarIcon className="h-5 w-5 text-indigo-400" />
             <CardTitle className="text-lg text-slate-900 dark:text-white">{format(currentDate, dateFormat)}</CardTitle>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" onClick={() => setShowEventForm(!showEventForm)} className="border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10 h-8">
+              <Plus className="h-4 w-4 mr-1" /> Add Event
+            </Button>
             <Button variant="outline" size="icon" onClick={prevMonth} className="h-8 w-8 rounded-full">
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -86,6 +107,43 @@ export default function CalendarView() {
             </Button>
           </div>
         </CardHeader>
+        {showEventForm && (
+          <form onSubmit={handleAddEvent} className="p-4 border-b border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 space-y-3 animate-in fade-in duration-200">
+            <div className="text-sm font-semibold text-slate-900 dark:text-white flex justify-between items-center">
+              <span>Add New Event</span>
+              <button type="button" onClick={() => setShowEventForm(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Date</label>
+                <Input type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} required className="h-9" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Title</label>
+                <Input type="text" placeholder="Event Title" value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} required className="h-9" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Type</label>
+                <select
+                  value={newEventType}
+                  onChange={e => setNewEventType(e.target.value as Event['type'])}
+                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:border-slate-800"
+                >
+                  <option value="community">Community</option>
+                  <option value="holiday">Holiday</option>
+                  <option value="renovation">Renovation</option>
+                  <option value="birthday">Birthday</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-1">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setShowEventForm(false)}>Cancel</Button>
+              <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">Save Event</Button>
+            </div>
+          </form>
+        )}
         <CardContent className="p-4">
           <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (

@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
@@ -20,14 +15,7 @@ import CalendarView from './components/CalendarView';
 import Groups from './components/Groups';
 import LocalBusinesses from './components/LocalBusinesses';
 import Chat from './components/Chat';
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  return <>{children}</>;
-}
+import GuestWelcome from './components/GuestWelcome';
 
 export default function App() {
   const { user } = useAuthStore();
@@ -41,23 +29,28 @@ export default function App() {
     }
   }, [theme]);
 
+  // Determine the default route for "/" based on guest status
+  const isGuest = user?.role === 'guest';
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthScreen />} />
+        <Route path="/welcome" element={isGuest ? <GuestWelcome /> : <Navigate to="/" replace />} />
+        <Route path="/auth" element={isGuest ? <AuthScreen /> : <Navigate to="/" replace />} />
         
-        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Feed />} />
+        <Route path="/" element={<Layout />}>
+          <Route index element={isGuest ? <Navigate to="/welcome" replace /> : <Feed />} />
+          <Route path="feed" element={<Feed />} />
           <Route path="mutual-aid" element={<MutualAid />} />
           <Route path="marketplace" element={<Marketplace />} />
           <Route path="businesses" element={<LocalBusinesses />} />
           <Route path="events" element={<CalendarView />} />
           <Route path="polls" element={<Polls />} />
           <Route path="recommendations" element={<Recommendations />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="groups" element={<Groups />} />
-            <Route path="profile" element={<Profile />} />
-          <Route path="moderator" element={<ModeratorPanel />} />
+          <Route path="chat" element={!isGuest ? <Chat /> : <Navigate to="/auth" replace />} />
+          <Route path="groups" element={!isGuest ? <Groups /> : <Navigate to="/auth" replace />} />  
+          <Route path="profile" element={!isGuest ? <Profile /> : <Navigate to="/auth" replace />} />
+          <Route path="moderator" element={!isGuest ? <ModeratorPanel /> : <Navigate to="/" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -4,55 +4,12 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Send, Store, User, ArrowLeft, Smile, Reply, Users, Plus, Mic, Square, Trash2 } from 'lucide-react';
 import VerificationGate from './VerificationGate';
-
-interface Message {
-  id: number;
-  text: string;
-  senderId: string;
-  timestamp: Date;
-  audioUrl?: string;
-}
-
-interface ChatSession {
-  id: string;
-  name: string;
-  type: 'neighbor' | 'business' | 'group';
-  lastMessage: string;
-  unread: number;
-  messages: Message[];
-}
-
-const MOCK_CHATS: ChatSession[] = [
-  {
-    id: '1',
-    name: 'Baku Roasters Cafe',
-    type: 'business',
-    lastMessage: 'Your coffee beans are ready for pickup!',
-    unread: 1,
-    messages: [
-      { id: 1, text: 'Hi, do you have Ethiopian Yirgacheffe in stock?', senderId: 'me', timestamp: new Date(Date.now() - 3600000) },
-      { id: 2, text: 'Yes, we just roasted a fresh batch yesterday. Shall I reserve a bag for you?', senderId: '1', timestamp: new Date(Date.now() - 3500000) },
-      { id: 3, text: 'Yes please, I will pick it up today.', senderId: 'me', timestamp: new Date(Date.now() - 3400000) },
-      { id: 4, text: 'Your coffee beans are ready for pickup!', senderId: '1', timestamp: new Date(Date.now() - 100000) },
-    ]
-  },
-  {
-    id: '2',
-    name: 'Leyla (Neighbor)',
-    type: 'neighbor',
-    lastMessage: 'Sure, I can lend you the drill.',
-    unread: 0,
-    messages: [
-      { id: 1, text: 'Hi Leyla, I saw your post about the power drill.', senderId: 'me', timestamp: new Date(Date.now() - 86400000) },
-      { id: 2, text: 'Sure, I can lend you the drill.', senderId: '2', timestamp: new Date(Date.now() - 82800000) },
-    ]
-  }
-];
+import { useChatStore, Message, ChatSession } from '../store/useChatStore';
 
 export default function Chat() {
-  const [activeChat, setActiveChat] = useState<ChatSession | null>(null);
+  const { chats, activeChatId, setActiveChatId, sendMessage } = useChatStore();
+  const activeChat = chats.find(c => c.id === activeChatId) || null;
   const [newMessage, setNewMessage] = useState('');
-  const [chats, setChats] = useState(MOCK_CHATS);
   
   // Audio recording state
   const [isRecording, setIsRecording] = useState(false);
@@ -74,29 +31,10 @@ export default function Chat() {
     if (e) e.preventDefault();
     if ((!newMessage.trim() && !audioUrl) || !activeChat) return;
 
-    const newMsg: Message = {
-      id: Date.now(),
-      text: newMessage,
-      senderId: 'me',
-      timestamp: new Date(),
-      audioUrl
-    };
-
-    const updatedChats = chats.map(chat => {
-      if (chat.id === activeChat.id) {
-        return {
-          ...chat,
-          lastMessage: audioUrl ? '🎤 Voice message' : newMessage,
-          messages: [...chat.messages, newMsg]
-        };
-      }
-      return chat;
-    });
-
-    setChats(updatedChats);
-    setActiveChat(updatedChats.find(c => c.id === activeChat.id) || null);
+    sendMessage(activeChat.id, newMessage, audioUrl);
     setNewMessage('');
   };
+
 
   const startRecording = async () => {
     try {
@@ -169,8 +107,7 @@ export default function Chat() {
             <button
               key={chat.id}
               onClick={() => {
-                setActiveChat(chat);
-                setChats(chats.map(c => c.id === chat.id ? { ...c, unread: 0 } : c));
+                setActiveChatId(chat.id);
               }}
               className={`w-full p-4 text-left border-b border-black/5 dark:border-white/5 transition-colors hover:bg-black/5 dark:hover:bg-white/5 ${activeChat?.id === chat.id ? 'bg-black/5 dark:bg-white/5' : ''}`}
             >
@@ -200,7 +137,7 @@ export default function Chat() {
             {/* Chat Header */}
             <div className="p-4 border-b border-black/10 dark:border-white/10 flex items-center space-x-3">
               <button 
-                onClick={() => setActiveChat(null)}
+                onClick={() => setActiveChatId(null)}
                 className="sm:hidden p-2 -ml-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white"
               >
                 <ArrowLeft className="h-5 w-5" />
