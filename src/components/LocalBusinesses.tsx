@@ -158,7 +158,13 @@ export default function LocalBusinesses() {
                       </Button>
                     </VerificationGate>
                   )}
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 self-end" disabled={isGuest}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => alert(`Starting turn-by-turn navigation to ${business.name} at ${business.address}.`)}
+                    className="h-9 w-9 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 self-end" 
+                    disabled={isGuest}
+                  >
                     <Navigation className="h-4 w-4" />
                   </Button>
                 </div>

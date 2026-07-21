@@ -61,6 +61,24 @@ export default function AuthScreen() {
     navigate('/');
   };
 
+  const handleSocialLogin = async (provider: string) => {
+    setError('');
+    const mockEmail = `${provider.toLowerCase()}-${Date.now()}@example.com`;
+    const mockName = `${provider} Neighbor`;
+    await login(mockEmail, 'social123', mockName, {
+      country: 'Azerbaijan',
+      city: 'Baku',
+      town: 'Sabail',
+      district: 'Sabail',
+      street: 'Nizami St',
+      building: '42',
+      entrance: '2',
+      apartment: '15',
+      phone: '+994501234567'
+    });
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen w-full overflow-y-auto relative">
       <div className="fixed inset-0 z-0">
@@ -126,9 +144,9 @@ export default function AuthScreen() {
                   </div>
                   
                   <div className="grid grid-cols-3 gap-3">
-                    <Button type="button" variant="outline" className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Google</Button>
-                    <Button type="button" variant="outline" className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Facebook</Button>
-                    <Button type="button" variant="outline" className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Apple</Button>
+                    <Button type="button" variant="outline" onClick={() => handleSocialLogin('Google')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Google</Button>
+                    <Button type="button" variant="outline" onClick={() => handleSocialLogin('Facebook')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Facebook</Button>
+                    <Button type="button" variant="outline" onClick={() => handleSocialLogin('Apple')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Apple</Button>
                   </div>
                 </form>
               )}

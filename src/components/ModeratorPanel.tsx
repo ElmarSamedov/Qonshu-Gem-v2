@@ -6,19 +6,18 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useModerationStore } from '../store/useModerationStore';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
+import { useVerificationStore } from '../store/useVerificationStore';
 
 export default function ModeratorPanel() {
   const { user } = useAuthStore();
   const { reports, updateReportStatus } = useModerationStore();
   const { language } = useLanguageStore();
+  const { requests, approveRequest, rejectRequest } = useVerificationStore();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'verifications' | 'users' | 'reports'>('dashboard');
   const [filterNsfw, setFilterNsfw] = useState(false);
   const [filterArLaw, setFilterArLaw] = useState(false);
   
-  const [verifications, setVerifications] = useState([
-    { id: 1, name: 'Ali M.', district: 'Nasimi', document_url: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop', status: 'pending', date: '2023-10-25' },
-    { id: 2, name: 'Zahra K.', district: 'Nasimi', document_url: 'https://images.unsplash.com/photo-1618042164219-62c820f10723?w=400&h=300&fit=crop', status: 'pending', date: '2023-10-26' },
-  ]);
+  const verifications = requests.filter(r => r.status === 'pending');
 
   if (user?.role !== 'moderator' && user?.role !== 'admin') {
     return (
@@ -31,11 +30,11 @@ export default function ModeratorPanel() {
   }
 
   const handleApprove = (id: number) => {
-    setVerifications(prev => prev.filter(v => v.id !== id));
+    approveRequest(id);
   };
 
   const handleReject = (id: number) => {
-    setVerifications(prev => prev.filter(v => v.id !== id));
+    rejectRequest(id);
   };
 
   return (
@@ -156,7 +155,7 @@ export default function ModeratorPanel() {
                   <div key={v.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 rounded-xl border border-black/10 dark:border-white/10 bg-white/40 dark:bg-black/20 hover:bg-white/60 dark:bg-black/40 transition-all">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-5 w-full md:w-auto mb-4 md:mb-0">
                       <div className="relative group/img cursor-pointer overflow-hidden rounded-lg border border-black/20 dark:border-white/20">
-                        <img src={v.document_url} alt="Document" className="h-20 w-32 object-cover transition-transform group-hover/img:scale-105" />
+                        <img src={(v as any).document_url || (v as any).documentUrl} alt="Document" className="h-20 w-32 object-cover transition-transform group-hover/img:scale-105" />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
                           <Eye className="h-6 w-6 text-slate-900 dark:text-white" />
                         </div>

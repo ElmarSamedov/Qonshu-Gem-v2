@@ -125,6 +125,8 @@ interface AuthState {
   createGuestSession: () => void;
   verifyLocation: (locationId: string, method: string) => void;
   switchLocation: (locationId: string) => void;
+  addLocation: (location: Omit<UserLocation, 'id' | 'verified'> & { id?: string; verified?: boolean }) => void;
+  removeLocation: (locationId: string) => void;
   logout: () => void;
 }
 
@@ -179,15 +181,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       registrationDate
     });
 
-    const primaryLocationId = 'loc-' + Date.now();
+    const primaryLocationId = 'loc-home';
     const primaryLocation: UserLocation = {
       id: primaryLocationId,
       type: 'HOME',
       name: 'Home Address',
       district,
       address: `${street}, Bldg ${building}, Apt ${apartment}`,
-      verified: true, // Auto-verify primary home address for standard registration flow
-      verification_method: 'sms',
+      verified: false, // Set to false initially so they must verify it via the VerificationGate
       country,
       countryId,
       city,
@@ -213,11 +214,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         name: name || 'New Neighbor',
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
         role: email.endsWith('@qonsu.dev') ? 'moderator' : 'user',
-        trust_level: 2, // With a verified home address, trust level is 2
-        trust_scores: { identity: 40, location: 40, community: 10, overall: 90 },
+        trust_level: 1, // Start as trust level 1 (registered) until location is verified
+        trust_scores: { identity: 40, location: 0, community: 10, overall: 50 },
         locations: [primaryLocation],
         activeLocationId: primaryLocationId,
-        is_verified: true,
+        is_verified: false,
         isMilestoneUser: isMilestone,
         district,
         address: primaryLocation.address,
@@ -244,8 +245,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   verifyLocation: (locationId, method) => set((state) => {
     if (!state.user) return state;
     
+    // Fallback: if locationId doesn't exist but we have locations, verify the first one or active one
+    let targetLocId = locationId;
+    if (!state.user.locations.some(loc => loc.id === locationId) && state.user.locations.length > 0) {
+      targetLocId = state.user.activeLocationId || state.user.locations[0].id;
+    }
+
     const newLocations = state.user.locations.map(loc => {
-      if (loc.id === locationId) {
+      if (loc.id === targetLocId) {
         return { ...loc, verified: true, verification_method: method as any };
       }
       return loc;
@@ -258,7 +265,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     let locationScore = state.user.trust_scores.location;
     if (hasVerifiedLocation) {
       newLevel = Math.max(newLevel, 2) as TrustLevel;
-      locationScore = 40; // example increment
+      locationScore = 40; // increment location score
     }
 
     const newScores = {
@@ -275,8 +282,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         trust_scores: newScores,
         is_verified: hasVerifiedLocation,
         // Update legacy fields for compatibility
-        district: newLocations.find(l => l.id === locationId)?.district || state.user.district,
-        address: newLocations.find(l => l.id === locationId)?.address || state.user.address,
+        district: newLocations.find(l => l.id === targetLocId)?.district || state.user.district,
+        address: newLocations.find(l => l.id === targetLocId)?.address || state.user.address,
       }
     };
   }),
@@ -290,6 +297,44 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         activeLocationId: locationId,
         district: loc.district,
         address: loc.address,
+      }
+    };
+  }),
+  addLocation: (loc) => set((state) => {
+    if (!state.user) return state;
+    const newId = loc.id || 'loc-' + Date.now();
+    const newLoc: UserLocation = {
+      ...loc,
+      id: newId,
+      verified: loc.verified || false,
+    };
+    const locations = [...state.user.locations, newLoc];
+    const activeLocationId = state.user.activeLocationId || newId;
+    return {
+      user: {
+        ...state.user,
+        locations,
+        activeLocationId,
+        district: activeLocationId === newId ? loc.district : state.user.district,
+        address: activeLocationId === newId ? loc.address : state.user.address,
+      }
+    };
+  }),
+  removeLocation: (locationId) => set((state) => {
+    if (!state.user) return state;
+    const locations = state.user.locations.filter(l => l.id !== locationId);
+    let activeLocationId = state.user.activeLocationId;
+    if (activeLocationId === locationId) {
+      activeLocationId = locations.length > 0 ? locations[0].id : null;
+    }
+    const activeLoc = locations.find(l => l.id === activeLocationId);
+    return {
+      user: {
+        ...state.user,
+        locations,
+        activeLocationId,
+        district: activeLoc ? activeLoc.district : '',
+        address: activeLoc ? activeLoc.address : '',
       }
     };
   }),

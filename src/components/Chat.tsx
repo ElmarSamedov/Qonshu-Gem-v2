@@ -7,7 +7,7 @@ import VerificationGate from './VerificationGate';
 import { useChatStore, Message, ChatSession } from '../store/useChatStore';
 
 export default function Chat() {
-  const { chats, activeChatId, setActiveChatId, sendMessage } = useChatStore();
+  const { chats, activeChatId, setActiveChatId, sendMessage, toggleReaction } = useChatStore();
   const activeChat = chats.find(c => c.id === activeChatId) || null;
   const [newMessage, setNewMessage] = useState('');
   
@@ -163,16 +163,30 @@ export default function Chat() {
                         Your browser does not support the audio element.
                       </audio>
                     )}
-                    <span className="text-[10px] opacity-60 mt-1 block text-right">
+                     <span className="text-[10px] opacity-60 mt-1 block text-right">
                       {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
+
+                    {msg.reactions && msg.reactions.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1 justify-end">
+                        {msg.reactions.map((emoji, eIdx) => (
+                          <span key={eIdx} className="bg-black/20 dark:bg-white/20 text-[10px] px-1.5 py-0.5 rounded-full select-none">{emoji}</span>
+                        ))}
+                      </div>
+                    )}
                     
                     {/* Reaction & Reply buttons on hover */}
                     <div className={`absolute top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ${msg.senderId === 'me' ? 'right-full mr-2' : 'left-full ml-2'}`}>
-                      <button className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 shadow flex items-center justify-center text-slate-500 hover:text-blue-500 transition-colors">
+                      <button 
+                        onClick={() => toggleReaction(activeChat.id, msg.id, '👍')}
+                        className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 shadow flex items-center justify-center text-slate-500 hover:text-blue-500 transition-colors"
+                      >
                         <Smile className="w-3 h-3" />
                       </button>
-                      <button className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 shadow flex items-center justify-center text-slate-500 hover:text-blue-500 transition-colors">
+                      <button 
+                        onClick={() => setNewMessage(`Replying to "${msg.text ? msg.text.substring(0, 15) : 'voice message'}...": `)}
+                        className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 shadow flex items-center justify-center text-slate-500 hover:text-blue-500 transition-colors"
+                      >
                         <Reply className="w-3 h-3" />
                       </button>
                     </div>

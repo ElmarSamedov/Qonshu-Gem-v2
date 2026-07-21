@@ -8,14 +8,22 @@ import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { useAddressVerification } from '../hooks/useAddressVerification';
+import { useVerificationStore } from '../store/useVerificationStore';
 
 export default function VerificationGate({ children, compact = false }: { children: React.ReactNode, compact?: boolean }) {
-  const { user, verifyLocation } = useAuthStore();
+  const { user, verifyLocation, addLocation } = useAuthStore();
   const { language } = useLanguageStore();
   const navigate = useNavigate();
+  const { addRequest, requests } = useVerificationStore();
   
   const [isVerifying, setIsVerifying] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'pending'>('idle');
+
+  // Address form fields if there are no locations
+  const [newStreet, setNewStreet] = useState('');
+  const [newBuilding, setNewBuilding] = useState('');
+  const [newApartment, setNewApartment] = useState('');
+  const [newDistrict, setNewDistrict] = useState('Sabail');
 
   const {
     method: verifyMethod,
@@ -33,9 +41,12 @@ export default function VerificationGate({ children, compact = false }: { childr
     setFile,
   } = useAddressVerification((verified) => {
     if (verified) {
-      verifyLocation('home', verifyMethod);
+      verifyLocation(user?.activeLocationId || 'loc-home', verifyMethod);
     }
   });
+
+  // Check if there is an active request in pending state for the current user
+  const hasPendingRequest = requests.some(r => r.userId === user?.uid && r.status === 'pending');
 
   // Auto-pass if already verified
   if (user?.trust_level && user.trust_level >= 2) {
@@ -48,12 +59,18 @@ export default function VerificationGate({ children, compact = false }: { childr
   }
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file || !user) return;
     setUploadStatus('uploading');
     
     setTimeout(() => {
+      addRequest({
+        userId: user.uid,
+        name: user.name,
+        district: user.district || 'Sabail',
+        documentUrl: URL.createObjectURL(file),
+        locationId: user.activeLocationId || 'loc-home'
+      });
       setUploadStatus('pending');
-      // For demo we won't automatically verify here
     }, 1500);
   };
 
@@ -61,11 +78,27 @@ export default function VerificationGate({ children, compact = false }: { childr
     setUploadStatus('pending'); 
   };
 
-  if (uploadStatus === 'pending') {
+  const handleAddLocationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStreet || !newBuilding || !newApartment) {
+      alert('Please fill out all address fields');
+      return;
+    }
+    addLocation({
+      type: 'HOME',
+      name: 'Home Address',
+      district: newDistrict,
+      address: `${newStreet}, Bldg ${newBuilding}, Apt ${newApartment}`,
+      country: user?.country || 'Azerbaijan',
+      city: user?.city || 'Baku',
+    });
+  };
+
+  if (uploadStatus === 'pending' || hasPendingRequest) {
     return (
-      <Card className="glass-panel text-center border-black/10 dark:border-white/10 shadow-2xl">
+      <Card className="glass-panel text-center border-black/10 dark:border-white/10 shadow-2xl p-6">
         <CardContent className="pt-6">
-          <Clock className="mx-auto h-12 w-12 text-orange-400 mb-4" />
+          <Clock className="mx-auto h-12 w-12 text-orange-400 mb-4 animate-pulse" />
           <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Verification in Progress</h3>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Your verification request is being processed. 
@@ -79,7 +112,60 @@ export default function VerificationGate({ children, compact = false }: { childr
     );
   }
 
+  const hasLocations = user?.locations && user.locations.length > 0;
+
   if (isVerifying) {
+    if (!hasLocations) {
+      return (
+        <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl max-w-xl mx-auto my-8">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center text-slate-900 dark:text-white">
+              <MapPin className="mr-2 h-5 w-5 text-indigo-500" />
+              Add Your Address First
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddLocationSubmit} className="space-y-4 text-left">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                You have no addresses registered. Please enter your physical address before verifying.
+              </p>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">District</label>
+                <select 
+                  value={newDistrict} 
+                  onChange={e => setNewDistrict(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm text-slate-900 dark:text-white"
+                >
+                  <option value="Sabail">Sabail</option>
+                  <option value="Nasimi">Nasimi</option>
+                  <option value="Yasamal">Yasamal</option>
+                  <option value="Narimanov">Narimanov</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Street</label>
+                <Input type="text" placeholder="e.g. Nizami St" value={newStreet} onChange={e => setNewStreet(e.target.value)} className="bg-white dark:bg-slate-800" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Building</label>
+                  <Input type="text" placeholder="e.g. 42" value={newBuilding} onChange={e => setNewBuilding(e.target.value)} className="bg-white dark:bg-slate-800" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Apartment</label>
+                  <Input type="text" placeholder="e.g. 15" value={newApartment} onChange={e => setNewApartment(e.target.value)} className="bg-white dark:bg-slate-800" />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="ghost" onClick={() => setIsVerifying(false)} className="w-1/3 text-slate-500">Cancel</Button>
+                <Button type="submit" className="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white">Save Address</Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      );
+    }
+
     if (verifyMethod === 'select') {
       return (
         <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl max-w-xl mx-auto my-8">

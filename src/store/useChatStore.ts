@@ -6,6 +6,7 @@ export interface Message {
   senderId: string;
   timestamp: Date;
   audioUrl?: string;
+  reactions?: string[];
 }
 
 export interface ChatSession {
@@ -23,6 +24,7 @@ interface ChatState {
   setActiveChatId: (id: string | null) => void;
   openOrCreateChat: (id: string, name: string, type: ChatSession['type']) => void;
   sendMessage: (chatId: string, text: string, audioUrl?: string) => void;
+  toggleReaction: (chatId: string, messageId: number, emoji: string) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -31,16 +33,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
       id: '1', name: 'Baku Roasters Cafe', type: 'business', unread: 1,
       lastMessage: 'Your coffee beans are ready for pickup!',
       messages: [
-        { id: 1, text: 'Hi, do you have Ethiopian Yirgacheffe in stock?', senderId: 'me', timestamp: new Date(Date.now() - 3600000) },
-        { id: 2, text: 'Yes, we just roasted a fresh batch yesterday. Shall I reserve a bag for you?', senderId: '1', timestamp: new Date(Date.now() - 3500000) },
+        { id: 1, text: 'Hi, do you have Ethiopian Yirgacheffe in stock?', senderId: 'me', timestamp: new Date(Date.now() - 3600000), reactions: ['👍'] },
+        { id: 2, text: 'Yes, we just roasted a fresh batch yesterday. Shall I reserve a bag for you?', senderId: '1', timestamp: new Date(Date.now() - 3500000), reactions: [] },
       ]
     },
     {
       id: '2', name: 'Leyla (Neighbor)', type: 'neighbor', unread: 0,
       lastMessage: 'Sure, I can lend you the drill.',
       messages: [
-        { id: 1, text: 'Hi Leyla, I saw your post about the power drill.', senderId: 'me', timestamp: new Date(Date.now() - 86400000) },
-        { id: 2, text: 'Sure, I can lend you the drill.', senderId: '2', timestamp: new Date(Date.now() - 82800000) },
+        { id: 1, text: 'Hi Leyla, I saw your post about the power drill.', senderId: 'me', timestamp: new Date(Date.now() - 86400000), reactions: [] },
+        { id: 2, text: 'Sure, I can lend you the drill.', senderId: '2', timestamp: new Date(Date.now() - 82800000), reactions: ['❤️'] },
       ]
     }
   ],
@@ -50,7 +52,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const exists = get().chats.some(c => c.id === id);
     if (!exists) {
       set(state => ({ 
-        chats: [...state.chats, { id, name, type, lastMessage: '', unread: 0, messages: [] }] 
+         chats: [...state.chats, { id, name, type, lastMessage: '', unread: 0, messages: [] }] 
       }));
     }
     set({ activeChatId: id });
@@ -60,7 +62,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
       chats: state.chats.map(c => c.id === chatId ? {
         ...c,
         lastMessage: audioUrl ? '🎤 Voice message' : text,
-        messages: [...c.messages, { id: Date.now(), text, senderId: 'me', timestamp: new Date(), audioUrl }]
+        messages: [...c.messages, { id: Date.now(), text, senderId: 'me', timestamp: new Date(), audioUrl, reactions: [] }]
+      } : c)
+    }));
+  },
+  toggleReaction: (chatId, messageId, emoji) => {
+    set(state => ({
+      chats: state.chats.map(c => c.id === chatId ? {
+        ...c,
+        messages: c.messages.map(m => m.id === messageId ? {
+          ...m,
+          reactions: m.reactions?.includes(emoji)
+            ? m.reactions.filter(r => r !== emoji)
+            : [...(m.reactions || []), emoji]
+        } : m)
       } : c)
     }));
   }

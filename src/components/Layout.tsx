@@ -15,7 +15,7 @@ export default function Layout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const userNationality = user?.nationality || 'Azerbaijani';
   
-  const simulatedNotifications = [
+  const [notifications, setNotifications] = useState([
     {
       id: 1,
       title: 'New Neighbor Alert',
@@ -30,7 +30,12 @@ export default function Layout() {
       time: '1 hour ago',
       unread: false
     }
-  ];
+  ]);
+
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, unread: false })));
+  };
+
   const { language } = useLanguageStore();
   const { seniorMode } = useSettingsStore();
   const { theme, toggleTheme } = useThemeStore();
@@ -133,17 +138,19 @@ export default function Layout() {
                 className="relative p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none"
               >
                 <Bell className="h-5 w-5 text-slate-700 dark:text-slate-300" />
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                {notifications.some(n => n.unread) && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                )}
               </button>
               
               {showNotifications && (
                 <div className="absolute left-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-black/15 dark:border-white/15 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/[0.02] dark:bg-white/[0.02]">
                     <h3 className="font-bold text-slate-900 dark:text-white">Notifications</h3>
-                    <button onClick={() => setShowNotifications(false)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold">Mark all as read</button>
+                    <button onClick={markAllAsRead} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold">Mark all as read</button>
                   </div>
                   <div className="max-h-80 overflow-y-auto divide-y divide-black/5 dark:divide-white/5">
-                    {simulatedNotifications.map(notif => (
+                    {notifications.map(notif => (
                       <div key={notif.id} className={`p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${notif.unread ? 'bg-indigo-500/10 dark:bg-indigo-500/20' : ''}`}>
                         <div className="flex justify-between items-start mb-1">
                           <h4 className={`text-sm font-bold ${notif.unread ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-950 dark:text-white'}`}>{notif.title}</h4>

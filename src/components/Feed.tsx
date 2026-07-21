@@ -53,10 +53,42 @@ export default function Feed() {
   const [showCropModal, setShowCropModal] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [postType, setPostType] = useState<'feed' | 'alert' | 'question'>('feed');
+  const [draftLocationScope, setDraftLocationScope] = useState<'all' | 'building' | 'landing' | 'courtyard'>('building');
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
   
   const [selectedNeighbor, setSelectedNeighbor] = useState<any>(null);
   const [locationFilter, setLocationFilter] = useState<'all' | 'building' | 'neighborhood'>('all');
   const [postAnonymously, setPostAnonymously] = useState(false);
+
+  const handleAddComment = (postId: number) => {
+    const text = commentInputs[postId];
+    if (!text || !text.trim()) return;
+    
+    setPosts(posts.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          comments: [
+            ...p.comments,
+            {
+              id: Date.now(),
+              author: user?.name || 'You',
+              avatar: user?.avatar || null,
+              content: text.trim(),
+              time: 'Just now',
+              reactions: []
+            }
+          ]
+        };
+      }
+      return p;
+    }));
+    
+    setCommentInputs({
+      ...commentInputs,
+      [postId]: ''
+    });
+  };
 
   const toggleComments = (postId: number) => {
     setExpandedComments(prev => prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]);
@@ -143,7 +175,7 @@ export default function Feed() {
       verified: user?.is_verified || false,
       pinned: false,
       hidden: false,
-      locationScope: 'building',
+      locationScope: draftLocationScope,
       views: 0,
       clicks: 0,
       image: postDraftImage,
@@ -261,11 +293,15 @@ export default function Feed() {
               <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
                 <Eye className="w-4 h-4" />
                 <span>Visible to:</span>
-                <select className="bg-transparent border-b border-black/20 dark:border-white/20 text-slate-900 dark:text-white outline-none focus:border-indigo-500">
-                  <option value="everyone" className="text-black">Everyone</option>
-                  <option value="building" className="text-black">Same Building</option>
-                  <option value="landing" className="text-black">Same Landing</option>
-                  <option value="courtyard" className="text-black">Same Courtyard</option>
+                <select 
+                  value={draftLocationScope}
+                  onChange={(e) => setDraftLocationScope(e.target.value as any)}
+                  className="bg-transparent border-b border-black/20 dark:border-white/20 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                >
+                  <option value="all" className="text-black dark:text-slate-950">Everyone</option>
+                  <option value="building" className="text-black dark:text-slate-950">Same Building</option>
+                  <option value="landing" className="text-black dark:text-slate-950">Same Landing</option>
+                  <option value="courtyard" className="text-black dark:text-slate-950">Same Courtyard</option>
                 </select>
               </div>
               <button 
@@ -449,9 +485,9 @@ export default function Feed() {
                       </div>
                       <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
                       
-                      {/* Comment reactions */}
-                      {comment.reactions && comment.reactions.length > 0 && (
-                        <div className="mt-2 flex items-center space-x-2 text-xs">
+                      {/* Comment reactions & Reply */}
+                      <div className="mt-2 flex items-center space-x-2 text-xs">
+                        {comment.reactions && comment.reactions.length > 0 && (
                           <button 
                             onClick={() => toggleReactions(comment.id)}
                             className="bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded-full hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
@@ -461,9 +497,19 @@ export default function Feed() {
                               : comment.reactions.slice(0, 3).join(' ') + (comment.reactions.length > 3 ? ` +${comment.reactions.length - 3}` : '')
                             }
                           </button>
-                          <button className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">Reply</button>
-                        </div>
-                      )}
+                        )}
+                        <button 
+                          onClick={() => {
+                            setCommentInputs({
+                              ...commentInputs,
+                              [post.id]: `@${comment.author} `
+                            });
+                          }}
+                          className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                        >
+                          Reply
+                        </button>
+                      </div>
                     </div>
                   ))}
                   {isGuest ? (
@@ -477,7 +523,27 @@ export default function Feed() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-white text-xs font-medium shrink-0 overflow-hidden">
                           {user?.avatar ? <img src={user.avatar} alt="You" className="w-full h-full object-cover" /> : user?.name.charAt(0)}
                         </div>
-                        <Input placeholder="Write a comment..." className="h-8 text-sm bg-white dark:bg-slate-900" />
+                        <Input 
+                          placeholder="Write a comment..." 
+                          className="h-8 text-sm bg-white dark:bg-slate-900 flex-1" 
+                          value={commentInputs[post.id] || ''}
+                          onChange={(e) => setCommentInputs({
+                            ...commentInputs,
+                            [post.id]: e.target.value
+                          })}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleAddComment(post.id);
+                            }
+                          }}
+                        />
+                        <Button 
+                          size="sm" 
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 text-xs px-3"
+                          onClick={() => handleAddComment(post.id)}
+                        >
+                          Send
+                        </Button>
                       </div>
                     </VerificationGate>
                   )}
