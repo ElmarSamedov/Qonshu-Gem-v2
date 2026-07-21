@@ -63,20 +63,16 @@ export default function AuthScreen() {
 
   const handleSocialLogin = async (provider: string) => {
     setError('');
-    const mockEmail = `${provider.toLowerCase()}-${Date.now()}@example.com`;
-    const mockName = `${provider} Neighbor`;
-    await login(mockEmail, 'social123', mockName, {
-      country: 'Azerbaijan',
-      city: 'Baku',
-      town: 'Sabail',
-      district: 'Sabail',
-      street: 'Nizami St',
-      building: '42',
-      entrance: '2',
-      apartment: '15',
-      phone: '+994501234567'
-    });
-    navigate('/');
+    try {
+      if (provider === 'Google') {
+        await useAuthStore.getState().loginWithGoogle();
+        navigate('/');
+      } else {
+        alert(`${provider} login is not supported yet.`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Social login failed');
+    }
   };
 
   return (

@@ -123,7 +123,9 @@ export default function LocalBusinesses() {
                   <div>
                     <div className="flex items-center space-x-2 mb-1">
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{business.name}</h3>
-                      <BadgeCheck className="h-5 w-5 text-blue-500" title={t('business.verified_acc', language)} />
+                      <div title={t('business.verified_acc', language)}>
+                        <BadgeCheck className="h-5 w-5 text-blue-500" />
+                      </div>
                     </div>
                     <div className="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-400 mb-2">
                       <span className="px-2 py-0.5 rounded-full bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10">
@@ -161,7 +163,10 @@ export default function LocalBusinesses() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    onClick={() => alert(`Starting turn-by-turn navigation to ${business.name} at ${business.address}.`)}
+                    onClick={() => {
+                      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.name + ' ' + business.address)}`;
+                      window.open(url, '_blank');
+                    }}
                     className="h-9 w-9 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 self-end" 
                     disabled={isGuest}
                   >

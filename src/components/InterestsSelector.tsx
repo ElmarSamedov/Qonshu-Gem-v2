@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguageStore } from '../store/useLanguageStore';
-import interestsData from '../data/interests.json';
 
 interface InterestNode {
   id: string;
@@ -25,9 +24,19 @@ export default function InterestsSelector({ selectedIds, onChange }: InterestsSe
   const [selectedLevel4, setSelectedLevel4] = useState('');
   
   const [interests, setInterests] = useState<InterestNode[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setInterests(interestsData as InterestNode[]);
+    fetch('/interests.json')
+      .then(res => res.json())
+      .then(data => {
+        setInterests(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load interests', err);
+        setLoading(false);
+      });
   }, []);
 
   const handleAddInterest = () => {
@@ -59,6 +68,10 @@ export default function InterestsSelector({ selectedIds, onChange }: InterestsSe
   const level2Options = selectedLevel1 ? getOptions('subcategory', selectedLevel1) : [];
   const level3Options = selectedLevel2 ? getOptions('refinement', selectedLevel2) : [];
   const level4Options = selectedLevel3 ? getOptions('specialization', selectedLevel3) : [];
+
+  if (loading) {
+    return <div className="text-sm text-slate-500">Loading interests...</div>;
+  }
 
   return (
     <div className="space-y-4">

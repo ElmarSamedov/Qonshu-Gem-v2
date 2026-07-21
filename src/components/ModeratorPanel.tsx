@@ -29,11 +29,11 @@ export default function ModeratorPanel() {
     );
   }
 
-  const handleApprove = (id: number) => {
+  const handleApprove = (id: string) => {
     approveRequest(id);
   };
 
-  const handleReject = (id: number) => {
+  const handleReject = (id: string) => {
     rejectRequest(id);
   };
 
@@ -200,15 +200,13 @@ export default function ModeratorPanel() {
           .filter(r => r.status === 'pending')
           .filter(r => {
             if (filterNsfw) {
-              const text = `${r.reason} ${r.content}`.toLowerCase();
-              return text.includes('nsfw') || text.includes('inappropriate');
+              return r.aiScores ? r.aiScores.nsfw > 0.6 : false;
             }
             return true;
           })
           .filter(r => {
             if (filterArLaw) {
-              const text = `${r.reason} ${r.content}`.toLowerCase();
-              return text.includes('ar_law') || text.includes('ar law') || text.includes('law') || text.includes('qanun') || text.includes('закон') || text.includes('illegal');
+              return r.aiScores ? r.aiScores.arLaw > 0.6 : false;
             }
             return true;
           });
@@ -266,6 +264,16 @@ export default function ModeratorPanel() {
                         <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10 inline-block">
                           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('mod.author', language)}: <span className="text-slate-900 dark:text-white">{report.author}</span></p>
                           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1"><Flag className="h-3 w-3 inline mr-1 text-red-400"/> {t('mod.reason', language)}: {report.reason}</p>
+                          {report.aiScores && (
+                            <div className="mt-2 flex gap-3 text-xs">
+                              <span className={`px-2 py-1 rounded ${report.aiScores.nsfw > 0.6 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                                AI NSFW: {(report.aiScores.nsfw * 100).toFixed(0)}%
+                              </span>
+                              <span className={`px-2 py-1 rounded ${report.aiScores.arLaw > 0.6 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                                AI AR Law: {(report.aiScores.arLaw * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">

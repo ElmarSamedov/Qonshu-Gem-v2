@@ -1,8 +1,16 @@
 import { create } from 'zustand';
 import { useAuthStore } from './useAuthStore';
+import { db } from '../lib/firebase';
+import { 
+  collection, 
+  onSnapshot, 
+  setDoc, 
+  doc, 
+  updateDoc 
+} from 'firebase/firestore';
 
 export interface VerificationRequest {
-  id: number;
+  id: string;
   userId: string;
   name: string;
   district: string;
@@ -14,59 +22,59 @@ export interface VerificationRequest {
 
 interface VerificationStore {
   requests: VerificationRequest[];
-  addRequest: (request: Omit<VerificationRequest, 'id' | 'status' | 'date'>) => void;
-  approveRequest: (id: number) => void;
-  rejectRequest: (id: number) => void;
+  addRequest: (request: Omit<VerificationRequest, 'id' | 'status' | 'date'>) => Promise<void>;
+  approveRequest: (id: string) => Promise<void>;
+  rejectRequest: (id: string) => Promise<void>;
+  initListener: () => () => void;
 }
 
 export const useVerificationStore = create<VerificationStore>((set, get) => ({
-  requests: [
-    {
-      id: 1,
-      userId: 'user-ali',
-      name: 'Ali M.',
-      district: 'Nasimi',
-      documentUrl: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop',
+  requests: [],
+  addRequest: async (req) => {
+    const newId = 'req-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    const newRequest: VerificationRequest = {
+      ...req,
+      id: newId,
       status: 'pending',
-      date: '2026-07-18',
-      locationId: 'loc-ali'
-    },
-    {
-      id: 2,
-      userId: 'user-zahra',
-      name: 'Zahra K.',
-      district: 'Nasimi',
-      documentUrl: 'https://images.unsplash.com/photo-1618042164219-62c820f10723?w=400&h=300&fit=crop',
-      status: 'pending',
-      date: '2026-07-19',
-      locationId: 'loc-zahra'
+      date: new Date().toISOString().split('T')[0]
+    };
+    try {
+      await setDoc(doc(db, 'verification_requests', newId), newRequest);
+    } catch (e) {
+      console.error('Failed to save verification request:', e);
     }
-  ],
-  addRequest: (req) => set((state) => ({
-    requests: [
-      ...state.requests,
-      {
-        ...req,
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        status: 'pending',
-        date: new Date().toISOString().split('T')[0]
-      }
-    ]
-  })),
-  approveRequest: (id) => {
+  },
+  approveRequest: async (id) => {
     const request = get().requests.find(r => r.id === id);
     if (request) {
       const auth = useAuthStore.getState();
-      // If the request belongs to the currently logged-in user, verify their location
       if (auth.user && auth.user.uid === request.userId) {
-        auth.verifyLocation(request.locationId, 'docs');
+        await auth.verifyLocation(request.locationId, 'docs');
+      }
+      try {
+        await updateDoc(doc(db, 'verification_requests', id), { status: 'approved' });
+      } catch (e) {
+        console.error('Failed to approve verification request:', e);
       }
     }
-    set((state) => ({
-      requests: state.requests.map(r => r.id === id ? { ...r, status: 'approved' } : r)
-    }));
   },
-  rejectRequest: (id) => set((state) => ({
-    requests: state.requests.map(r => r.id === id ? { ...r, status: 'rejected' } : r)
-  }))
+  rejectRequest: async (id) => {
+    try {
+      await updateDoc(doc(db, 'verification_requests', id), { status: 'rejected' });
+    } catch (e) {
+      console.error('Failed to reject verification request:', e);
+    }
+  },
+  initListener: () => {
+    const unsubscribe = onSnapshot(collection(db, 'verification_requests'), (snapshot) => {
+      const requestsList: VerificationRequest[] = [];
+      snapshot.forEach((doc) => {
+        requestsList.push(doc.data() as VerificationRequest);
+      });
+      set({ requests: requestsList });
+    }, (error) => {
+      console.error('Failed to fetch verification requests from Firestore:', error);
+    });
+    return unsubscribe;
+  }
 }));

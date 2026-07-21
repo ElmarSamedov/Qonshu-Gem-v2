@@ -26,7 +26,7 @@ export default function MutualAid() {
   const { user } = useAuthStore();
   const isGuest = user?.role === 'guest';
   const [showForm, setShowForm] = useState(false);
-  const [newRequest, setNewRequest] = useState({ title: '', description: '', type: 'service' as const });
+  const [newRequest, setNewRequest] = useState<{title: string; description: string; type: 'borrow' | 'service'}>({ title: '', description: '', type: 'service' });
   const { language } = useLanguageStore();
   const { openOrCreateChat } = useChatStore();
   const navigate = useNavigate();

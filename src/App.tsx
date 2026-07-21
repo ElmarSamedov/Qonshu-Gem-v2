@@ -18,8 +18,12 @@ import Chat from './components/Chat';
 import GuestWelcome from './components/GuestWelcome';
 
 export default function App() {
-  const { user } = useAuthStore();
+  const { user, initAuthListener } = useAuthStore();
   const { theme } = useThemeStore();
+
+  useEffect(() => {
+    initAuthListener();
+  }, [initAuthListener]);
 
   useEffect(() => {
     if (theme === 'dark') {

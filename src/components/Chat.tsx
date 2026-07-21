@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Send, Store, User, ArrowLeft, Smile, Reply, Users, Plus, Mic, Square, Trash2 } from 'lucide-react';
+import { Send, Store, User, ArrowLeft, Smile, Reply, Users, Plus, Mic, Square, Trash2, X } from 'lucide-react';
 import VerificationGate from './VerificationGate';
 import { useChatStore, Message, ChatSession } from '../store/useChatStore';
 
@@ -14,6 +14,7 @@ export default function Chat() {
   // Audio recording state
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [replyTo, setReplyTo] = useState<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -31,8 +32,14 @@ export default function Chat() {
     if (e) e.preventDefault();
     if ((!newMessage.trim() && !audioUrl) || !activeChat) return;
 
-    sendMessage(activeChat.id, newMessage, audioUrl);
+    let finalMessage = newMessage;
+    if (replyTo) {
+      finalMessage = `[Replying to: ${replyTo.text ? replyTo.text.substring(0, 30) : 'Voice message'}...] \n\n${newMessage}`;
+    }
+
+    sendMessage(activeChat.id, finalMessage, audioUrl);
     setNewMessage('');
+    setReplyTo(null);
   };
 
 
@@ -164,7 +171,7 @@ export default function Chat() {
                       </audio>
                     )}
                      <span className="text-[10px] opacity-60 mt-1 block text-right">
-                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </span>
 
                     {msg.reactions && msg.reactions.length > 0 && (
@@ -184,7 +191,7 @@ export default function Chat() {
                         <Smile className="w-3 h-3" />
                       </button>
                       <button 
-                        onClick={() => setNewMessage(`Replying to "${msg.text ? msg.text.substring(0, 15) : 'voice message'}...": `)}
+                        onClick={() => setReplyTo(msg)}
                         className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 shadow flex items-center justify-center text-slate-500 hover:text-blue-500 transition-colors"
                       >
                         <Reply className="w-3 h-3" />
@@ -196,7 +203,16 @@ export default function Chat() {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-black/10 dark:border-white/10 bg-white/40 dark:bg-black/20">
+            <div className="p-4 border-t border-black/10 dark:border-white/10 bg-white/40 dark:bg-black/20 flex flex-col">
+              {replyTo && (
+                <div className="mb-2 p-2 bg-black/5 dark:bg-white/5 rounded flex items-center justify-between">
+                  <div className="text-xs text-slate-600 dark:text-slate-400 border-l-2 border-indigo-500 pl-2">
+                    <span className="font-semibold block">Replying to:</span>
+                    <span className="truncate block w-48">{replyTo.text ? replyTo.text : 'Voice message'}</span>
+                  </div>
+                  <button onClick={() => setReplyTo(null)} className="text-slate-500 hover:text-slate-700"><X className="w-4 h-4"/></button>
+                </div>
+              )}
               <VerificationGate>
                 {isRecording ? (
                   <div className="flex items-center justify-between space-x-2 bg-red-500/10 dark:bg-red-500/20 rounded-full px-4 py-2 border border-red-500/20">

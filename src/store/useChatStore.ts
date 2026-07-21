@@ -1,10 +1,20 @@
 import { create } from 'zustand';
+import { db } from '../lib/firebase';
+import { 
+  collection, 
+  onSnapshot, 
+  setDoc, 
+  doc, 
+  query, 
+  orderBy, 
+  updateDoc 
+} from 'firebase/firestore';
 
 export interface Message {
-  id: number;
+  id: string;
   text: string;
   senderId: string;
-  timestamp: Date;
+  timestamp: string;
   audioUrl?: string;
   reactions?: string[];
 }
@@ -21,62 +31,127 @@ export interface ChatSession {
 interface ChatState {
   chats: ChatSession[];
   activeChatId: string | null;
+  activeMessagesUnsubscribe: (() => void) | null;
   setActiveChatId: (id: string | null) => void;
-  openOrCreateChat: (id: string, name: string, type: ChatSession['type']) => void;
-  sendMessage: (chatId: string, text: string, audioUrl?: string) => void;
-  toggleReaction: (chatId: string, messageId: number, emoji: string) => void;
+  openOrCreateChat: (id: string, name: string, type: ChatSession['type']) => Promise<void>;
+  sendMessage: (chatId: string, text: string, audioUrl?: string, senderId?: string) => Promise<void>;
+  toggleReaction: (chatId: string, messageId: string, emoji: string) => Promise<void>;
+  initListener: () => () => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
-  chats: [
-    {
-      id: '1', name: 'Baku Roasters Cafe', type: 'business', unread: 1,
-      lastMessage: 'Your coffee beans are ready for pickup!',
-      messages: [
-        { id: 1, text: 'Hi, do you have Ethiopian Yirgacheffe in stock?', senderId: 'me', timestamp: new Date(Date.now() - 3600000), reactions: ['👍'] },
-        { id: 2, text: 'Yes, we just roasted a fresh batch yesterday. Shall I reserve a bag for you?', senderId: '1', timestamp: new Date(Date.now() - 3500000), reactions: [] },
-      ]
-    },
-    {
-      id: '2', name: 'Leyla (Neighbor)', type: 'neighbor', unread: 0,
-      lastMessage: 'Sure, I can lend you the drill.',
-      messages: [
-        { id: 1, text: 'Hi Leyla, I saw your post about the power drill.', senderId: 'me', timestamp: new Date(Date.now() - 86400000), reactions: [] },
-        { id: 2, text: 'Sure, I can lend you the drill.', senderId: '2', timestamp: new Date(Date.now() - 82800000), reactions: ['❤️'] },
-      ]
-    }
-  ],
+  chats: [],
   activeChatId: null,
-  setActiveChatId: (id) => set({ activeChatId: id }),
-  openOrCreateChat: (id, name, type) => {
+  activeMessagesUnsubscribe: null,
+  setActiveChatId: (id) => {
+    set({ activeChatId: id });
+    
+    // Clear old messages subscription if any
+    const oldUnsub = get().activeMessagesUnsubscribe;
+    if (oldUnsub) {
+      oldUnsub();
+    }
+
+    if (id) {
+      const q = query(collection(db, 'chats', id, 'messages'), orderBy('timestamp', 'asc'));
+      const unsub = onSnapshot(q, (snapshot) => {
+        const messagesList: Message[] = [];
+        snapshot.forEach((doc) => {
+          messagesList.push({
+            id: doc.id,
+            ...doc.data()
+          } as Message);
+        });
+
+        // Merge messages into the active chat session in state
+        set(state => ({
+          chats: state.chats.map(c => c.id === id ? { ...c, messages: messagesList } : c)
+        }));
+      });
+      set({ activeMessagesUnsubscribe: unsub as any });
+    }
+  },
+  openOrCreateChat: async (id, name, type) => {
     const exists = get().chats.some(c => c.id === id);
     if (!exists) {
-      set(state => ({ 
-         chats: [...state.chats, { id, name, type, lastMessage: '', unread: 0, messages: [] }] 
-      }));
+      const newChat: Omit<ChatSession, 'messages'> = {
+        id,
+        name,
+        type,
+        lastMessage: '',
+        unread: 0
+      };
+      try {
+        await setDoc(doc(db, 'chats', id), newChat);
+      } catch (e) {
+        console.error('Failed to create chat session:', e);
+      }
     }
-    set({ activeChatId: id });
+    get().setActiveChatId(id);
   },
-  sendMessage: (chatId, text, audioUrl) => {
-    set(state => ({
-      chats: state.chats.map(c => c.id === chatId ? {
-        ...c,
-        lastMessage: audioUrl ? '🎤 Voice message' : text,
-        messages: [...c.messages, { id: Date.now(), text, senderId: 'me', timestamp: new Date(), audioUrl, reactions: [] }]
-      } : c)
-    }));
+  sendMessage: async (chatId, text, audioUrl, senderId) => {
+    const resolvedSenderId = senderId || 'me';
+    const messageData = {
+      text,
+      senderId: resolvedSenderId,
+      timestamp: new Date().toISOString(),
+      audioUrl: audioUrl || '',
+      reactions: []
+    };
+    
+    try {
+      // 1. Add message document to subcollection
+      const messageDocRef = doc(collection(db, 'chats', chatId, 'messages'));
+      await setDoc(messageDocRef, messageData);
+
+      // 2. Update chat session lastMessage
+      await updateDoc(doc(db, 'chats', chatId), {
+        lastMessage: audioUrl ? '🎤 Voice message' : text
+      });
+    } catch (e) {
+      console.error('Failed to send message:', e);
+    }
   },
-  toggleReaction: (chatId, messageId, emoji) => {
-    set(state => ({
-      chats: state.chats.map(c => c.id === chatId ? {
-        ...c,
-        messages: c.messages.map(m => m.id === messageId ? {
-          ...m,
-          reactions: m.reactions?.includes(emoji)
-            ? m.reactions.filter(r => r !== emoji)
-            : [...(m.reactions || []), emoji]
-        } : m)
-      } : c)
-    }));
+  toggleReaction: async (chatId, messageId, emoji) => {
+    const chat = get().chats.find(c => c.id === chatId);
+    if (!chat) return;
+    const message = chat.messages.find(m => m.id === messageId);
+    if (!message) return;
+
+    const hasEmoji = message.reactions?.includes(emoji);
+    const updatedReactions = hasEmoji
+      ? (message.reactions || []).filter(r => r !== emoji)
+      : [...(message.reactions || []), emoji];
+
+    try {
+      await updateDoc(doc(db, 'chats', chatId, 'messages', messageId), {
+        reactions: updatedReactions
+      });
+    } catch (e) {
+      console.error('Failed to toggle message reaction:', e);
+    }
+  },
+  initListener: () => {
+    const unsubscribeChats = onSnapshot(collection(db, 'chats'), (snapshot) => {
+      const chatsList: ChatSession[] = [];
+      snapshot.forEach((chatDoc) => {
+        const chatData = chatDoc.data() as Omit<ChatSession, 'messages'>;
+        chatsList.push({
+          ...chatData,
+          messages: get().chats.find(c => c.id === chatDoc.id)?.messages || []
+        });
+      });
+      set({ chats: chatsList });
+    }, (error) => {
+      console.error('Failed to fetch chats from Firestore:', error);
+    });
+
+    return () => {
+      unsubscribeChats();
+      const activeUnsub = get().activeMessagesUnsubscribe;
+      if (activeUnsub) {
+        activeUnsub();
+      }
+    };
   }
 }));

@@ -37,6 +37,8 @@ export default function VerificationGate({ children, compact = false }: { childr
     setSmsCode,
     smsError,
     handleSmsVerification,
+    sendSmsCode,
+    generatedSmsCode,
     file,
     setFile,
   } = useAddressVerification((verified) => {
@@ -280,10 +282,24 @@ export default function VerificationGate({ children, compact = false }: { childr
             <p className="text-sm text-slate-700 dark:text-slate-300">
               Enter your phone number. The number must be registered to your name and address.
             </p>
-            <Input type="tel" placeholder="+994" value={phone} onChange={e => setPhone(e.target.value)} className="bg-white dark:bg-slate-800" />
+            <div className="flex gap-2">
+              <Input type="tel" placeholder="+994..." value={phone} onChange={e => setPhone(e.target.value)} className="bg-white dark:bg-slate-800 flex-1" />
+              <Button type="button" size="sm" variant="outline" onClick={sendSmsCode} disabled={phone.length < 8}>
+                Send Code
+              </Button>
+            </div>
             
-            {phone.length > 8 && (
-              <Input type="text" placeholder="SMS Code (try 1234)" value={smsCode} onChange={e => setSmsCode(e.target.value)} className="bg-white dark:bg-slate-800" />
+            {generatedSmsCode && (
+              <div className="space-y-2">
+                <Input 
+                  type="text" 
+                  placeholder="Enter the 4-digit code sent to your phone" 
+                  value={smsCode} 
+                  onChange={e => setSmsCode(e.target.value)} 
+                  className="bg-white dark:bg-slate-800" 
+                />
+                <p className="text-xs text-indigo-500 font-medium">Tip: Use the code simulated in the SMS alert dialogue.</p>
+              </div>
             )}
             
             {smsError && <p className="text-sm text-red-500">{smsError}</p>}
@@ -291,6 +307,7 @@ export default function VerificationGate({ children, compact = false }: { childr
             <Button 
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               onClick={handleSmsVerification}
+              disabled={!generatedSmsCode}
             >
               Verify Phone
             </Button>

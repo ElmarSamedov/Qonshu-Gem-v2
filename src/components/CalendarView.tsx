@@ -5,6 +5,7 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Gift, Hammer, Part
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { useAuthStore } from '../store/useAuthStore';
 import { Input } from './ui/input';
+import EventModal from './EventModal';
 
 interface Event {
   id: string;
@@ -12,10 +13,14 @@ interface Event {
   title: string;
   type: 'birthday' | 'renovation' | 'holiday' | 'community';
   author?: string;
+  attendees?: string[]; // user ids
+  notGoing?: string[];
+  maybe?: string[];
+  description?: string;
 }
 
 const INITIAL_EVENTS: Event[] = [
-  { id: '1', date: new Date(2026, 6, 15), title: 'Novruz Holiday', type: 'holiday' },
+  { id: '1', date: new Date(2026, 6, 15), title: 'Novruz Holiday', type: 'holiday', attendees: ['user-1'], maybe: ['user-2'], notGoing: [] },
   { id: '2', date: new Date(2026, 6, 20), title: 'Apt 4B Renovation', type: 'renovation', author: 'Elmar' },
   { id: '3', date: new Date(2026, 6, 25), title: 'Courtyard Meeting', type: 'community' }
 ];
@@ -29,21 +34,38 @@ export default function CalendarView() {
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventType, setNewEventType] = useState<Event['type']>('community');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const handleAddEvent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEventTitle.trim() || !newEventDate) return;
-    // We convert newEventDate to Date. Note: new Date(newEventDate) parses yyyy-mm-dd correctly.
-    // However, sometimes it is parsed as UTC midnight, which might be off by a day in local timezone depending on implementation.
-    // To be safe, we parse it with hyphens replaced or let standard Date construct it and set hours to noon to avoid off-by-one errors in local views.
     const dateObj = new Date(newEventDate + 'T12:00:00');
-    setEvents([...events, { id: Date.now().toString(), date: dateObj, title: newEventTitle, type: newEventType, author: user?.name }]);
+    setEvents([...events, { id: Date.now().toString(), date: dateObj, title: newEventTitle, type: newEventType, author: user?.name, attendees: [], notGoing: [], maybe: [] }]);
     setShowEventForm(false);
     setNewEventTitle('');
     setNewEventDate('');
   };
 
-  // If user has a public birthday, we can dynamically add it
+  const handleRsvp = (eventId: string, status: 'coming' | 'not_going' | 'maybe') => {
+    if (!user) return;
+    setEvents(events.map(ev => {
+      if (ev.id !== eventId) return ev;
+      let { attendees = [], notGoing = [], maybe = [] } = ev;
+      
+      attendees = attendees.filter(id => id !== user.uid);
+      notGoing = notGoing.filter(id => id !== user.uid);
+      maybe = maybe.filter(id => id !== user.uid);
+      
+      if (status === 'coming') attendees.push(user.uid);
+      if (status === 'not_going') notGoing.push(user.uid);
+      if (status === 'maybe') maybe.push(user.uid);
+      
+      const updated = { ...ev, attendees, notGoing, maybe };
+      if (selectedEvent?.id === eventId) setSelectedEvent(updated);
+      return updated;
+    }));
+  };
+
   React.useEffect(() => {
     if (user?.birthday && user.allowBirthdayPublic) {
       const bday = new Date(user.birthday);
@@ -75,18 +97,19 @@ export default function CalendarView() {
   const EventLabel: React.FC<{ event: Event }> = ({ event }) => {
     switch (event.type) {
       case 'birthday':
-        return <div className="flex items-center space-x-1 text-[10px] bg-pink-500/20 text-pink-300 px-1.5 py-0.5 rounded border border-pink-500/30 w-full truncate"><Gift className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
+        return <div onClick={() => setSelectedEvent(event)} className="flex items-center space-x-1 text-[10px] bg-pink-500/20 text-pink-300 px-1.5 py-0.5 rounded border border-pink-500/30 w-full truncate cursor-pointer hover:opacity-80"><Gift className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
       case 'renovation':
-        return <div className="flex items-center space-x-1 text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded border border-orange-500/30 w-full truncate"><Hammer className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
+        return <div onClick={() => setSelectedEvent(event)} className="flex items-center space-x-1 text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded border border-orange-500/30 w-full truncate cursor-pointer hover:opacity-80"><Hammer className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
       case 'holiday':
-        return <div className="flex items-center space-x-1 text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30 w-full truncate"><PartyPopper className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
+        return <div onClick={() => setSelectedEvent(event)} className="flex items-center space-x-1 text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30 w-full truncate cursor-pointer hover:opacity-80"><PartyPopper className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
       case 'community':
-        return <div className="flex items-center space-x-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30 w-full truncate"><Users className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
+        return <div onClick={() => setSelectedEvent(event)} className="flex items-center space-x-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30 w-full truncate cursor-pointer hover:opacity-80"><Users className="w-3 h-3 flex-shrink-0"/> <span className="truncate">{event.title}</span></div>;
     }
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      {selectedEvent && <EventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} onRsvp={handleRsvp} />}
       <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-4">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Calendar & Events</h2>
       </div>

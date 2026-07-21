@@ -2,26 +2,33 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Tag, MapPin, Plus, X, HandHeart, RefreshCw, Flag, Eye, ThumbsUp, Lock } from 'lucide-react';
+import { Tag, MapPin, Plus, X, HandHeart, RefreshCw, Flag, Eye, ThumbsUp, Lock, MessageCircle } from 'lucide-react';
 import { useModerationStore } from '../store/useModerationStore';
 import VerificationGate from './VerificationGate';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
 import { useAuthStore } from '../store/useAuthStore';
+import { useChatStore } from '../store/useChatStore';
+import { useNavigate } from 'react-router-dom';
+
+import MarketplaceProductModal from './MarketplaceProductModal';
 
 export default function Marketplace() {
   const { user } = useAuthStore();
   const isGuest = user?.role === 'guest';
+  const { openOrCreateChat } = useChatStore();
+  const navigate = useNavigate();
   const { addReport } = useModerationStore();
   const { language } = useLanguageStore();
   const [items, setItems] = useState([
-    { id: 1, title: 'IKEA Office Chair', type: 'sell', price: '45 ₼', category: 'Furniture', image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=400&h=300&fit=crop', distance: '100m', distanceNum: 100, views: 12, helpful: 3 },
-    { id: 2, title: 'Bicycle (Adult)', type: 'sell', price: '120 ₼', category: 'Sports', image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&h=300&fit=crop', distance: '300m', distanceNum: 300, views: 45, helpful: 8 },
-    { id: 3, title: 'Moving Boxes', type: 'giveaway', price: 'Free', category: 'Other', image: 'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=300&fit=crop', distance: '50m', distanceNum: 50, views: 8, helpful: 1 },
-    { id: 4, title: 'Power Drill', type: 'lend', price: 'Lend', category: 'Tools', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop', distance: '400m', distanceNum: 400, views: 32, helpful: 5 },
+    { id: 1, title: 'IKEA Office Chair', type: 'sell', price: '45 ₼', category: 'Furniture', image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=400&h=300&fit=crop', images: ['https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=400&h=300&fit=crop', 'https://images.unsplash.com/photo-1592078615290-07e15822363a?w=400&h=300&fit=crop'], description: 'Used for 6 months. Excellent condition, no scratches.', distance: '100m', distanceNum: 100, views: 12, helpful: 3 },
+    { id: 2, title: 'Bicycle (Adult)', type: 'sell', price: '120 ₼', category: 'Sports', image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&h=300&fit=crop', images: ['https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&h=300&fit=crop'], description: 'Great for city riding. Needs some oil on the chain.', distance: '300m', distanceNum: 300, views: 45, helpful: 8 },
+    { id: 3, title: 'Moving Boxes', type: 'giveaway', price: 'Free', category: 'Other', image: 'https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=300&fit=crop', images: ['https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=300&fit=crop'], description: '10 large boxes left over from my move last week. Pick up anytime.', distance: '50m', distanceNum: 50, views: 8, helpful: 1 },
+    { id: 4, title: 'Power Drill', type: 'lend', price: 'Lend', category: 'Tools', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop', images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop'], description: 'Available for a few days. Comes with basic drill bits.', distance: '400m', distanceNum: 400, views: 32, helpful: 5 },
   ]);
   const [filter, setFilter] = useState('closest');
   const [showForm, setShowForm] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
   const [newItem, setNewItem] = useState({
     title: '',
     type: 'giveaway',
@@ -48,6 +55,8 @@ export default function Marketplace() {
         price: newItem.price || 'Free',
         category: newItem.category,
         image: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400&h=300&fit=crop',
+        images: ['https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400&h=300&fit=crop'],
+        description: 'New listing',
         distance: '0m',
         distanceNum: 0,
         views: 0,
@@ -60,6 +69,8 @@ export default function Marketplace() {
   };
 
   const handleItemClick = (id: number) => {
+    const item = items.find(i => i.id === id);
+    if (item) setSelectedItem(item);
     setItems(items.map(item => item.id === id ? { ...item, views: item.views + 1 } : item));
   };
 
@@ -86,6 +97,7 @@ export default function Marketplace() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-20">
+      {selectedItem && <MarketplaceProductModal item={selectedItem} onClose={() => setSelectedItem(null)} />}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('market.title', language)}</h2>
@@ -213,7 +225,7 @@ export default function Marketplace() {
                   className="h-6 w-6 p-0 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur border border-black/10 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-red-400 hover:bg-red-500/20"
                   onClick={(e) => {
                     e.stopPropagation();
-                    addReport({ type: 'listing', contentId: item.id, content: item.title, author: 'Anonymous', reason: 'Flagged by user' });
+                    addReport({ type: 'listing', contentId: String(item.id), content: item.title, author: 'Anonymous', reason: 'Flagged by user' });
                   }}
                 >
                   <Flag className="h-3 w-3" />
@@ -262,10 +274,24 @@ export default function Marketplace() {
                   </div>
                 )}
                 {!isGuest && (
-                  <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {item.distance} {t('aid.away', language)}
-                  </div>
+                  <>
+                    <div className="flex items-center text-xs text-slate-500 dark:text-slate-500 font-medium">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {item.distance} {t('aid.away', language)}
+                    </div>
+                    <Button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openOrCreateChat(`seller-${item.id}`, 'Seller', 'neighbor');
+                        navigate('/chat');
+                      }}
+                      className="w-full mt-2 h-8 text-xs bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 text-slate-900 dark:text-white border-0"
+                      variant="outline"
+                    >
+                      <MessageCircle className="h-3 w-3 mr-1" />
+                      Contact Seller
+                    </Button>
+                  </>
                 )}
               </div>
             </CardContent>

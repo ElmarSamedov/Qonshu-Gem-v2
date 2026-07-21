@@ -95,7 +95,7 @@ export function generateApartmentId(apartment: string, buildingId: string): stri
  * User ID written as:
  * [first two letters of country] [first two letters of city] [first two letters of street] [last two digits of apartment (padded)] [last two digits of phone] [registration date hh:mm:ss]
  */
-export function generateUserId(params: {
+export function generateUserId(params?: {
   country?: string;
   city?: string;
   street?: string;
@@ -103,31 +103,12 @@ export function generateUserId(params: {
   phone?: string;
   registrationDate?: Date;
 }): string {
-  const ctry = cleanCode(params.country || 'AZ', 2);
-  const city = cleanCode(params.city || 'BA', 2);
-  const street = cleanCode(params.street || 'ST', 2);
-  
-  // Last two digits of apartment, padded to 2 with leading 0 if single digit
-  const aptRaw = String(params.apartment || '01').trim();
-  let apt = '';
-  const digits = aptRaw.replace(/\D/g, ''); // extract digits if any
-  if (digits.length > 0) {
-    apt = digits.slice(-2).padStart(2, '0');
-  } else {
-    // fallback if no digits (e.g. "Penthouse" -> "PH")
-    apt = aptRaw.slice(-2).padStart(2, '0').toUpperCase();
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
   }
-  
-  // Last two digits of phone number
-  const phoneRaw = String(params.phone || '00').replace(/\D/g, '');
-  const phone = phoneRaw.slice(-2).padStart(2, '0');
-  
-  // Registration time as hh:mm:ss
-  const regDate = params.registrationDate || new Date();
-  const hours = String(regDate.getHours()).padStart(2, '0');
-  const minutes = String(regDate.getMinutes()).padStart(2, '0');
-  const seconds = String(regDate.getSeconds()).padStart(2, '0');
-  const regTime = `${hours}:${minutes}:${seconds}`;
-  
-  return `${ctry}${city}${street}${apt}${phone}${regTime}`;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }

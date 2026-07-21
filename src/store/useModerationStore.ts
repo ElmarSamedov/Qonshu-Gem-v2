@@ -1,47 +1,94 @@
 import { create } from 'zustand';
+import { db } from '../lib/firebase';
+import { 
+  collection, 
+  onSnapshot, 
+  setDoc, 
+  doc, 
+  updateDoc 
+} from 'firebase/firestore';
+
+import { isValidTransition } from '../lib/statusTransitions';
 
 export interface Report {
   id: string;
   type: 'post' | 'listing';
-  contentId: string | number;
+  contentId: string;
   content: string;
   author: string;
   reason: string;
   timestamp: string;
   status: 'pending' | 'resolved' | 'dismissed';
+  aiScores?: {
+    nsfw: number;
+    arLaw: number;
+  };
 }
 
 interface ModerationState {
   reports: Report[];
-  addReport: (report: Omit<Report, 'id' | 'timestamp' | 'status'>) => void;
-  updateReportStatus: (id: string, status: Report['status']) => void;
+  addReport: (report: Omit<Report, 'id' | 'timestamp' | 'status' | 'aiScores'>) => Promise<void>;
+  updateReportStatus: (id: string, status: Report['status']) => Promise<void>;
+  initListener: () => () => void;
 }
 
 export const useModerationStore = create<ModerationState>((set) => ({
-  reports: [
-    {
-      id: '1',
-      type: 'post',
-      contentId: 99,
-      content: 'This is a test post that someone found offensive.',
-      author: 'John D.',
-      reason: 'Inappropriate content',
-      timestamp: new Date().toISOString(),
-      status: 'pending'
+  reports: [],
+  addReport: async (report) => {
+    const id = Math.random().toString(36).substring(7);
+    
+    // Simulate AI Moderation scoring
+    const textToAnalyze = `${report.reason} ${report.content}`.toLowerCase();
+    let nsfwScore = Math.random() * 0.3; // Base low score
+    let arLawScore = Math.random() * 0.3;
+    
+    // Slight bias for literal matches to simulate the AI catching obvious ones
+    if (textToAnalyze.includes('nsfw') || textToAnalyze.includes('inappropriate') || textToAnalyze.includes('naked') || textToAnalyze.includes('adult')) {
+      nsfwScore += 0.6;
     }
-  ],
-  addReport: (report) => set((state) => ({
-    reports: [
-      ...state.reports,
-      {
-        ...report,
-        id: Math.random().toString(36).substring(7),
-        timestamp: new Date().toISOString(),
-        status: 'pending'
+    if (textToAnalyze.includes('law') || textToAnalyze.includes('illegal') || textToAnalyze.includes('qanun') || textToAnalyze.includes('закон')) {
+      arLawScore += 0.6;
+    }
+
+    const newReport: Report = {
+      ...report,
+      id,
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+      aiScores: {
+        nsfw: Math.min(1, nsfwScore),
+        arLaw: Math.min(1, arLawScore)
       }
-    ]
-  })),
-  updateReportStatus: (id, status) => set((state) => ({
-    reports: state.reports.map((r) => r.id === id ? { ...r, status } : r)
-  }))
+    };
+    try {
+      await setDoc(doc(db, 'reports', id), newReport);
+    } catch (e) {
+      console.error('Failed to add moderation report:', e);
+    }
+  },
+  updateReportStatus: async (id, status) => {
+    const currentState = useModerationStore.getState().reports.find(r => r.id === id)?.status || 'pending';
+    if (!isValidTransition(currentState, status)) {
+      console.warn(`Invalid state transition from ${currentState} to ${status}`);
+      return;
+    }
+    
+    try {
+      await updateDoc(doc(db, 'reports', id), { status });
+    } catch (e) {
+      console.error('Failed to update report status:', e);
+    }
+  },
+  initListener: () => {
+    const unsubscribe = onSnapshot(collection(db, 'reports'), (snapshot) => {
+      const reportsList: Report[] = [];
+      snapshot.forEach((doc) => {
+        reportsList.push(doc.data() as Report);
+      });
+      set({ reports: reportsList });
+    }, (error) => {
+      console.error('Failed to fetch reports from Firestore:', error);
+    });
+    return unsubscribe;
+  }
 }));

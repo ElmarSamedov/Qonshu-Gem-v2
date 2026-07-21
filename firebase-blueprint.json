@@ -1,0 +1,197 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account registration and location credentials",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "avatar": { "type": "string" },
+        "role": { "type": "string", "enum": ["guest", "user", "moderator", "admin", "business"] },
+        "trust_level": { "type": "integer" },
+        "trust_scores": {
+          "type": "object",
+          "properties": {
+            "identity": { "type": "integer" },
+            "location": { "type": "integer" },
+            "community": { "type": "integer" },
+            "overall": { "type": "integer" }
+          }
+        },
+        "locations": {
+          "type": "array"
+        },
+        "activeLocationId": { "type": "string" },
+        "is_verified": { "type": "boolean" },
+        "country": { "type": "string" },
+        "countryId": { "type": "string" },
+        "city": { "type": "string" },
+        "cityId": { "type": "string" },
+        "town": { "type": "string" },
+        "townId": { "type": "string" },
+        "district": { "type": "string" },
+        "districtId": { "type": "string" },
+        "street": { "type": "string" },
+        "streetId": { "type": "string" },
+        "building": { "type": "string" },
+        "buildingId": { "type": "string" },
+        "entrance": { "type": "string" },
+        "entranceId": { "type": "string" },
+        "apartment": { "type": "string" },
+        "apartmentId": { "type": "string" },
+        "registrationDate": { "type": "string" }
+      },
+      "required": ["uid", "name", "role"]
+    },
+    "Post": {
+      "title": "Feed Post",
+      "description": "Neighborhood bulletin and alert posts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "author": { "type": "string" },
+        "authorId": { "type": "string" },
+        "avatar": { "type": "string" },
+        "type": { "type": "string", "enum": ["feed", "alert", "question", "free_stuff", "lost_pet"] },
+        "content": { "type": "string" },
+        "time": { "type": "string" },
+        "likes": { "type": "integer" },
+        "verified": { "type": "boolean" },
+        "pinned": { "type": "boolean" },
+        "hidden": { "type": "boolean" },
+        "locationScope": { "type": "string", "enum": ["all", "building", "landing", "courtyard", "neighborhood"] },
+        "views": { "type": "integer" },
+        "clicks": { "type": "integer" },
+        "image": { "type": "string" }
+      },
+      "required": ["author", "authorId", "content", "type"]
+    },
+    "Comment": {
+      "title": "Post Comment",
+      "description": "Comments left on feed posts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "author": { "type": "string" },
+        "authorId": { "type": "string" },
+        "avatar": { "type": "string" },
+        "content": { "type": "string" },
+        "time": { "type": "string" },
+        "reactions": { "type": "array" }
+      },
+      "required": ["author", "authorId", "content"]
+    },
+    "Moment": {
+      "title": "Moment",
+      "description": "Visual visual stories uploaded by users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "author": { "type": "string" },
+        "authorId": { "type": "string" },
+        "avatar": { "type": "string" },
+        "image": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "reactions": { "type": "array" }
+      },
+      "required": ["author", "authorId", "image"]
+    },
+    "ChatSession": {
+      "title": "Chat Session",
+      "description": "Active conversational channels between residents and businesses",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["direct", "business"] },
+        "lastMessage": { "type": "string" },
+        "unread": { "type": "integer" },
+        "participants": { "type": "array" }
+      },
+      "required": ["id", "name", "type"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "Individual messages within a conversational channel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "reactions": { "type": "array" }
+      },
+      "required": ["id", "text", "senderId", "timestamp"]
+    },
+    "VerificationRequest": {
+      "title": "Verification Request",
+      "description": "Official requests for address/resident verification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "district": { "type": "string" },
+        "documentUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "date": { "type": "string" },
+        "locationId": { "type": "string" }
+      },
+      "required": ["userId", "name", "documentUrl", "status"]
+    },
+    "Report": {
+      "title": "Moderation Report",
+      "description": "Complaints or reports submitted on posts/listings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["post", "listing"] },
+        "contentId": { "type": "string" },
+        "content": { "type": "string" },
+        "author": { "type": "string" },
+        "reason": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "resolved", "dismissed"] }
+      },
+      "required": ["type", "contentId", "reason", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles indexed by UID"
+    },
+    "/posts/{postId}": {
+      "schema": { "$ref": "#/entities/Post" },
+      "description": "Main neighborhood posts"
+    },
+    "/posts/{postId}/comments/{commentId}": {
+      "schema": { "$ref": "#/entities/Comment" },
+      "description": "Post comments"
+    },
+    "/moments/{momentId}": {
+      "schema": { "$ref": "#/entities/Moment" },
+      "description": "Visual visual stories uploaded by users"
+    },
+    "/chats/{chatId}": {
+      "schema": { "$ref": "#/entities/ChatSession" },
+      "description": "Active conversational channels"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Individual messages within a conversational channel"
+    },
+    "/verification_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/VerificationRequest" },
+      "description": "Official requests for address/resident verification"
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/Report" },
+      "description": "Complaints or reports submitted on posts/listings"
+    }
+  }
+}

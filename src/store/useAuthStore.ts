@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { calculateNewTrustScores } from '../lib/trustScores';
 import { 
   generateCountryId,
   generateCityId,
@@ -10,6 +11,21 @@ import {
   generateApartmentId,
   generateUserId
 } from '../lib/idGenerator';
+import { auth, db } from '../lib/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc 
+} from 'firebase/firestore';
 
 export interface TrustScores {
   identity: number;
@@ -95,6 +111,8 @@ export interface User {
   childrenCount?: number;
   childrenAges?: string;
   interests?: string[];
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
   business_details?: {
     category: string;
     address: string;
@@ -105,7 +123,7 @@ export interface User {
 interface AuthState {
   user: User | null;
   setUser: (user: User | null) => void;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: Partial<User>) => Promise<void>;
   login: (
     email: string, 
     pass: string, 
@@ -123,11 +141,13 @@ interface AuthState {
     }
   ) => Promise<void>;
   createGuestSession: () => void;
-  verifyLocation: (locationId: string, method: string) => void;
-  switchLocation: (locationId: string) => void;
-  addLocation: (location: Omit<UserLocation, 'id' | 'verified'> & { id?: string; verified?: boolean }) => void;
-  removeLocation: (locationId: string) => void;
-  logout: () => void;
+  verifyLocation: (locationId: string, method: string) => Promise<void>;
+  switchLocation: (locationId: string) => Promise<void>;
+  addLocation: (location: Omit<UserLocation, 'id' | 'verified'> & { id?: string; verified?: boolean }) => Promise<void>;
+  removeLocation: (locationId: string) => Promise<void>;
+  logout: () => Promise<void>;
+  initAuthListener: () => void;
+  loginWithGoogle: () => Promise<void>;
 }
 
 const createGuestUser = (): User => ({
@@ -144,77 +164,112 @@ const createGuestUser = (): User => ({
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: createGuestUser(), // Start as guest
   setUser: (user) => set({ user }),
-  updateUser: (updates) => set((state) => ({ user: state.user ? { ...state.user, ...updates } : null })),
+  updateUser: async (updates) => {
+    const { user } = get();
+    if (!user || user.role === 'guest') {
+      set({ user: user ? { ...user, ...updates } : null });
+      return;
+    }
+    const updatedUser = { ...user, ...updates };
+    set({ user: updatedUser });
+    try {
+      await updateDoc(doc(db, 'users', user.uid), updates);
+    } catch (e) {
+      console.error('Failed to sync user updates to Firestore:', e);
+    }
+  },
   login: async (email, pass, name, details) => {
-    // Level 1 - Registered User (Identity Verified via Auth)
-    const isMilestone = true;
-    
-    // Fallbacks to default values if registration details are empty
-    const country = details?.country || 'Azerbaijan';
-    const city = details?.city || 'Baku';
-    const town = details?.town || 'Sabail';
-    const district = details?.district || 'Sabail';
-    const street = details?.street || 'Nizami St';
-    const building = details?.building || '42';
-    const entrance = details?.entrance || '2';
-    const apartment = details?.apartment || '15';
-    const phone = details?.phone || '+994501234567';
-    const registrationDate = new Date();
+    let firebaseUser;
+    try {
+      // 1. Try to sign in the user
+      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+      firebaseUser = userCredential.user;
+    } catch (signinError: any) {
+      // 2. If user not found, try to register them
+      if (signinError.code === 'auth/user-not-found' || signinError.code === 'auth/invalid-credential' || signinError.code === 'auth/wrong-password') {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+          firebaseUser = userCredential.user;
+        } catch (signupError: any) {
+          throw new Error(signupError.message || 'Authentication failed');
+        }
+      } else {
+        throw new Error(signinError.message || 'Authentication failed');
+      }
+    }
 
-    // Generate property IDs
-    const countryId = generateCountryId(country);
-    const cityId = generateCityId(city, countryId);
-    const townId = generateTownId(town, cityId);
-    const districtId = generateDistrictId(district, cityId);
-    const streetId = generateStreetId(street, districtId);
-    const buildingId = generateBuildingId(building, streetId);
-    const entranceId = generateEntranceId(entrance, buildingId);
-    const apartmentId = generateApartmentId(apartment, buildingId);
+    if (!firebaseUser) {
+      throw new Error('Authentication failed');
+    }
 
-    // Generate user ID using custom rule
-    const customUid = generateUserId({
-      country,
-      city,
-      street,
-      apartment,
-      phone,
-      registrationDate
-    });
+    const uid = firebaseUser.uid;
 
-    const primaryLocationId = 'loc-home';
-    const primaryLocation: UserLocation = {
-      id: primaryLocationId,
-      type: 'HOME',
-      name: 'Home Address',
-      district,
-      address: `${street}, Bldg ${building}, Apt ${apartment}`,
-      verified: false, // Set to false initially so they must verify it via the VerificationGate
-      country,
-      countryId,
-      city,
-      cityId,
-      town,
-      townId,
-      districtId,
-      street,
-      streetId,
-      building,
-      buildingId,
-      entrance,
-      entranceId,
-      apartment,
-      apartmentId
-    };
+    // Check if user already exists in Firestore
+    const userDocRef = doc(db, 'users', uid);
+    const userDocSnap = await getDoc(userDocRef);
 
-    set({
-      user: {
-        uid: customUid,
+    if (userDocSnap.exists()) {
+      const existingUser = userDocSnap.data() as User;
+      set({ user: existingUser });
+    } else {
+      // Create new user in Firestore and state
+      const isMilestone = true;
+      const country = details?.country || 'Azerbaijan';
+      const city = details?.city || 'Baku';
+      const town = details?.town || 'Sabail';
+      const district = details?.district || 'Sabail';
+      const street = details?.street || 'Nizami St';
+      const building = details?.building || '42';
+      const entrance = details?.entrance || '2';
+      const apartment = details?.apartment || '15';
+      const phone = details?.phone || '+994501234567';
+      const registrationDate = new Date();
+
+      const countryId = generateCountryId(country);
+      const cityId = generateCityId(city, countryId);
+      const townId = generateTownId(town, cityId);
+      const districtId = generateDistrictId(district, cityId);
+      const streetId = generateStreetId(street, districtId);
+      const buildingId = generateBuildingId(building, streetId);
+      const entranceId = generateEntranceId(entrance, buildingId);
+      const apartmentId = generateApartmentId(apartment, buildingId);
+
+      const primaryLocationId = 'loc-home';
+      const primaryLocation: UserLocation = {
+        id: primaryLocationId,
+        type: 'HOME',
+        name: 'Home Address',
+        district,
+        address: `${street}, Bldg ${building}, Apt ${apartment}`,
+        verified: false,
+        country,
+        countryId,
+        city,
+        cityId,
+        town,
+        townId,
+        districtId,
+        street,
+        streetId,
+        building,
+        buildingId,
+        entrance,
+        entranceId,
+        apartment,
+        apartmentId
+      };
+
+      // Bootstrap elmar.myspace@gmail.com as moderator for verification/moderation testing
+      const resolvedRole = (email.toLowerCase() === 'elmar.myspace@gmail.com') ? 'moderator' : 'user';
+
+      const newUser: User = {
+        uid,
         email,
         phone,
         name: name || 'New Neighbor',
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-        role: email.endsWith('@qonsu.dev') ? 'moderator' : 'user',
-        trust_level: 1, // Start as trust level 1 (registered) until location is verified
+        role: resolvedRole,
+        trust_level: 1,
         trust_scores: { identity: 40, location: 0, community: 10, overall: 50 },
         locations: [primaryLocation],
         activeLocationId: primaryLocationId,
@@ -238,20 +293,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         apartment,
         apartmentId,
         registrationDate: registrationDate.toISOString()
-      }
-    });
+      };
+
+      await setDoc(userDocRef, newUser);
+      set({ user: newUser });
+    }
   },
   createGuestSession: () => set({ user: createGuestUser() }),
-  verifyLocation: (locationId, method) => set((state) => {
-    if (!state.user) return state;
+  verifyLocation: async (locationId, method) => {
+    const { user } = get();
+    if (!user || user.role === 'guest') return;
     
-    // Fallback: if locationId doesn't exist but we have locations, verify the first one or active one
     let targetLocId = locationId;
-    if (!state.user.locations.some(loc => loc.id === locationId) && state.user.locations.length > 0) {
-      targetLocId = state.user.activeLocationId || state.user.locations[0].id;
+    if (!user.locations.some(loc => loc.id === locationId) && user.locations.length > 0) {
+      targetLocId = user.activeLocationId || user.locations[0].id;
     }
 
-    const newLocations = state.user.locations.map(loc => {
+    const newLocations = user.locations.map(loc => {
       if (loc.id === targetLocId) {
         return { ...loc, verified: true, verification_method: method as any };
       }
@@ -260,83 +318,215 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const hasVerifiedLocation = newLocations.some(l => l.verified);
     
-    // Level 2 - Verified Resident
-    let newLevel = state.user.trust_level;
-    let locationScore = state.user.trust_scores.location;
-    if (hasVerifiedLocation) {
-      newLevel = Math.max(newLevel, 2) as TrustLevel;
-      locationScore = 40; // increment location score
+    let { trust_level: newLevel, trust_scores: newScores } = calculateNewTrustScores(
+      user.trust_level,
+      user.trust_scores,
+      hasVerifiedLocation
+    );
+
+    const targetLoc = newLocations.find(l => l.id === targetLocId);
+    const updatedUser: User = {
+      ...user,
+      locations: newLocations,
+      trust_level: newLevel,
+      trust_scores: newScores,
+      is_verified: hasVerifiedLocation,
+      district: targetLoc?.district || user.district,
+      address: targetLoc?.address || user.address,
+    };
+
+    set({ user: updatedUser });
+    try {
+      await setDoc(doc(db, 'users', user.uid), updatedUser);
+    } catch (e) {
+      console.error('Failed to sync verified location to Firestore:', e);
     }
+  },
+  switchLocation: async (locationId) => {
+    const { user } = get();
+    if (!user || user.role === 'guest') return;
+    const loc = user.locations.find(l => l.id === locationId);
+    if (!loc) return;
 
-    const newScores = {
-      ...state.user.trust_scores,
-      location: locationScore,
-      overall: state.user.trust_scores.identity + locationScore + state.user.trust_scores.community
+    const updatedUser: User = {
+      ...user,
+      activeLocationId: locationId,
+      district: loc.district,
+      address: loc.address,
     };
 
-    return {
-      user: {
-        ...state.user,
-        locations: newLocations,
-        trust_level: newLevel,
-        trust_scores: newScores,
-        is_verified: hasVerifiedLocation,
-        // Update legacy fields for compatibility
-        district: newLocations.find(l => l.id === targetLocId)?.district || state.user.district,
-        address: newLocations.find(l => l.id === targetLocId)?.address || state.user.address,
-      }
-    };
-  }),
-  switchLocation: (locationId) => set((state) => {
-    if (!state.user) return state;
-    const loc = state.user.locations.find(l => l.id === locationId);
-    if (!loc) return state;
-    return {
-      user: {
-        ...state.user,
-        activeLocationId: locationId,
-        district: loc.district,
-        address: loc.address,
-      }
-    };
-  }),
-  addLocation: (loc) => set((state) => {
-    if (!state.user) return state;
+    set({ user: updatedUser });
+    try {
+      await setDoc(doc(db, 'users', user.uid), updatedUser);
+    } catch (e) {
+      console.error('Failed to sync switch location to Firestore:', e);
+    }
+  },
+  addLocation: async (loc) => {
+    const { user } = get();
+    if (!user || user.role === 'guest') return;
     const newId = loc.id || 'loc-' + Date.now();
     const newLoc: UserLocation = {
       ...loc,
       id: newId,
       verified: loc.verified || false,
     };
-    const locations = [...state.user.locations, newLoc];
-    const activeLocationId = state.user.activeLocationId || newId;
-    return {
-      user: {
-        ...state.user,
-        locations,
-        activeLocationId,
-        district: activeLocationId === newId ? loc.district : state.user.district,
-        address: activeLocationId === newId ? loc.address : state.user.address,
-      }
+    const locations = [...user.locations, newLoc];
+    const activeLocationId = user.activeLocationId || newId;
+
+    const updatedUser: User = {
+      ...user,
+      locations,
+      activeLocationId,
+      district: activeLocationId === newId ? loc.district : user.district,
+      address: activeLocationId === newId ? loc.address : user.address,
     };
-  }),
-  removeLocation: (locationId) => set((state) => {
-    if (!state.user) return state;
-    const locations = state.user.locations.filter(l => l.id !== locationId);
-    let activeLocationId = state.user.activeLocationId;
+
+    set({ user: updatedUser });
+    try {
+      await setDoc(doc(db, 'users', user.uid), updatedUser);
+    } catch (e) {
+      console.error('Failed to sync added location to Firestore:', e);
+    }
+  },
+  removeLocation: async (locationId) => {
+    const { user } = get();
+    if (!user || user.role === 'guest') return;
+    const locations = user.locations.filter(l => l.id !== locationId);
+    let activeLocationId = user.activeLocationId;
     if (activeLocationId === locationId) {
       activeLocationId = locations.length > 0 ? locations[0].id : null;
     }
     const activeLoc = locations.find(l => l.id === activeLocationId);
-    return {
-      user: {
-        ...state.user,
-        locations,
-        activeLocationId,
-        district: activeLoc ? activeLoc.district : '',
-        address: activeLoc ? activeLoc.address : '',
-      }
+
+    const updatedUser: User = {
+      ...user,
+      locations,
+      activeLocationId,
+      district: activeLoc ? activeLoc.district : '',
+      address: activeLoc ? activeLoc.address : '',
     };
-  }),
-  logout: () => set({ user: createGuestUser() }),
+
+    set({ user: updatedUser });
+    try {
+      await setDoc(doc(db, 'users', user.uid), updatedUser);
+    } catch (e) {
+      console.error('Failed to sync removed location to Firestore:', e);
+    }
+  },
+  logout: async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error('Sign out error:', e);
+    }
+    set({ user: createGuestUser() });
+  },
+  initAuthListener: () => {
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          set({ user: userDocSnap.data() as User });
+        } else {
+          set({
+            user: {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              name: firebaseUser.displayName || 'Neighbor',
+              role: 'user',
+              trust_level: 1,
+              trust_scores: { identity: 40, location: 0, community: 10, overall: 50 },
+              locations: [],
+              activeLocationId: null,
+              is_verified: false
+            }
+          });
+        }
+      } else {
+        set({ user: createGuestUser() });
+      }
+    });
+  },
+  loginWithGoogle: async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      const firebaseUser = userCredential.user;
+      
+      const userDocRef = doc(db, 'users', firebaseUser.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const existingUser = userDocSnap.data() as User;
+        set({ user: existingUser });
+      } else {
+        // Create new user in Firestore and state
+        const primaryLocationId = 'loc-home';
+        const primaryLocation: UserLocation = {
+          id: primaryLocationId,
+          type: 'HOME',
+          name: 'Home Address',
+          district: 'Unknown',
+          address: 'Unknown Address',
+          verified: false,
+          country: 'Azerbaijan',
+          countryId: 'aze',
+          city: 'Baku',
+          cityId: 'bak',
+          town: 'Unknown',
+          townId: 'unk',
+          districtId: 'unk',
+          street: 'Unknown',
+          streetId: 'unk',
+          building: '0',
+          buildingId: '0',
+          entrance: '0',
+          entranceId: '0',
+          apartment: '0',
+          apartmentId: '0'
+        };
+
+        const resolvedRole = (firebaseUser.email?.toLowerCase() === 'elmar.myspace@gmail.com') ? 'moderator' : 'user';
+
+        const newUser: User = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email || '',
+          phone: firebaseUser.phoneNumber || '',
+          name: firebaseUser.displayName || 'Neighbor',
+          role: resolvedRole,
+          trust_level: 1,
+          trust_scores: { identity: 40, location: 0, community: 10, overall: 50 },
+          locations: [primaryLocation],
+          activeLocationId: primaryLocationId,
+          is_verified: false,
+          district: 'Unknown',
+          address: 'Unknown Address',
+          country: 'Azerbaijan',
+          countryId: 'aze',
+          city: 'Baku',
+          cityId: 'bak',
+          town: 'Unknown',
+          townId: 'unk',
+          districtId: 'unk',
+          street: 'Unknown',
+          streetId: 'unk',
+          building: '0',
+          buildingId: '0',
+          entrance: '0',
+          entranceId: '0',
+          apartment: '0',
+          apartmentId: '0',
+          registrationDate: new Date().toISOString()
+        };
+
+        await setDoc(userDocRef, newUser);
+        set({ user: newUser });
+      }
+    } catch (error: any) {
+      console.error("Google login failed", error);
+      throw new Error(error.message || 'Authentication failed');
+    }
+  }
 }));

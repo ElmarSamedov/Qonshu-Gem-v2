@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useModerationStore } from '../store/useModerationStore';
 import { useLanguageStore } from '../store/useLanguageStore';
@@ -10,6 +10,135 @@ import { Textarea, Input } from './ui/input';
 import { Send, MapPin, AlertTriangle, Package, Heart, MessageCircle, Flag, BadgeCheck, Plus, X, Crop, Type, Smile, Image as ImageIcon, Sticker, Check, Eye, EyeOff, Pin, Share2, BarChart2, Lock } from 'lucide-react';
 import { useChatStore } from '../store/useChatStore';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../lib/firebase';
+import { 
+  collection, 
+  onSnapshot, 
+  query, 
+  orderBy, 
+  setDoc, 
+  doc, 
+  updateDoc 
+} from 'firebase/firestore';
+
+interface PostCommentsProps {
+  postId: string;
+  isGuest: boolean;
+  user: any;
+  t: any;
+  language: any;
+  handleAddComment: (postId: string, text: string) => Promise<void>;
+  commentInputs: Record<string, string>;
+  setCommentInputs: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+}
+
+function PostComments({ 
+  postId, 
+  isGuest, 
+  user, 
+  t, 
+  language, 
+  handleAddComment, 
+  commentInputs, 
+  setCommentInputs 
+}: PostCommentsProps) {
+  const [comments, setComments] = useState<any[]>([]);
+  const [expandedReactions, setExpandedReactions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'posts', postId, 'comments'), orderBy('timestamp', 'asc'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const list: any[] = [];
+      snapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      setComments(list);
+    });
+    return unsub;
+  }, [postId]);
+
+  const toggleReactions = (commentId: string) => {
+    setExpandedReactions(prev => prev.includes(commentId) ? prev.filter(id => id !== commentId) : [...prev, commentId]);
+  };
+
+  return (
+    <div className="mt-4 space-y-3 pt-3 border-t border-black/5 dark:border-white/5">
+      {comments.map(comment => (
+        <div key={comment.id} className="bg-black/5 dark:bg-white/5 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-semibold text-slate-900 dark:text-white">{isGuest ? 'Neighbor' : comment.author}</span>
+          </div>
+          <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
+          
+          {/* Comment reactions & Reply */}
+          <div className="mt-2 flex items-center space-x-2 text-xs">
+            {comment.reactions && comment.reactions.length > 0 && (
+              <button 
+                onClick={() => toggleReactions(comment.id)}
+                className="bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded-full hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
+              >
+                {expandedReactions.includes(comment.id) 
+                  ? comment.reactions.join(' ')
+                  : comment.reactions.slice(0, 3).join(' ') + (comment.reactions.length > 3 ? ` +${comment.reactions.length - 3}` : '')
+                }
+              </button>
+            )}
+            <button 
+              onClick={() => {
+                setCommentInputs({
+                  ...commentInputs,
+                  [postId]: `@${comment.author} `
+                });
+              }}
+              className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            >
+              Reply
+            </button>
+          </div>
+        </div>
+      ))}
+      {isGuest ? (
+        <div className="flex items-center space-x-2 mt-2 p-2 bg-slate-500/5 rounded-lg border border-slate-500/10">
+          <Lock className="w-3.5 h-3.5 text-slate-500 mr-1 shrink-0" />
+          <span className="text-xs text-slate-500">Register or sign in to comment on posts</span>
+        </div>
+      ) : (
+        <VerificationGate compact={true}>
+          <div className="flex items-center space-x-2 mt-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-white text-xs font-medium shrink-0 overflow-hidden">
+              {user?.avatar ? <img src={user.avatar} alt="You" className="w-full h-full object-cover" /> : user?.name?.charAt(0)}
+            </div>
+            <Input 
+              placeholder="Write a comment..." 
+              className="h-8 text-sm bg-white dark:bg-slate-900 flex-1 border-black/10 dark:border-white/10 text-slate-900 dark:text-white" 
+              value={commentInputs[postId] || ''}
+              onChange={(e) => setCommentInputs({
+                ...commentInputs,
+                [postId]: e.target.value
+              })}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAddComment(postId, commentInputs[postId] || '');
+                  setCommentInputs({ ...commentInputs, [postId]: '' });
+                }
+              }}
+            />
+            <Button 
+              size="sm" 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 text-xs px-3"
+              onClick={async () => {
+                await handleAddComment(postId, commentInputs[postId] || '');
+                setCommentInputs({ ...commentInputs, [postId]: '' });
+              }}
+            >
+              Send
+            </Button>
+          </div>
+        </VerificationGate>
+      )}
+    </div>
+  );
+}
 
 export default function Feed() {
   const { user } = useAuthStore();
@@ -19,83 +148,171 @@ export default function Feed() {
   const { openOrCreateChat } = useChatStore();
   const navigate = useNavigate();
   
-  const [posts, setPosts] = useState([
-    { 
-      id: 1, author: 'Leyla M.', avatar: null, type: 'alert', 
-      content: 'Suspicious caller pretending to be from Kapital Bank. They asked for card details. Please warn your elderly relatives!', 
-      time: '2 hours ago', likes: 12, verified: true, pinned: false, hidden: false, locationScope: 'neighborhood', views: 142, clicks: 12, image: null,
-      comments: [
-        { id: 101, author: 'Samir', content: 'Thanks for the warning!', reactions: ['👍', '❤️', '🙏', '💯'] },
-        { id: 102, author: 'Aysel', content: 'Same happened to me yesterday.', reactions: ['😠', '👍'] }
-      ]
-    },
-    { id: 2, author: 'Kamran B.', avatar: null, type: 'free_stuff', content: 'Leaving an old but working desk near block A. Anyone can pick it up today.', time: '4 hours ago', likes: 8, comments: [], verified: false, pinned: false, hidden: false, locationScope: 'building', views: 89, clicks: 4, image: null },
-    { id: 3, author: 'Aysel H.', avatar: null, type: 'feed', content: 'Does anyone know when the hot water will be back in the second block?', time: '5 hours ago', likes: 2, comments: [], verified: true, pinned: false, hidden: false, locationScope: 'building', views: 45, clicks: 0, image: null },
-  ]);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [moments, setMoments] = useState<any[]>([]);
 
-  const [moments, setMoments] = useState([
-    { id: 1, author: 'Tural S.', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=800&fit=crop', verified: true, reactions: ['👍', '❤️', '🔥'] },
-    { id: 2, author: 'Aysel H.', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=800&fit=crop', verified: false, reactions: ['🤩', '👍'] },
-    { id: 3, author: 'Kamran B.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=800&fit=crop', verified: false, reactions: [] },
-  ]);
+  useEffect(() => {
+    // 1. Subscribe to posts
+    const qPosts = query(collection(db, 'posts'));
+    const unsubPosts = onSnapshot(qPosts, (snapshot) => {
+      if (snapshot.empty) {
+        // Seed default posts
+        const defaultPosts = [
+          {
+            id: 'post-1',
+            author: 'Leyla M.',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Leyla`,
+            type: 'alert',
+            content: 'Suspicious caller pretending to be from Kapital Bank. They asked for card details. Please warn your elderly relatives!',
+            time: '2 hours ago',
+            likes: 12,
+            verified: true,
+            pinned: false,
+            hidden: false,
+            locationScope: 'neighborhood',
+            views: 142,
+            clicks: 12,
+            image: null,
+            commentCount: 2,
+            timestamp: new Date(Date.now() - 7200000).toISOString()
+          },
+          {
+            id: 'post-2',
+            author: 'Kamran B.',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Kamran`,
+            type: 'free_stuff',
+            content: 'Leaving an old but working desk near block A. Anyone can pick it up today.',
+            time: '4 hours ago',
+            likes: 8,
+            verified: false,
+            pinned: false,
+            hidden: false,
+            locationScope: 'building',
+            views: 89,
+            clicks: 4,
+            image: null,
+            commentCount: 0,
+            timestamp: new Date(Date.now() - 14400000).toISOString()
+          },
+          {
+            id: 'post-3',
+            author: 'Aysel H.',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Aysel`,
+            type: 'feed',
+            content: 'Does anyone know when the hot water will be back in the second block?',
+            time: '5 hours ago',
+            likes: 2,
+            verified: true,
+            pinned: false,
+            hidden: false,
+            locationScope: 'building',
+            views: 45,
+            clicks: 0,
+            image: null,
+            commentCount: 0,
+            timestamp: new Date(Date.now() - 18000000).toISOString()
+          }
+        ];
+        defaultPosts.forEach(p => {
+          setDoc(doc(db, 'posts', p.id), p);
+          // Seed comments for post-1
+          if (p.id === 'post-1') {
+            const commentsRef = collection(db, 'posts', p.id, 'comments');
+            setDoc(doc(commentsRef, 'comment-1'), { author: 'Samir', content: 'Thanks for the warning!', timestamp: new Date(Date.now() - 3600000).toISOString(), reactions: ['👍', '❤️', '🙏', '💯'] });
+            setDoc(doc(commentsRef, 'comment-2'), { author: 'Aysel', content: 'Same happened to me yesterday.', timestamp: new Date(Date.now() - 1800000).toISOString(), reactions: ['😠', '👍'] });
+          }
+        });
+      } else {
+        const postsList: any[] = [];
+        snapshot.forEach((doc) => {
+          postsList.push({ id: doc.id, ...doc.data() });
+        });
+        setPosts(postsList);
+      }
+    });
 
-  const [expandedComments, setExpandedComments] = useState<number[]>([]);
-  const [expandedReactions, setExpandedReactions] = useState<number[]>([]);
+    // 2. Subscribe to moments
+    const qMoments = collection(db, 'moments');
+    const unsubMoments = onSnapshot(qMoments, (snapshot) => {
+      if (snapshot.empty) {
+        const defaultMoments = [
+          { id: 'moment-1', author: 'Tural S.', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=800&fit=crop', verified: true, reactions: ['👍', '❤️', '🔥'] },
+          { id: 'moment-2', author: 'Aysel H.', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=800&fit=crop', verified: false, reactions: ['🤩', '👍'] },
+          { id: 'moment-3', author: 'Kamran B.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=800&fit=crop', verified: false, reactions: [] },
+        ];
+        defaultMoments.forEach(m => {
+          setDoc(doc(db, 'moments', m.id), m);
+        });
+      } else {
+        const momentsList: any[] = [];
+        snapshot.forEach((doc) => {
+          momentsList.push({ id: doc.id, ...doc.data() });
+        });
+        setMoments(momentsList);
+      }
+    });
+
+    return () => {
+      unsubPosts();
+      unsubMoments();
+    };
+  }, []);
+
+  const [expandedComments, setExpandedComments] = useState<string[]>([]);
   const [activeMoment, setActiveMoment] = useState<any>(null);
   
   // Moment Editor
   const [momentDraft, setMomentDraft] = useState<string | null>(null);
   const [showMomentEditor, setShowMomentEditor] = useState(false);
+  const [momentOverlayText, setMomentOverlayText] = useState('');
+  const [showTextEditor, setShowTextEditor] = useState(false);
+  const [momentReply, setMomentReply] = useState('');
+  const [momentEmotion, setMomentEmotion] = useState<string | null>(null);
+  const [momentSticker, setMomentSticker] = useState<string | null>(null);
+  const [showEmotionPicker, setShowEmotionPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
   
   // Feed Composer & 1:1 Crop
-  const [postDraftContent, setPostDraftContent] = useState('');
+  const [postDraftContent, setPostDraftContent] = useState(() => localStorage.getItem('feedPostDraft') || '');
   const [postDraftImage, setPostDraftImage] = useState<string | null>(null);
+  
+  React.useEffect(() => {
+    localStorage.setItem('feedPostDraft', postDraftContent);
+  }, [postDraftContent]);
+
   const [showCropModal, setShowCropModal] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [postType, setPostType] = useState<'feed' | 'alert' | 'question'>('feed');
   const [draftLocationScope, setDraftLocationScope] = useState<'all' | 'building' | 'landing' | 'courtyard'>('building');
-  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   
   const [selectedNeighbor, setSelectedNeighbor] = useState<any>(null);
   const [locationFilter, setLocationFilter] = useState<'all' | 'building' | 'neighborhood'>('all');
   const [postAnonymously, setPostAnonymously] = useState(false);
 
-  const handleAddComment = (postId: number) => {
-    const text = commentInputs[postId];
+  const handleAddComment = async (postId: string, text: string) => {
     if (!text || !text.trim()) return;
-    
-    setPosts(posts.map(p => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          comments: [
-            ...p.comments,
-            {
-              id: Date.now(),
-              author: user?.name || 'You',
-              avatar: user?.avatar || null,
-              content: text.trim(),
-              time: 'Just now',
-              reactions: []
-            }
-          ]
-        };
-      }
-      return p;
-    }));
-    
-    setCommentInputs({
-      ...commentInputs,
-      [postId]: ''
-    });
+    try {
+      const commentRef = doc(collection(db, 'posts', postId, 'comments'));
+      await setDoc(commentRef, {
+        author: user?.name || 'You',
+        avatar: user?.avatar || null,
+        content: text.trim(),
+        timestamp: new Date().toISOString(),
+        reactions: []
+      });
+      // Increment commentCount
+      const post = posts.find(p => p.id === postId);
+      await updateDoc(doc(db, 'posts', postId), {
+        commentCount: (post?.commentCount || 0) + 1
+      });
+    } catch (e) {
+      console.error('Failed to add comment:', e);
+    }
   };
 
-  const toggleComments = (postId: number) => {
+  const toggleComments = (postId: string) => {
     setExpandedComments(prev => prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]);
-  };
-
-  const toggleReactions = (commentId: number) => {
-    setExpandedReactions(prev => prev.includes(commentId) ? prev.filter(id => id !== commentId) : [...prev, commentId]);
   };
 
   const getTypeIcon = (type: string) => {
@@ -121,22 +338,29 @@ export default function Feed() {
     fileInput.click();
   };
 
-  const confirmMomentUpload = () => {
+  const confirmMomentUpload = async () => {
     if (!momentDraft) return;
     setShowMomentEditor(false);
-    alert('Moment uploaded! AI moderation is checking for 18+ content...');
-    setTimeout(() => {
-      const newMoment = {
-        id: Date.now(),
-        author: user?.name || 'You',
-        avatar: user?.avatar || null,
-        image: momentDraft,
-        verified: user?.is_verified || false,
-        reactions: []
-      };
-      setMoments([newMoment, ...moments]);
+    
+    const newId = 'moment-' + Date.now();
+    const newMoment = {
+      author: user?.name || 'You',
+      avatar: user?.avatar || null,
+      image: momentDraft,
+      textOverlay: momentOverlayText,
+      verified: user?.is_verified || false,
+      reactions: [],
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      await setDoc(doc(db, 'moments', newId), newMoment);
       setMomentDraft(null);
-    }, 1500);
+      setMomentOverlayText('');
+      setShowTextEditor(false);
+    } catch (e) {
+      console.error('Failed to add moment:', e);
+    }
   };
   
   const handleUploadPostImage = () => {
@@ -161,13 +385,13 @@ export default function Feed() {
     setCropImageSrc(null);
   };
   
-  const handlePostSubmit = () => {
+  const handlePostSubmit = async () => {
     if (!postDraftContent.trim() && !postDraftImage) return;
     
+    const newId = 'post-' + Date.now();
     const newPost: any = {
-      id: Date.now(),
-      author: user?.name || 'You',
-      avatar: user?.avatar || null,
+      author: postAnonymously ? 'Anonymous Neighbor' : (user?.name || 'You'),
+      avatar: postAnonymously ? null : (user?.avatar || null),
       type: postType,
       content: postDraftContent,
       time: 'Just now',
@@ -179,37 +403,86 @@ export default function Feed() {
       views: 0,
       clicks: 0,
       image: postDraftImage,
-      comments: []
+      commentCount: 0,
+      timestamp: new Date().toISOString()
     };
     
-    setPosts([newPost, ...posts]);
-    setPostDraftContent('');
-    setPostDraftImage(null);
-    setPostAnonymously(false);
-    setPostType('feed');
+    try {
+      await setDoc(doc(db, 'posts', newId), newPost);
+      setPostDraftContent('');
+      setPostDraftImage(null);
+      setPostAnonymously(false);
+      setPostType('feed');
+    } catch (e) {
+      console.error('Failed to add post:', e);
+    }
   };
 
-  const handleLike = (postId: number) => {
-    setPosts(posts.map(p => p.id === postId ? { ...p, likes: p.likes + 1 } : p));
+  const handleLike = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      try {
+        await updateDoc(doc(db, 'posts', postId), {
+          likes: (post.likes || 0) + 1
+        });
+      } catch (e) {
+        console.error('Failed to like post:', e);
+      }
+    }
   };
 
-  const togglePin = (postId: number) => {
-    setPosts(posts.map(p => p.id === postId ? { ...p, pinned: !p.pinned } : p));
+  const togglePin = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      try {
+        await updateDoc(doc(db, 'posts', postId), {
+          pinned: !post.pinned
+        });
+      } catch (e) {
+        console.error('Failed to pin post:', e);
+      }
+    }
   };
   
-  const hidePost = (postId: number) => {
-    setPosts(posts.map(p => p.id === postId ? { ...p, hidden: true } : p));
+  const hidePost = async (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      try {
+        await updateDoc(doc(db, 'posts', postId), {
+          hidden: true
+        });
+      } catch (e) {
+        console.error('Failed to hide post:', e);
+      }
+    }
   };
   
-  const handleShare = () => {
-    alert('Post shared via internal messages!');
+  const handleShare = async (post: any) => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Post by ${post.author}`,
+          text: post.content,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(`${post.content}\n- ${post.author}\n${window.location.href}`);
+        alert('Link copied to clipboard!');
+      }
+    } catch (e) {
+      console.error('Error sharing:', e);
+    }
   };
 
   const visiblePosts = posts
     .filter(p => !p.hidden)
     .filter(p => locationFilter === 'all' || p.locationScope === locationFilter)
     .sort((a, b) => {
-      if (a.pinned === b.pinned) return b.id - a.id;
+      if (a.pinned === b.pinned) {
+        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return timeB - timeA;
+      }
       return a.pinned ? -1 : 1;
     });
 
@@ -304,13 +577,19 @@ export default function Feed() {
                   <option value="courtyard" className="text-black dark:text-slate-950">Same Courtyard</option>
                 </select>
               </div>
-              <button 
-                onClick={handleUploadPostImage}
-                className="flex items-center space-x-1 text-sm text-slate-600 hover:text-indigo-500 transition-colors"
-              >
-                <ImageIcon className="w-5 h-5" />
-                <span>Photo</span>
-              </button>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-1 text-sm text-slate-600 hover:text-indigo-500 cursor-pointer">
+                  <input type="checkbox" checked={postAnonymously} onChange={(e) => setPostAnonymously(e.target.checked)} className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                  <span>Anonymous</span>
+                </label>
+                <button 
+                  onClick={handleUploadPostImage}
+                  className="flex items-center space-x-1 text-sm text-slate-600 hover:text-indigo-500 transition-colors"
+                >
+                  <ImageIcon className="w-5 h-5" />
+                  <span>Photo</span>
+                </button>
+              </div>
             </div>
             
             <div className="flex justify-between items-center">
@@ -443,17 +722,17 @@ export default function Feed() {
                 <div className="flex items-center space-x-4">
                   <button onClick={() => handleLike(post.id)} className="flex items-center space-x-1 hover:text-blue-400 transition-colors">
                     <Heart className="h-4 w-4" />
-                    <span>{post.likes} {t('common.helpful', language)}</span>
+                    <span>{post.likes || 0} {t('common.helpful', language)}</span>
                   </button>
                   <button 
                     onClick={() => toggleComments(post.id)}
                     className="flex items-center space-x-1 hover:text-blue-400 transition-colors"
                   >
                     <MessageCircle className="h-4 w-4" />
-                    <span>{post.comments.length} {t('common.comments', language)}</span>
+                    <span>{post.commentCount || 0} {t('common.comments', language)}</span>
                   </button>
                   <button 
-                    onClick={handleShare}
+                    onClick={() => handleShare(post)}
                     className="flex items-center space-x-1 hover:text-blue-400 transition-colors"
                   >
                     <Share2 className="h-4 w-4" />
@@ -466,88 +745,27 @@ export default function Feed() {
                   <div className="flex items-center space-x-3 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
                     <div className="flex items-center space-x-1">
                       <Eye className="w-3 h-3" />
-                      <span>{post.views} views</span>
+                      <span>{post.views || 0} views</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <BarChart2 className="w-3 h-3" />
-                      <span>{post.clicks} clicks</span>
+                      <span>{post.clicks || 0} clicks</span>
                     </div>
                   </div>
                 )}
               </div>
               
               {expandedComments.includes(post.id) && (
-                <div className="mt-4 space-y-3 pt-3 border-t border-black/5 dark:border-white/5">
-                  {post.comments.map(comment => (
-                    <div key={comment.id} className="bg-black/5 dark:bg-white/5 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white">{isGuest ? 'Neighbor' : comment.author}</span>
-                      </div>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
-                      
-                      {/* Comment reactions & Reply */}
-                      <div className="mt-2 flex items-center space-x-2 text-xs">
-                        {comment.reactions && comment.reactions.length > 0 && (
-                          <button 
-                            onClick={() => toggleReactions(comment.id)}
-                            className="bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded-full hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
-                          >
-                            {expandedReactions.includes(comment.id) 
-                              ? comment.reactions.join(' ')
-                              : comment.reactions.slice(0, 3).join(' ') + (comment.reactions.length > 3 ? ` +${comment.reactions.length - 3}` : '')
-                            }
-                          </button>
-                        )}
-                        <button 
-                          onClick={() => {
-                            setCommentInputs({
-                              ...commentInputs,
-                              [post.id]: `@${comment.author} `
-                            });
-                          }}
-                          className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                        >
-                          Reply
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {isGuest ? (
-                    <div className="flex items-center space-x-2 mt-2 p-2 bg-slate-500/5 rounded-lg border border-slate-500/10">
-                      <Lock className="w-3.5 h-3.5 text-slate-500 mr-1 shrink-0" />
-                      <span className="text-xs text-slate-500">Register or sign in to comment on posts</span>
-                    </div>
-                  ) : (
-                    <VerificationGate compact={true}>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-white text-xs font-medium shrink-0 overflow-hidden">
-                          {user?.avatar ? <img src={user.avatar} alt="You" className="w-full h-full object-cover" /> : user?.name.charAt(0)}
-                        </div>
-                        <Input 
-                          placeholder="Write a comment..." 
-                          className="h-8 text-sm bg-white dark:bg-slate-900 flex-1" 
-                          value={commentInputs[post.id] || ''}
-                          onChange={(e) => setCommentInputs({
-                            ...commentInputs,
-                            [post.id]: e.target.value
-                          })}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleAddComment(post.id);
-                            }
-                          }}
-                        />
-                        <Button 
-                          size="sm" 
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 text-xs px-3"
-                          onClick={() => handleAddComment(post.id)}
-                        >
-                          Send
-                        </Button>
-                      </div>
-                    </VerificationGate>
-                  )}
-                </div>
+                <PostComments 
+                  postId={post.id}
+                  isGuest={isGuest}
+                  user={user}
+                  t={t}
+                  language={language}
+                  handleAddComment={handleAddComment}
+                  commentInputs={commentInputs}
+                  setCommentInputs={setCommentInputs}
+                />
               )}
             </CardContent>
           </Card>
@@ -596,26 +814,91 @@ export default function Feed() {
             </button>
           </div>
           
-          <div className="flex-1 flex items-center justify-center p-4">
-            <img src={momentDraft} alt="Draft" className="max-h-[70vh] max-w-full object-contain rounded-xl" />
+          <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+            <div className="relative max-h-[70vh] max-w-full">
+              <img src={momentDraft} alt="Draft" className="max-h-full max-w-full object-contain rounded-xl" />
+              {momentOverlayText && !showTextEditor && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-bold text-center drop-shadow-md bg-black/30 p-2 rounded whitespace-pre-wrap max-w-[80%] cursor-pointer" onClick={() => setShowTextEditor(true)}>
+                  {momentOverlayText}
+                </div>
+              )}
+              {momentEmotion && (
+                <div className="absolute top-1/4 right-1/4 text-6xl cursor-move animate-bounce" onClick={() => setMomentEmotion(null)}>
+                  {momentEmotion}
+                </div>
+              )}
+              {momentSticker && (
+                <div className="absolute bottom-1/4 left-1/4 text-6xl cursor-move drop-shadow-lg" onClick={() => setMomentSticker(null)}>
+                  {momentSticker}
+                </div>
+              )}
+            </div>
+            
+            {showTextEditor && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 z-20">
+                <textarea 
+                  autoFocus
+                  className="w-full max-w-sm bg-transparent text-white text-3xl font-bold text-center outline-none resize-none placeholder:text-white/50" 
+                  placeholder="Type here..."
+                  value={momentOverlayText}
+                  onChange={e => setMomentOverlayText(e.target.value)}
+                  onBlur={() => setShowTextEditor(false)}
+                  rows={3}
+                />
+              </div>
+            )}
+
+            {showEmotionPicker && (
+              <div className="absolute inset-x-0 bottom-0 p-4 bg-black/80 z-20 flex justify-center space-x-4 overflow-x-auto pb-24">
+                {['😊', '😂', '🥰', '😎', '🥺', '😡'].map(emoji => (
+                  <button key={emoji} className="text-4xl hover:scale-125 transition-transform" onClick={() => { setMomentEmotion(emoji); setShowEmotionPicker(false); }}>
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showStickerPicker && (
+              <div className="absolute inset-x-0 bottom-0 p-4 bg-black/80 z-20 flex justify-center space-x-4 overflow-x-auto pb-24">
+                {['🎉', '🌟', '🔥', '💯', '✨', '🎈'].map(sticker => (
+                  <button key={sticker} className="text-4xl hover:scale-125 transition-transform" onClick={() => { setMomentSticker(sticker); setShowStickerPicker(false); }}>
+                    {sticker}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           
-          <div className="p-6 absolute bottom-0 left-0 right-0 bg-black/80 flex justify-center space-x-6 border-t border-white/10">
-            <button className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
+          <div className="p-6 absolute bottom-0 left-0 right-0 bg-black/80 flex justify-center space-x-6 border-t border-white/10 z-30">
+            <button className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors" onClick={() => {
+              // Simulate crop by toggling object-cover vs object-contain
+              const img = document.querySelector('img[alt="Draft"]') as HTMLImageElement;
+              if (img) {
+                img.style.objectFit = img.style.objectFit === 'cover' ? 'contain' : 'cover';
+              }
+            }}>
               <Crop className="w-6 h-6" /><span className="text-xs">Crop</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
+            <button onClick={() => { setShowTextEditor(true); setShowEmotionPicker(false); setShowStickerPicker(false); }} className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
               <Type className="w-6 h-6" /><span className="text-xs">Text</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
+            <button onClick={() => { setShowEmotionPicker(!showEmotionPicker); setShowStickerPicker(false); setShowTextEditor(false); }} className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
               <Smile className="w-6 h-6" /><span className="text-xs">Emotion</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
+            <button onClick={() => { setShowStickerPicker(!showStickerPicker); setShowEmotionPicker(false); setShowTextEditor(false); }} className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
               <Sticker className="w-6 h-6" /><span className="text-xs">Sticker</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors">
+            <label className="flex flex-col items-center space-y-1 text-white/70 hover:text-white transition-colors cursor-pointer">
               <ImageIcon className="w-6 h-6" /><span className="text-xs">Add Photo</span>
-            </button>
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  const url = URL.createObjectURL(e.target.files[0]);
+                  setMomentSticker(null);
+                  setMomentEmotion(null);
+                  setMomentDraft(url); // Just replace the draft for simplicity
+                }
+              }} />
+            </label>
           </div>
         </div>
       )}
@@ -702,7 +985,14 @@ export default function Feed() {
           </div>
           
           <div className="flex-1 flex items-center justify-center p-4 relative">
-            <img src={activeMoment.image} alt="Moment" className="max-h-full max-w-full object-contain rounded-xl" />
+            <div className="relative max-h-full max-w-full">
+              <img src={activeMoment.image} alt="Moment" className="max-h-full max-w-full object-contain rounded-xl" />
+              {activeMoment.textOverlay && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-bold text-center drop-shadow-md bg-black/30 p-2 rounded whitespace-pre-wrap max-w-[80%]">
+                  {activeMoment.textOverlay}
+                </div>
+              )}
+            </div>
             
             {/* Reactions placed on the right side in a straight orbit (3 P.M.) */}
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center space-y-4">
@@ -710,8 +1000,17 @@ export default function Feed() {
                 <button 
                   key={emoji}
                   className="w-12 h-12 bg-black/40 hover:bg-black/60 border border-white/20 rounded-full text-2xl flex items-center justify-center transition-all hover:scale-110"
-                  onClick={() => {
-                    alert(`Reacted with ${emoji}`);
+                  onClick={async () => {
+                    if (activeMoment) {
+                      try {
+                        const newReactions = [...(activeMoment.reactions || []), emoji];
+                        await updateDoc(doc(db, 'moments', activeMoment.id), {
+                          reactions: newReactions
+                        });
+                      } catch (e) {
+                        console.error('Failed to react:', e);
+                      }
+                    }
                     setActiveMoment(null);
                   }}
                   style={{ animationDelay: `${idx * 0.1}s` }}
@@ -723,7 +1022,26 @@ export default function Feed() {
           </div>
           
           <div className="p-4 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent">
-            <Input placeholder="Reply to moment..." className="bg-white/20 border-none text-white placeholder:text-white/60" />
+            <Input 
+              placeholder="Reply to moment..." 
+              value={momentReply}
+              onChange={(e) => setMomentReply(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && momentReply.trim()) {
+                  if (isGuest) {
+                    alert('Guests cannot send messages.');
+                    return;
+                  }
+                  const text = `[Reply to your moment] ${momentReply}`;
+                  openOrCreateChat(`neighbor-${activeMoment.author}`, activeMoment.author, 'neighbor');
+                  // We might need to get the chat id, but openOrCreateChat adds to the list, we can just navigate to /chat
+                  navigate('/chat');
+                  setMomentReply('');
+                  setActiveMoment(null);
+                }
+              }}
+              className="bg-white/20 border-none text-white placeholder:text-white/60" 
+            />
           </div>
         </div>
       )}
