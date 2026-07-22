@@ -4,9 +4,12 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Send, Store, User, ArrowLeft, Smile, Reply, Users, Plus, Mic, Square, Trash2, X } from 'lucide-react';
 import VerificationGate from './VerificationGate';
+import { useLanguageStore } from '../store/useLanguageStore';
+import { t } from '../lib/i18n';
 import { useChatStore, Message, ChatSession } from '../store/useChatStore';
 
 export default function Chat() {
+  const { language } = useLanguageStore();
   const { chats, activeChatId, setActiveChatId, sendMessage, toggleReaction } = useChatStore();
   const activeChat = chats.find(c => c.id === activeChatId) || null;
   const [newMessage, setNewMessage] = useState('');
@@ -154,7 +157,7 @@ export default function Chat() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{activeChat.name}</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400">{activeChat.type === 'business' ? 'Verified Business' : 'Neighbor'}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{activeChat.type === 'business' ? 'Verified Business' : t('common.neighbor', language)}</p>
               </div>
             </div>
 

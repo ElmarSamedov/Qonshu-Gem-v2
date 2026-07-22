@@ -419,9 +419,9 @@ export default function VerificationGate({ children, compact = false }: { childr
           {isGuest ? (
              <>
                <ShieldCheck className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Create an Account</h3>
+               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('guest.create_account', language)}</h3>
                <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-                 Guests can browse, but you must create an account to post and participate in the community.
+                 {t('verify.guest_desc', language)}
                </p>
                <Button onClick={() => navigate('/auth')} className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900">
                  Create Account

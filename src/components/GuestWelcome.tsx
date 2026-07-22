@@ -1,10 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguageStore } from '../store/useLanguageStore';
+import { t } from '../lib/i18n';
 import { Button } from './ui/button';
 import { MapPin, Search, Calendar, ShoppingBag } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 
 export default function GuestWelcome() {
+  const { language } = useLanguageStore();
   const navigate = useNavigate();
 
   return (
@@ -28,28 +31,28 @@ export default function GuestWelcome() {
         </div>
 
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-          Welcome to Qonşu.
+          {t('guest.welcome', language)}
         </h1>
         <p className="text-xl text-slate-300 mb-10 max-w-lg">
-          Discover what's happening around you.
+          {t('guest.discover', language)}
         </p>
 
         <div className="grid grid-cols-2 gap-4 max-w-lg w-full mb-10">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col items-center text-white">
             <Search className="h-6 w-6 mb-2 text-blue-400" />
-            <span className="text-sm font-medium">Local Feeds</span>
+            <span className="text-sm font-medium">{t('guest.local_feeds', language)}</span>
           </div>
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col items-center text-white">
             <Calendar className="h-6 w-6 mb-2 text-green-400" />
-            <span className="text-sm font-medium">Public Events</span>
+            <span className="text-sm font-medium">{t('guest.public_events', language)}</span>
           </div>
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col items-center text-white">
             <ShoppingBag className="h-6 w-6 mb-2 text-orange-400" />
-            <span className="text-sm font-medium">Marketplace</span>
+            <span className="text-sm font-medium">{t('guest.marketplace', language)}</span>
           </div>
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex flex-col items-center text-white">
             <MapPin className="h-6 w-6 mb-2 text-purple-400" />
-            <span className="text-sm font-medium">Neighborhoods</span>
+            <span className="text-sm font-medium">{t('guest.neighborhoods', language)}</span>
           </div>
         </div>
 
@@ -58,11 +61,11 @@ export default function GuestWelcome() {
             className="flex-1 bg-white hover:bg-slate-100 text-slate-900 text-lg h-14 rounded-xl font-semibold shadow-xl"
             onClick={() => navigate('/feed')}
           >
-            Explore Nearby
+            {t('guest.explore', language)}
           </Button>
           <Button 
             className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-lg h-14 rounded-xl font-semibold shadow-xl"
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/onboarding')}
           >
             Create Account
           </Button>

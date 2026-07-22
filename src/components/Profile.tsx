@@ -12,12 +12,12 @@ import InterestsSelector from "./InterestsSelector";
 import NationalitySelector from "./NationalitySelector";
 
 import UserTrustCard from './profile/UserTrustCard';
+import TrustJourney from './profile/TrustJourney';
 import MyLocations from './profile/MyLocations';
 import WifiSharing from './profile/WifiSharing';
 import MyNeighbors from './profile/MyNeighbors';
 import SettingsSection from './profile/SettingsSection';
 import LanguageSelector from './profile/LanguageSelector';
-import RegistrySection from './profile/RegistrySection';
 import EmergencyContact from './profile/EmergencyContact';
 
 export default function Profile() {
@@ -27,7 +27,7 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-4">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('profile.title', language)}</h2>
         <Button variant="outline" size="sm" onClick={logout} className="text-red-400 border-red-400/30 hover:bg-red-500/10">
@@ -35,6 +35,8 @@ export default function Profile() {
           {t('profile.signout', language)}
         </Button>
       </div>
+
+      <TrustJourney />
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* User Info Column */}
@@ -44,16 +46,17 @@ export default function Profile() {
             <EmergencyContact />
             <CarNumbers />
             <div className="p-6 border-b border-black/10 dark:border-white/10">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">{t('profile.family_demographics', language) || 'Family & Demographics'}</h3>
-              <div className="space-y-4">
-                <NationalitySelector />
-              </div>
+              <NationalitySelector />
             </div>
             <MyLocations />
             <BirthdaySettings />
+            <div className="p-6 border-t border-black/10 dark:border-white/10">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">User ID</h3>
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3 flex items-center justify-center border border-slate-200 dark:border-slate-700/50">
+                <code className="font-mono text-sm text-indigo-600 dark:text-indigo-400 break-all select-all font-bold tracking-tight">{user.uid}</code>
+              </div>
+            </div>
           </Card>
-
-          <RegistrySection />
           <LanguageSelector />
         </div>
 

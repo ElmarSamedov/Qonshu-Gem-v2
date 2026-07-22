@@ -14,8 +14,6 @@ export default function ModeratorPanel() {
   const { language } = useLanguageStore();
   const { requests, approveRequest, rejectRequest } = useVerificationStore();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'verifications' | 'users' | 'reports'>('dashboard');
-  const [filterNsfw, setFilterNsfw] = useState(false);
-  const [filterArLaw, setFilterArLaw] = useState(false);
   
   const verifications = requests.filter(r => r.status === 'pending');
 
@@ -198,43 +196,12 @@ export default function ModeratorPanel() {
       {activeTab === 'reports' && (() => {
         const filteredPendingReports = reports
           .filter(r => r.status === 'pending')
-          .filter(r => {
-            if (filterNsfw) {
-              return r.aiScores ? r.aiScores.nsfw > 0.6 : false;
-            }
-            return true;
-          })
-          .filter(r => {
-            if (filterArLaw) {
-              return r.aiScores ? r.aiScores.arLaw > 0.6 : false;
-            }
-            return true;
-          });
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
         return (
           <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader>
               <CardTitle className="text-xl text-slate-900 dark:text-white">{t('mod.queue', language)}</CardTitle>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFilterNsfw(v => !v)}
-                  className={`border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all ${filterNsfw ? 'bg-red-500/20 border-red-500/30 font-semibold' : 'bg-black/5 dark:bg-white/5'}`}
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  {t('mod.nsfw', language)}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFilterArLaw(v => !v)}
-                  className={`border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-300 transition-all ${filterArLaw ? 'bg-red-500/20 border-red-500/30 font-semibold' : 'bg-black/5 dark:bg-white/5'}`}
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  {t('mod.ar_law', language)}
-                </Button>
-              </div>
             </CardHeader>
             <CardContent>
               {filteredPendingReports.length === 0 ? (
@@ -264,16 +231,7 @@ export default function ModeratorPanel() {
                         <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10 inline-block">
                           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('mod.author', language)}: <span className="text-slate-900 dark:text-white">{report.author}</span></p>
                           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1"><Flag className="h-3 w-3 inline mr-1 text-red-400"/> {t('mod.reason', language)}: {report.reason}</p>
-                          {report.aiScores && (
-                            <div className="mt-2 flex gap-3 text-xs">
-                              <span className={`px-2 py-1 rounded ${report.aiScores.nsfw > 0.6 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
-                                AI NSFW: {(report.aiScores.nsfw * 100).toFixed(0)}%
-                              </span>
-                              <span className={`px-2 py-1 rounded ${report.aiScores.arLaw > 0.6 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
-                                AI AR Law: {(report.aiScores.arLaw * 100).toFixed(0)}%
-                              </span>
-                            </div>
-                          )}
+                          
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">

@@ -22,8 +22,8 @@ export default function NationalitySelector() {
   const [level2, setLevel2] = useState('');
   const [level3, setLevel3] = useState('');
   const [level4, setLevel4] = useState('');
-
   const [nationalities, setNationalities] = useState<NatNode[]>([]);
+  const [showSelector, setShowSelector] = useState(false);
 
   useEffect(() => {
     setNationalities(nationalitiesData as NatNode[]);
@@ -58,17 +58,32 @@ export default function NationalitySelector() {
     if (val) {
       const selectedOpt = nationalities.find(n => n.id === val);
       if (selectedOpt) {
+         // Assuming updating it immediately locks it
          updateUser({ nationality: getName(selectedOpt) });
       }
     }
   };
 
+  const displayNationality = user?.nationality;
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-xs text-slate-600 dark:text-slate-400 font-medium mb-1 block">
-          {t('profile.nationality', language) || 'Nationality'}
-        </label>
+    <div className="space-y-3">
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+        {t('profile.nationality', language) || 'Nationality'}
+      </h3>
+      
+      {displayNationality ? (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800">
+          {displayNationality}
+        </span>
+      ) : !showSelector ? (
+        <button 
+          onClick={() => setShowSelector(true)} 
+          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors"
+        >
+          + Add Nationality
+        </button>
+      ) : (
         <div className="space-y-2">
           <select value={level1} onChange={(e) => handleSelect(1, e.target.value)} className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg p-2 text-sm text-slate-900 dark:text-white">
              <option value="">{language === 'az' ? 'Region seçin' : language === 'ru' ? 'Выберите регион' : 'Select Region'}</option>
@@ -93,13 +108,7 @@ export default function NationalitySelector() {
             </select>
           )}
         </div>
-      </div>
-      <div className="p-3 bg-indigo-50 dark:bg-indigo-900/10 rounded-lg border border-indigo-100 dark:border-indigo-800">
-         <p className="text-sm font-medium text-slate-900 dark:text-white">
-           {language === 'az' ? 'Seçilmiş: ' : language === 'ru' ? 'Выбрано: ' : 'Selected: '} 
-           <span className="text-indigo-600 dark:text-indigo-400 font-bold ml-1">{user?.nationality || 'None'}</span>
-         </p>
-      </div>
+      )}
     </div>
   )
 }

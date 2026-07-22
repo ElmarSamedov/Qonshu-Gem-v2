@@ -1,6 +1,10 @@
+import MomentViewer from "./MomentViewer";
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useModerationStore } from '../store/useModerationStore';
+import NeighborhoodPulse from './NeighborhoodPulse';
+import StreetMap from './StreetMap';
+import { Map as MapIcon, List as ListIcon } from 'lucide-react';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { t } from '../lib/i18n';
 import VerificationGate from './VerificationGate';
@@ -53,7 +57,7 @@ function PostComments({
         list.push({ id: doc.id, ...doc.data() });
       });
       setComments(list);
-    });
+    }, (err) => console.error('Comments snapshot error:', err));
     return unsub;
   }, [postId]);
 
@@ -66,7 +70,7 @@ function PostComments({
       {comments.map(comment => (
         <div key={comment.id} className="bg-black/5 dark:bg-white/5 rounded-lg p-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">{isGuest ? 'Neighbor' : comment.author}</span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white">{isGuest ? t('common.neighbor', language) : comment.author}</span>
           </div>
           <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
           
@@ -229,7 +233,7 @@ export default function Feed() {
         });
         setPosts(postsList);
       }
-    });
+    }, (err) => console.error('Posts snapshot error:', err));
 
     // 2. Subscribe to moments
     const qMoments = collection(db, 'moments');
@@ -250,7 +254,7 @@ export default function Feed() {
         });
         setMoments(momentsList);
       }
-    });
+    }, (err) => console.error('Moments snapshot error:', err));
 
     return () => {
       unsubPosts();
@@ -259,7 +263,7 @@ export default function Feed() {
   }, []);
 
   const [expandedComments, setExpandedComments] = useState<string[]>([]);
-  const [activeMoment, setActiveMoment] = useState<any>(null);
+  const [activeMomentIndex, setActiveMomentIndex] = useState<number | null>(null);
   
   // Moment Editor
   const [momentDraft, setMomentDraft] = useState<string | null>(null);
@@ -288,6 +292,7 @@ export default function Feed() {
   
   const [selectedNeighbor, setSelectedNeighbor] = useState<any>(null);
   const [locationFilter, setLocationFilter] = useState<'all' | 'building' | 'neighborhood'>('all');
+  const [feedView, setFeedView] = useState<'list' | 'map'>('list');
   const [postAnonymously, setPostAnonymously] = useState(false);
 
   const handleAddComment = async (postId: string, text: string) => {
@@ -390,7 +395,7 @@ export default function Feed() {
     
     const newId = 'post-' + Date.now();
     const newPost: any = {
-      author: postAnonymously ? 'Anonymous Neighbor' : (user?.name || 'You'),
+      author: postAnonymously ? t('common.neighbor', language) : (user?.name || 'You'),
       avatar: postAnonymously ? null : (user?.avatar || null),
       type: postType,
       content: postDraftContent,
@@ -498,6 +503,8 @@ export default function Feed() {
         </span>
       </div>
 
+      {!isGuest && <NeighborhoodPulse />}
+
       {/* Moments */}
       {!isGuest && (
         <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
@@ -514,19 +521,19 @@ export default function Feed() {
           {moments.map(moment => (
             <div key={moment.id} className="flex flex-col items-center space-y-1 shrink-0 snap-start relative">
               <button 
-                onClick={() => setActiveMoment(moment)}
+                onClick={() => setActiveMomentIndex(moments.findIndex(m => m.id === moment.id))}
                 className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-500"
               >
                 <div className="w-full h-full rounded-full overflow-hidden border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
                   {moment.avatar && !isGuest ? (
-                    <img src={moment.avatar} alt={isGuest ? 'Neighbor' : moment.author} className="w-full h-full object-cover" />
+                    <img src={moment.avatar} alt={isGuest ? t('common.neighbor', language) : moment.author} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="font-bold text-slate-500">{(isGuest ? 'Neighbor' : moment.author).charAt(0)}</span>
+                    <span className="font-bold text-slate-500">{(isGuest ? t('common.neighbor', language) : moment.author).charAt(0)}</span>
                   )}
                 </div>
               </button>
               <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 truncate w-16 text-center">
-                {isGuest ? 'Neighbor' : moment.author.split(' ')[0]}
+                {isGuest ? t('common.neighbor', language) : moment.author.split(' ')[0]}
               </span>
               
               {/* Reactions summary in feed */}
@@ -638,13 +645,16 @@ export default function Feed() {
         >{t('common.neighborhood', language)}</button>
       </div>
 
+      {feedView === 'map' ? (
+        <StreetMap posts={visiblePosts} />
+      ) : (
       <div className="space-y-4">
         {visiblePosts.map(post => (
           <Card key={post.id} className={`glass-panel overflow-hidden border-black/10 dark:border-white/10 transition-all hover:shadow-xl ${post.pinned ? 'ring-2 ring-indigo-500/50' : ''}`}>
             {post.pinned && (
               <div className="bg-indigo-500/10 px-4 py-1 flex items-center space-x-2 border-b border-indigo-500/10">
                 <Pin className="h-3 w-3 text-indigo-500" />
-                <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Pinned by {isGuest ? 'Neighbor' : post.author}</span>
+                <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Pinned by {isGuest ? t('common.neighbor', language) : post.author}</span>
               </div>
             )}
             <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-2">
@@ -654,14 +664,14 @@ export default function Feed() {
                   onClick={() => setSelectedNeighbor(post)}
                 >
                   {post.avatar && !isGuest ? (
-                    <img src={post.avatar} alt={isGuest ? 'Neighbor' : post.author} className="w-full h-full object-cover" />
+                    <img src={post.avatar} alt={isGuest ? t('common.neighbor', language) : post.author} className="w-full h-full object-cover" />
                   ) : (
-                    (isGuest ? 'Neighbor' : post.author).charAt(0)
+                    (isGuest ? t('common.neighbor', language) : post.author).charAt(0)
                   )}
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1 cursor-pointer hover:underline" onClick={() => setSelectedNeighbor(post)}>
-                    {isGuest ? 'Neighbor' : post.author}
+                    {isGuest ? t('common.neighbor', language) : post.author}
                     {!isGuest && post.verified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
                   </h4>
                   <div className="flex items-center space-x-1 text-xs text-slate-600 dark:text-slate-400">
@@ -702,7 +712,7 @@ export default function Feed() {
                   variant="ghost" 
                   size="sm" 
                   className="h-8 w-8 p-0 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-                  onClick={() => addReport({ type: 'post', contentId: post.id, content: post.content, author: isGuest ? 'Neighbor' : post.author, reason: 'Flagged by user' })}
+                  onClick={() => addReport({ type: 'post', contentId: post.id, content: post.content, author: isGuest ? t('common.neighbor', language) : post.author, reason: 'Flagged by user' })}
                   title="Report post"
                 >
                   <Flag className="h-4 w-4" />
@@ -771,6 +781,7 @@ export default function Feed() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Post Image 1:1 Crop Modal */}
       {showCropModal && cropImageSrc && (
@@ -920,7 +931,7 @@ export default function Feed() {
                   {selectedNeighbor.avatar && !isGuest ? (
                     <img src={selectedNeighbor.avatar} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-4xl font-bold text-slate-400">{(isGuest ? 'Neighbor' : selectedNeighbor.author).charAt(0)}</span>
+                    <span className="text-4xl font-bold text-slate-400">{(isGuest ? t('common.neighbor', language) : selectedNeighbor.author).charAt(0)}</span>
                   )}
                 </div>
                 {!isGuest && (
@@ -936,7 +947,7 @@ export default function Feed() {
                 )}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                {isGuest ? 'Neighbor' : selectedNeighbor.author}
+                {isGuest ? t('common.neighbor', language) : selectedNeighbor.author}
                 {!isGuest && selectedNeighbor.verified && <BadgeCheck className="w-5 h-5 text-blue-500" />}
               </h2>
               <p className="text-slate-500 dark:text-slate-400 mt-1">{t('feed.resident_in', language)} {selectedNeighbor.locationScope === 'neighborhood' ? t('common.neighborhood', language).toLowerCase() : t('common.building', language).toLowerCase()}</p>
@@ -963,87 +974,12 @@ export default function Feed() {
         </div>
       )}
 
-      {activeMoment && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
-          <div className="flex items-center justify-between p-4 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/60 to-transparent">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-white">
-                {activeMoment.avatar && !isGuest ? (
-                  <img src={activeMoment.avatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-slate-800 flex items-center justify-center text-white font-bold">
-                    {(isGuest ? 'Neighbor' : activeMoment.author).charAt(0)}
-                  </div>
-                )}
-              </div>
-              <span className="text-white font-medium">{isGuest ? 'Neighbor' : activeMoment.author}</span>
-              {!isGuest && activeMoment.verified && <BadgeCheck className="w-4 h-4 text-blue-400" />}
-            </div>
-            <button onClick={() => setActiveMoment(null)} className="text-white hover:bg-white/20 p-2 rounded-full">
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-          
-          <div className="flex-1 flex items-center justify-center p-4 relative">
-            <div className="relative max-h-full max-w-full">
-              <img src={activeMoment.image} alt="Moment" className="max-h-full max-w-full object-contain rounded-xl" />
-              {activeMoment.textOverlay && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-3xl font-bold text-center drop-shadow-md bg-black/30 p-2 rounded whitespace-pre-wrap max-w-[80%]">
-                  {activeMoment.textOverlay}
-                </div>
-              )}
-            </div>
-            
-            {/* Reactions placed on the right side in a straight orbit (3 P.M.) */}
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center space-y-4">
-              {['👍', '❤️', '🔥', '😂', '😲', '😢'].map((emoji, idx) => (
-                <button 
-                  key={emoji}
-                  className="w-12 h-12 bg-black/40 hover:bg-black/60 border border-white/20 rounded-full text-2xl flex items-center justify-center transition-all hover:scale-110"
-                  onClick={async () => {
-                    if (activeMoment) {
-                      try {
-                        const newReactions = [...(activeMoment.reactions || []), emoji];
-                        await updateDoc(doc(db, 'moments', activeMoment.id), {
-                          reactions: newReactions
-                        });
-                      } catch (e) {
-                        console.error('Failed to react:', e);
-                      }
-                    }
-                    setActiveMoment(null);
-                  }}
-                  style={{ animationDelay: `${idx * 0.1}s` }}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="p-4 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent">
-            <Input 
-              placeholder="Reply to moment..." 
-              value={momentReply}
-              onChange={(e) => setMomentReply(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && momentReply.trim()) {
-                  if (isGuest) {
-                    alert('Guests cannot send messages.');
-                    return;
-                  }
-                  const text = `[Reply to your moment] ${momentReply}`;
-                  openOrCreateChat(`neighbor-${activeMoment.author}`, activeMoment.author, 'neighbor');
-                  // We might need to get the chat id, but openOrCreateChat adds to the list, we can just navigate to /chat
-                  navigate('/chat');
-                  setMomentReply('');
-                  setActiveMoment(null);
-                }
-              }}
-              className="bg-white/20 border-none text-white placeholder:text-white/60" 
-            />
-          </div>
-        </div>
+      {activeMomentIndex !== null && (
+        <MomentViewer 
+          moments={moments} 
+          initialIndex={activeMomentIndex} 
+          onClose={() => setActiveMomentIndex(null)} 
+        />
       )}
     </div>
   );

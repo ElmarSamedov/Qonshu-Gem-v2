@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
+import { useChatStore } from '../store/useChatStore';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -21,6 +23,8 @@ export default function CarNumbers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<any>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const { openOrCreateChat, sendMessage } = useChatStore();
+  const navigate = useNavigate();
   
   const cars = user?.cars || [];
   
@@ -58,7 +62,7 @@ export default function CarNumbers() {
             c.number.toLowerCase().replace(/[^a-z0-9]/g, '') === searchQuery.toLowerCase().replace(/[^a-z0-9]/g, '')
           );
           if (matchingCar) {
-            foundUser = { name: userData.name, apartment: userData.apartment, car: matchingCar };
+            foundUser = { id: doc.id, name: userData.name, apartment: userData.apartment, car: matchingCar };
           }
         }
       });
@@ -187,9 +191,11 @@ export default function CarNumbers() {
                 <p className="text-xs text-slate-500 mt-1">Identity is hidden for privacy.</p>
               </div>
               <Button 
-                onClick={() => {
-                  /* Normally this would use openOrCreateChat, but we don't have it imported here. Let's alert for now, or just use a generic action. */
-                  alert('Notification sent to the owner anonymously.');
+                onClick={async () => {
+                  const chatId = `neighbor-${searchResult.id}`;
+                  await openOrCreateChat(chatId, `Neighbor (${searchResult.car.number})`, 'neighbor');
+                  await sendMessage(chatId, `A neighbor reports: your car ${searchResult.car.number} is blocking access`, undefined, 'system');
+                  navigate('/chat');
                 }}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
               >

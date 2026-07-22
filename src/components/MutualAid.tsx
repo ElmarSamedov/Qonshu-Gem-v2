@@ -226,7 +226,7 @@ export default function MutualAid() {
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center text-xs text-slate-600 dark:text-slate-400 font-medium">
-                    <span className="text-slate-700 dark:text-slate-300 mr-1">{isGuest ? 'Neighbor' : req.author}</span>
+                    <span className="text-slate-700 dark:text-slate-300 mr-1">{isGuest ? t('common.neighbor', language) : req.author}</span>
                     {!isGuest && req.verified && <BadgeCheck className="h-3 w-3 text-blue-500 mr-2" />}
                   </div>
                   {!isGuest && (

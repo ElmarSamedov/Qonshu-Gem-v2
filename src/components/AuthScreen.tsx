@@ -42,7 +42,7 @@ export default function AuthScreen() {
   const handleProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName || !lastName || !country || !city || !street || !building || !apartment) {
-      setError('Please fill out all required fields');
+      setError('Please fill out all required fields'); alert('Please fill out all required fields marked with *');
       return;
     }
     setError('');
@@ -112,7 +112,7 @@ export default function AuthScreen() {
                       placeholder="you@example.com or +994..."
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white dark:bg-slate-800"
+                      className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -122,7 +122,7 @@ export default function AuthScreen() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white dark:bg-slate-800"
+                      className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                     />
                   </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
@@ -139,9 +139,8 @@ export default function AuthScreen() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <Button type="button" variant="outline" onClick={() => handleSocialLogin('Google')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Google</Button>
-                    <Button type="button" variant="outline" onClick={() => handleSocialLogin('Facebook')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Facebook</Button>
                     <Button type="button" variant="outline" onClick={() => handleSocialLogin('Apple')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Apple</Button>
                   </div>
                 </form>
@@ -149,25 +148,25 @@ export default function AuthScreen() {
 
               {step === 2 && (
                 <form onSubmit={handleProfile} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">First Name</label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">* First Name</label>
                       <Input
                         type="text"
                         placeholder="John"
                         value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        className="bg-white dark:bg-slate-800"
+                        onChange={(e) => setFirstName(e.target.value)} required
+                        className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Last Name</label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">* Last Name</label>
                       <Input
                         type="text"
                         placeholder="Doe"
                         value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        className="bg-white dark:bg-slate-800"
+                        onChange={(e) => setLastName(e.target.value)} required
+                        className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                       />
                     </div>
                   </div>
@@ -179,75 +178,66 @@ export default function AuthScreen() {
                       placeholder="+994501234567"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="bg-white dark:bg-slate-800"
+                      className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                     />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Country</label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">* Country</label>
                       <Input
                         type="text"
                         placeholder="e.g. Azerbaijan"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                        className="bg-white dark:bg-slate-800"
+                        className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">City</label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">* City</label>
                       <Input
                         type="text"
                         placeholder="e.g. Baku"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="bg-white dark:bg-slate-800"
+                        className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
+                    
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Town</label>
-                      <Input
-                        type="text"
-                        placeholder="Sabail"
-                        value={town}
-                        onChange={(e) => setTown(e.target.value)}
-                        className="bg-white dark:bg-slate-800"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">District</label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">* District</label>
                       <Input
                         type="text"
                         placeholder="Sabail"
                         value={district}
                         onChange={(e) => setDistrict(e.target.value)}
-                        className="bg-white dark:bg-slate-800"
+                        className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Street</label>
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">* Street</label>
                     <Input
                       type="text"
                       placeholder="e.g. Nizami St"
                       value={street}
-                      onChange={(e) => setStreet(e.target.value)}
-                      className="bg-white dark:bg-slate-800"
+                      onChange={(e) => setStreet(e.target.value)} required
+                      className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Building</label>
+                      <label className="text-xs font-medium text-slate-700 dark:text-slate-300">* Building</label>
                       <Input
                         type="text"
                         placeholder="42"
                         value={building}
-                        onChange={(e) => setBuilding(e.target.value)}
+                        onChange={(e) => setBuilding(e.target.value)} required
                         className="bg-white dark:bg-slate-800 text-center"
                       />
                     </div>
@@ -262,12 +252,12 @@ export default function AuthScreen() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-medium text-slate-700 dark:text-slate-300">Apartment</label>
+                      <label className="text-xs font-medium text-slate-700 dark:text-slate-300">* Apartment</label>
                       <Input
                         type="text"
                         placeholder="15"
                         value={apartment}
-                        onChange={(e) => setApartment(e.target.value)}
+                        onChange={(e) => setApartment(e.target.value)} required
                         className="bg-white dark:bg-slate-800 text-center"
                       />
                     </div>

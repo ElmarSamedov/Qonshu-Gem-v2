@@ -16,6 +16,7 @@ import Groups from './components/Groups';
 import LocalBusinesses from './components/LocalBusinesses';
 import Chat from './components/Chat';
 import GuestWelcome from './components/GuestWelcome';
+import OnboardingWizard from './components/onboarding/OnboardingWizard';
 
 export default function App() {
   const { user, initAuthListener } = useAuthStore();
@@ -40,6 +41,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/welcome" element={isGuest ? <GuestWelcome /> : <Navigate to="/" replace />} />
+        <Route path="/onboarding" element={isGuest ? <OnboardingWizard /> : <Navigate to="/" replace />} />
         <Route path="/auth" element={isGuest ? <AuthScreen /> : <Navigate to="/" replace />} />
         
         <Route path="/" element={<Layout />}>

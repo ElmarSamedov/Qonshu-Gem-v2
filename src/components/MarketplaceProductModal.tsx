@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { X, MessageCircle, RefreshCw, HandHeart, Tag, MapPin, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { X, MessageCircle, RefreshCw, HandHeart, Tag, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
+import { useLanguageStore } from '../store/useLanguageStore';
+import { t } from '../lib/i18n';
 import { useAuthStore } from '../store/useAuthStore';
 import { useChatStore } from '../store/useChatStore';
 import { useNavigate } from 'react-router-dom';
 
 export default function MarketplaceProductModal({ item, onClose }: { item: any, onClose: () => void }) {
+  const { language } = useLanguageStore();
   const { user } = useAuthStore();
   const { openOrCreateChat } = useChatStore();
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [escrowStatus, setEscrowStatus] = useState<'none' | 'pending' | 'success'>('none');
-
   if (!item || !user) return null;
 
   const images = item.images || [item.image];
@@ -19,13 +20,6 @@ export default function MarketplaceProductModal({ item, onClose }: { item: any, 
   const handleContactSeller = () => {
     openOrCreateChat(`neighbor-seller-${item.id}`, `Seller of ${item.title}`, 'neighbor');
     navigate('/chat');
-  };
-
-  const handleEscrow = () => {
-    setEscrowStatus('pending');
-    setTimeout(() => {
-      setEscrowStatus('success');
-    }, 1500);
   };
 
   return (
@@ -81,7 +75,7 @@ export default function MarketplaceProductModal({ item, onClose }: { item: any, 
                 {item.type === 'lend' ? <RefreshCw className="h-4 w-4 mr-1.5" /> :
                  item.type === 'giveaway' ? <HandHeart className="h-4 w-4 mr-1.5" /> :
                  <Tag className="h-4 w-4 mr-1.5" />}
-                <span className="capitalize">{item.type}</span>
+                <span className="capitalize">{t(('market.' + item.type) as any, language)}</span>
               </div>
               <div className="flex items-center text-slate-500 dark:text-slate-400">
                 <MapPin className="h-4 w-4 mr-1" />
@@ -94,32 +88,8 @@ export default function MarketplaceProductModal({ item, onClose }: { item: any, 
             {item.description || "This neighbor hasn't provided a detailed description. Please contact them for more info."}
           </div>
 
-          {item.type === 'sell' && (
-            <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 rounded-xl p-4">
-              <h4 className="font-semibold text-orange-800 dark:text-orange-300 mb-2">Secure Neighborhood Transaction</h4>
-              <p className="text-xs text-orange-600 dark:text-orange-400 mb-3">
-                Use our escrow layer to hold funds securely until you physically receive the item.
-              </p>
-              {escrowStatus === 'none' && (
-                <Button onClick={handleEscrow} size="sm" className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                  Pay via Escrow ({item.price})
-                </Button>
-              )}
-              {escrowStatus === 'pending' && (
-                <Button disabled size="sm" className="w-full bg-orange-400 text-white">
-                  Processing Payment...
-                </Button>
-              )}
-              {escrowStatus === 'success' && (
-                <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400 font-medium p-2 bg-green-50 dark:bg-green-500/10 rounded">
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>Funds held in Escrow</span>
-                </div>
-              )}
-            </div>
-          )}
           
-          <Button onClick={handleContactSeller} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 text-lg">
+            <Button onClick={handleContactSeller} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 text-lg">
             <MessageCircle className="w-5 h-5 mr-2" />
             Contact Seller
           </Button>

@@ -257,7 +257,7 @@ export default function Marketplace() {
                     {item.type === 'lend' ? <RefreshCw className="h-3 w-3 mr-1 text-blue-400" /> :
                      item.type === 'giveaway' ? <HandHeart className="h-3 w-3 mr-1 text-green-400" /> :
                      <Tag className="h-3 w-3 mr-1 text-orange-400" />}
-                    <span className="capitalize">{item.type}</span>
+                    <span className="capitalize">{t(('market.' + item.type) as any, language)}</span>
                   </div>
                   {!isGuest && (
                     <div className="flex items-center space-x-2 text-slate-500">
@@ -270,7 +270,7 @@ export default function Marketplace() {
                 </div>
                 {isGuest && (
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium flex items-center">
-                    <Lock className="w-3 h-3 mr-1 text-slate-500 shrink-0" /> Seller info hidden
+                    <Lock className="w-3 h-3 mr-1 text-slate-500 shrink-0" /> {t('common.sell', language)}er info hidden
                   </div>
                 )}
                 {!isGuest && (
@@ -303,9 +303,9 @@ export default function Marketplace() {
         <Card className="glass-panel border-indigo-500/20 bg-indigo-500/5 mt-6">
           <CardContent className="p-6 text-center space-y-3">
             <Lock className="h-8 w-8 text-indigo-400 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Local Marketplace Truncated</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">{t('market.truncated', language)}</h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              Guests can view basic marketplace listing titles, but prices, exact distances, views, and seller information are reserved for registered neighbors.
+              {t('market.truncated_desc', language)}
             </p>
           </CardContent>
         </Card>

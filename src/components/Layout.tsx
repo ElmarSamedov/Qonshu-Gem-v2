@@ -66,7 +66,7 @@ export default function Layout() {
   }
 
   return (
-    <div className={`mx-auto flex h-screen max-w-md flex-col text-slate-100 sm:max-w-4xl sm:flex-row overflow-hidden sm:rounded-[2rem] sm:my-8 sm:h-[calc(100vh-4rem)] border border-black/10 dark:border-white/10 relative shadow-2xl ${seniorMode ? 'senior-mode' : ''} ${user?.isAnonymous ? 'bg-[#4d6c5b]' : 'bg-transparent'}`}>
+    <div className={`mx-auto flex h-screen max-w-md flex-col text-slate-100 sm:max-w-6xl sm:flex-row overflow-hidden sm:rounded-[2rem] sm:my-8 sm:h-[calc(100vh-4rem)] border border-black/10 dark:border-white/10 relative shadow-2xl ${seniorMode ? 'senior-mode' : ''} ${user?.isAnonymous ? 'bg-[#4d6c5b]' : 'bg-transparent'}`}>
       {/* Background glow effects */}
       <div className="absolute top-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full bg-blue-500/20 blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-orange-500/10 blur-[150px] pointer-events-none"></div>
@@ -144,7 +144,7 @@ export default function Layout() {
               </button>
               
               {showNotifications && (
-                <div className="absolute left-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-black/15 dark:border-white/15 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute left-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-black/15 dark:border-white/15 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/[0.02] dark:bg-white/[0.02]">
                     <h3 className="font-bold text-slate-900 dark:text-white">Notifications</h3>
                     <button onClick={markAllAsRead} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold">Mark all as read</button>
@@ -165,7 +165,7 @@ export default function Layout() {
             </div>
           </div>
 
-          {/* Night Mode switcher */}
+          {/* {t('common.night_mode', language)} switcher */}
           <div className="flex items-center space-x-2">
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Night Mode</span>
             <button 

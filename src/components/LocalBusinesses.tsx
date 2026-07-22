@@ -103,9 +103,9 @@ export default function LocalBusinesses() {
         <Card className="glass-panel border-indigo-500/20 bg-indigo-500/5 mb-4">
           <CardContent className="p-4 text-center space-y-2">
             <Lock className="h-5 w-5 text-indigo-400 mx-auto" />
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Contact Locked for Guests</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('business.locked', language)}</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              Guests can view local professional and business listings, but direct contact and live messaging are reserved for registered neighbors.
+              {t('business.locked_desc', language)}
             </p>
           </CardContent>
         </Card>
@@ -151,7 +151,7 @@ export default function LocalBusinesses() {
                 <div className="flex flex-col space-y-2">
                   {isGuest ? (
                     <Button disabled className="bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed text-xs flex items-center justify-center">
-                      <Lock className="w-3.5 h-3.5 mr-1" /> Visit
+                      <Lock className="w-3.5 h-3.5 mr-1" /> {t('common.visit', language)}
                     </Button>
                   ) : (
                     <VerificationGate compact={true}>

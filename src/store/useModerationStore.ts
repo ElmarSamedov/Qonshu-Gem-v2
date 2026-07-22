@@ -37,29 +37,13 @@ export const useModerationStore = create<ModerationState>((set) => ({
   addReport: async (report) => {
     const id = Math.random().toString(36).substring(7);
     
-    // Simulate AI Moderation scoring
-    const textToAnalyze = `${report.reason} ${report.content}`.toLowerCase();
-    let nsfwScore = Math.random() * 0.3; // Base low score
-    let arLawScore = Math.random() * 0.3;
-    
-    // Slight bias for literal matches to simulate the AI catching obvious ones
-    if (textToAnalyze.includes('nsfw') || textToAnalyze.includes('inappropriate') || textToAnalyze.includes('naked') || textToAnalyze.includes('adult')) {
-      nsfwScore += 0.6;
-    }
-    if (textToAnalyze.includes('law') || textToAnalyze.includes('illegal') || textToAnalyze.includes('qanun') || textToAnalyze.includes('закон')) {
-      arLawScore += 0.6;
-    }
-
     const newReport: Report = {
       ...report,
       id,
       timestamp: new Date().toISOString(),
-      status: 'pending',
-      aiScores: {
-        nsfw: Math.min(1, nsfwScore),
-        arLaw: Math.min(1, arLawScore)
-      }
+      status: 'pending'
     };
+
     try {
       await setDoc(doc(db, 'reports', id), newReport);
     } catch (e) {
