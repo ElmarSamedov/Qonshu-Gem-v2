@@ -40,7 +40,7 @@ service cloud.firestore {
 
     // --- USERS ---
     match /users/{userId} {
-      allow read: if true;
+      allow read: if isSignedIn();
       allow create: if isSignedIn() && isOwner(userId) && 
                       incoming().uid == request.auth.uid && 
                       (incoming().role == 'user' || (request.auth.token.email == 'elmar.myspace@gmail.com' && incoming().role == 'moderator')) && // Force default role on signup to prevent privilege escalation
@@ -51,7 +51,7 @@ service cloud.firestore {
                       incoming().uid == existing().uid &&
                       incoming().diff(existing()).affectedKeys().hasOnly([
                         'name', 'phone', 'avatar', 'nationality', 'birthday', 
-                        'allowBirthdayPublic', 'cars', 'interests', 'locations', 
+                        'allowBirthdayPublic', 'cars', 'interests', 'discoverableInterests', 'locations', 
                         'activeLocationId', 'district', 'address', 'is_verified', 
                         'trust_scores', 'trust_level'
                       ])
@@ -129,6 +129,14 @@ service cloud.firestore {
       allow create: if isSignedIn() && incoming().userId == request.auth.uid && incoming().status == 'pending';
       allow update: if isSignedIn() && (isModerator() || isAdmin());
       allow delete: if isAdmin();
+    }
+
+    // --- NOTIFICATIONS ---
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn(); 
+      allow update: if isSignedIn() && existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
 
     // --- REPORTS ---

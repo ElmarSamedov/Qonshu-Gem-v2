@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useLanguageStore } from '../store/useLanguageStore';
+import { useInterestsStore, InterestNode } from '../store/useInterestsStore';
 
-interface InterestNode {
-  id: string;
-  parent_id: string | null;
-  interest_en: string;
-  interest_ru: string;
-  interest_az: string;
-  level: string;
-}
+
 
 interface InterestsSelectorProps {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
+  discoverableIds?: string[];
+  onDiscoverableChange?: (ids: string[]) => void;
 }
 
-export default function InterestsSelector({ selectedIds, onChange }: InterestsSelectorProps) {
+export default function InterestsSelector({ selectedIds, onChange, discoverableIds = [], onDiscoverableChange }: InterestsSelectorProps) {
   const { language } = useLanguageStore();
   
   const [selectedLevel1, setSelectedLevel1] = useState('');
@@ -23,21 +20,11 @@ export default function InterestsSelector({ selectedIds, onChange }: InterestsSe
   const [selectedLevel3, setSelectedLevel3] = useState('');
   const [selectedLevel4, setSelectedLevel4] = useState('');
   
-  const [interests, setInterests] = useState<InterestNode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { interests, loading, fetchInterests } = useInterestsStore();
 
   useEffect(() => {
-    fetch('/interests.json')
-      .then(res => res.json())
-      .then(data => {
-        setInterests(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to load interests', err);
-        setLoading(false);
-      });
-  }, []);
+    fetchInterests();
+  }, [fetchInterests]);
 
   const handleAddInterest = () => {
     const interestId = selectedLevel4 || selectedLevel3 || selectedLevel2 || selectedLevel1;
@@ -178,12 +165,34 @@ export default function InterestsSelector({ selectedIds, onChange }: InterestsSe
             {selectedIds.map(id => {
               const interest = interests.find(i => i.id === id);
               if (!interest) return null;
+              const isDiscoverable = discoverableIds.includes(id);
               return (
                 <div key={id} className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-sm font-medium flex items-center gap-2 border border-indigo-100 dark:border-indigo-800">
                   {getName(interest)}
+                  {onDiscoverableChange && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isDiscoverable) {
+                          onDiscoverableChange(discoverableIds.filter(i => i !== id));
+                        } else {
+                          onDiscoverableChange([...discoverableIds, id]);
+                        }
+                      }}
+                      className={`ml-1 ${isDiscoverable ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'} hover:text-indigo-800 dark:hover:text-indigo-200`}
+                      title={isDiscoverable ? "Discoverable by others" : "Hidden from others"}
+                    >
+                      {isDiscoverable ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
                   <button 
                     type="button"
-                    onClick={() => onChange(selectedIds.filter(i => i !== id))}
+                    onClick={() => {
+                      onChange(selectedIds.filter(i => i !== id));
+                      if (onDiscoverableChange && isDiscoverable) {
+                        onDiscoverableChange(discoverableIds.filter(i => i !== id));
+                      }
+                    }}
                     className="hover:text-indigo-900 dark:hover:text-indigo-100 font-bold ml-1"
                   >
                     &times;

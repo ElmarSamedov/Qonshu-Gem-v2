@@ -6,6 +6,7 @@ import { useLanguageStore } from '../../store/useLanguageStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import { t } from '../../lib/i18n';
+import { requestNotificationPermission } from '../../lib/messaging';
 
 export default function SettingsSection() {
   const { language } = useLanguageStore();
@@ -27,17 +28,12 @@ export default function SettingsSection() {
       return;
     }
     
-    if (Notification.permission === 'granted') {
+    const success = await requestNotificationPermission();
+    if (success || Notification.permission === 'granted') {
       setNotifications(prev => ({ ...prev, pushEnabled: true }));
       new Notification('Notifications enabled!', { body: 'You will now receive push alerts.' });
-    } else if (Notification.permission !== 'denied') {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setNotifications(prev => ({ ...prev, pushEnabled: true }));
-        new Notification('Notifications enabled!', { body: 'You will now receive push alerts.' });
-      } else {
-        setNotifications(prev => ({ ...prev, pushEnabled: false }));
-      }
+    } else {
+      setNotifications(prev => ({ ...prev, pushEnabled: false }));
     }
   };
 

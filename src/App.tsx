@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
 import Layout from './components/Layout';
+import DistrictPortrait from './components/DistrictPortrait';
 import AuthScreen from './components/AuthScreen';
 import Feed from './components/Feed';
 import Marketplace from './components/Marketplace';
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="mutual-aid" element={<MutualAid />} />
           <Route path="marketplace" element={<Marketplace />} />
           <Route path="businesses" element={<LocalBusinesses />} />
+          <Route path="portrait" element={<DistrictPortrait />} />
           <Route path="events" element={<CalendarView />} />
           <Route path="polls" element={<Polls />} />
           <Route path="recommendations" element={<Recommendations />} />

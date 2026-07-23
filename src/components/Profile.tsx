@@ -11,6 +11,7 @@ import BirthdaySettings from "./BirthdaySettings";
 import InterestsSelector from "./InterestsSelector";
 import NationalitySelector from "./NationalitySelector";
 
+import GamificationCard from './profile/GamificationCard';
 import UserTrustCard from './profile/UserTrustCard';
 import TrustJourney from './profile/TrustJourney';
 import MyLocations from './profile/MyLocations';
@@ -19,6 +20,7 @@ import MyNeighbors from './profile/MyNeighbors';
 import SettingsSection from './profile/SettingsSection';
 import LanguageSelector from './profile/LanguageSelector';
 import EmergencyContact from './profile/EmergencyContact';
+import SafetyCheckInSettings from './profile/SafetyCheckInSettings';
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuthStore();
@@ -41,9 +43,11 @@ export default function Profile() {
       <div className="grid gap-6 md:grid-cols-3">
         {/* User Info Column */}
         <div className="md:col-span-1 space-y-6">
+          <GamificationCard />
           <Card className="glass-panel border-black/10 dark:border-white/10">
             <UserTrustCard />
             <EmergencyContact />
+            <SafetyCheckInSettings />
             <CarNumbers />
             <div className="p-6 border-b border-black/10 dark:border-white/10">
               <NationalitySelector />

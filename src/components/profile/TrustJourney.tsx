@@ -15,6 +15,7 @@ export default function TrustJourney() {
   const identity = user.trust_scores.identity || 0;
   const location = user.trust_scores.location || 0;
   const community = user.trust_scores.community || 0;
+  const reliabilityScore = user.reliabilityScore || 0;
 
   const levels = [
     { threshold: 0, title: 'Newbie', icon: <ShieldAlert className="w-5 h-5" />, benefits: 'Can read public posts.' },

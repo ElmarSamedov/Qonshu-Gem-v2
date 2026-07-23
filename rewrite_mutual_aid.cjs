@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+const fs = require('fs');
+
+const content = `import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -49,7 +51,7 @@ export default function MutualAid() {
         type: newRequest.type,
         author: user.name,
         authorId: user.uid,
-        verified: user.trust_level >= 3,
+        verified: user.verified || false,
         district: user.district || 'Unknown',
         status: 'open',
         timestamp: serverTimestamp(),
@@ -91,7 +93,7 @@ export default function MutualAid() {
         responders: arrayUnion({ uid: user.uid, name: user.name })
       });
     } catch(e) {}
-    openOrCreateChat(`neighbor-${req.authorId}`, req.author, 'neighbor');
+    openOrCreateChat(\`neighbor-\${req.authorId}\`, req.author, 'neighbor');
     navigate('/chat');
   };
 
@@ -110,13 +112,13 @@ export default function MutualAid() {
         <div className="flex bg-black/5 dark:bg-white/5 rounded-lg p-1">
           <button
             onClick={() => setViewMode('requests')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${viewMode === 'requests' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={\`px-3 py-1.5 text-sm font-medium rounded-md transition-colors \${viewMode === 'requests' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}\`}
           >
             Requests
           </button>
           <button
             onClick={() => setViewMode('registry')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${viewMode === 'registry' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={\`px-3 py-1.5 text-sm font-medium rounded-md transition-colors \${viewMode === 'registry' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}\`}
           >
             Registry
           </button>
@@ -153,22 +155,22 @@ export default function MutualAid() {
                     <button
                       type="button"
                       onClick={() => setNewRequest({...newRequest, type: 'service'})}
-                      className={`py-2 rounded-lg border text-sm font-medium transition-all ${
+                      className={\`py-2 rounded-lg border text-sm font-medium transition-all \${
                         newRequest.type === 'service' 
                           ? 'bg-rose-500/20 border-rose-500 text-rose-400' 
                           : 'border-black/10 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-black/5 dark:bg-white/5'
-                      }`}
+                      }\`}
                     >
                       {t('aid.service', language)}
                     </button>
                     <button
                       type="button"
                       onClick={() => setNewRequest({...newRequest, type: 'borrow'})}
-                      className={`py-2 rounded-lg border text-sm font-medium transition-all ${
+                      className={\`py-2 rounded-lg border text-sm font-medium transition-all \${
                         newRequest.type === 'borrow' 
                           ? 'bg-blue-500/20 border-blue-500 text-blue-400' 
                           : 'border-black/10 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-black/5 dark:bg-white/5'
-                      }`}
+                      }\`}
                     >
                       {t('aid.borrow', language)}
                     </button>
@@ -205,14 +207,14 @@ export default function MutualAid() {
 
       <div className="space-y-4">
         {requests.map(req => (
-          <Card key={req.id} className={`glass-panel border-black/10 dark:border-white/10 overflow-hidden ${req.status === 'fulfilled' ? 'opacity-60' : ''}`}>
+          <Card key={req.id} className={\`glass-panel border-black/10 dark:border-white/10 overflow-hidden \${req.status === 'fulfilled' ? 'opacity-60' : ''}\`}>
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex items-center space-x-2 mb-1">
-                    <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${
+                    <span className={\`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border \${
                       req.type === 'borrow' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                    }`}>
+                    }\`}>
                       {req.type}
                     </span>
                     {req.status === 'fulfilled' && (
@@ -221,7 +223,7 @@ export default function MutualAid() {
                       </span>
                     )}
                   </div>
-                  <CardTitle className={`text-lg mt-1 ${req.status === 'fulfilled' ? 'text-slate-600 dark:text-slate-400 line-through' : 'text-slate-900 dark:text-white'}`}>
+                  <CardTitle className={\`text-lg mt-1 \${req.status === 'fulfilled' ? 'text-slate-600 dark:text-slate-400 line-through' : 'text-slate-900 dark:text-white'}\`}>
                     {req.title}
                   </CardTitle>
                 </div>
@@ -312,3 +314,6 @@ export default function MutualAid() {
     </div>
   );
 }
+`;
+fs.writeFileSync('src/components/MutualAid.tsx', content);
+console.log("Rewrote MutualAid.tsx");

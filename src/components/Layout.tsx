@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, Store, Calendar, Bell, MessageCircle, User, Shield, BarChart2, HeartHandshake, Briefcase, ShoppingBag, Users, Sun, Moon } from 'lucide-react';
+import { Home, Store, Calendar, Bell, MessageCircle, User, Shield, BarChart2, HeartHandshake, Briefcase, ShoppingBag, Users, Sun, Moon, PieChart, Heart } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -47,6 +47,7 @@ export default function Layout() {
     { to: '/mutual-aid', icon: HeartHandshake, label: t('nav.help', language) },
     { to: '/marketplace', icon: ShoppingBag, label: t('nav.market', language) },
     { to: '/businesses', icon: Store, label: t('nav.businesses', language) },
+    { to: '/portrait', icon: PieChart, label: 'Portrait' },
     { to: '/events', icon: Calendar, label: t('nav.events', language) },
     { to: '/polls', icon: BarChart2, label: t('nav.polls', language) },
     { to: '/recommendations', icon: Briefcase, label: t('nav.recommendations', language) },
@@ -132,6 +133,36 @@ export default function Layout() {
 
         <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-black/10 dark:border-white/10 p-3 flex justify-between items-center text-sm sm:static sm:z-auto sm:bg-transparent sm:border-none sm:px-8 sm:pt-6 sm:pb-0">
           <div className="flex items-center space-x-4">
+            {!isGuest && user?.safetyCheckIn?.enabled && (
+              <button 
+                onClick={() => {
+                  updateUser({
+                    safetyCheckIn: {
+                      enabled: user.safetyCheckIn?.enabled || false,
+                      deadlineTime: user.safetyCheckIn?.deadlineTime || '18:00',
+                      contactUids: user.safetyCheckIn?.contactUids || [],
+                      pendingContactUids: user.safetyCheckIn?.pendingContactUids || [],
+                      ...user.safetyCheckIn,
+                      lastCheckInDate: new Date().toISOString().split('T')[0]
+                    }
+                  });
+                  // Also update streak if needed, or trigger gamification
+                  fetch('/api/gamification/silent-action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUid: user.uid, action: 'daily_login' })
+                  }).catch(console.error);
+                }}
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  user?.safetyCheckIn?.lastCheckInDate === new Date().toISOString().split('T')[0] 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' 
+                    : 'bg-rose-500 text-white shadow-md shadow-rose-500/20 hover:bg-rose-600 animate-pulse'
+                }`}
+              >
+                <Heart className="w-3.5 h-3.5" />
+                <span>{user?.safetyCheckIn?.lastCheckInDate === new Date().toISOString().split('T')[0] ? "Checked In" : "I'm OK"}</span>
+              </button>
+            )}
             <div className="relative">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}

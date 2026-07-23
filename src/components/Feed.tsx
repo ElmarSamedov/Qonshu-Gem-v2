@@ -1,3 +1,4 @@
+import { triggerGamification } from '../lib/gamification';
 import MomentViewer from "./MomentViewer";
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
@@ -240,9 +241,9 @@ export default function Feed() {
     const unsubMoments = onSnapshot(qMoments, (snapshot) => {
       if (snapshot.empty) {
         const defaultMoments = [
-          { id: 'moment-1', author: 'Tural S.', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=800&fit=crop', verified: true, reactions: ['👍', '❤️', '🔥'] },
-          { id: 'moment-2', author: 'Aysel H.', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=800&fit=crop', verified: false, reactions: ['🤩', '👍'] },
-          { id: 'moment-3', author: 'Kamran B.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=800&fit=crop', verified: false, reactions: [] },
+          { id: 'moment-1', authorId: user?.uid, author: 'Tural S.', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=800&fit=crop', verified: true, reactions: ['👍', '❤️', '🔥'] },
+          { id: 'moment-2', authorId: user?.uid, author: 'Aysel H.', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=800&fit=crop', verified: false, reactions: ['🤩', '👍'] },
+          { id: 'moment-3', authorId: user?.uid, author: 'Kamran B.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=800&fit=crop', verified: false, reactions: [] },
         ];
         defaultMoments.forEach(m => {
           setDoc(doc(db, 'moments', m.id), m);
@@ -300,6 +301,7 @@ export default function Feed() {
     try {
       const commentRef = doc(collection(db, 'posts', postId, 'comments'));
       await setDoc(commentRef, {
+        authorId: user?.uid,
         author: user?.name || 'You',
         avatar: user?.avatar || null,
         content: text.trim(),
@@ -349,6 +351,7 @@ export default function Feed() {
     
     const newId = 'moment-' + Date.now();
     const newMoment = {
+      authorId: user?.uid,
       author: user?.name || 'You',
       avatar: user?.avatar || null,
       image: momentDraft,
@@ -395,6 +398,7 @@ export default function Feed() {
     
     const newId = 'post-' + Date.now();
     const newPost: any = {
+      authorId: user?.uid,
       author: postAnonymously ? t('common.neighbor', language) : (user?.name || 'You'),
       avatar: postAnonymously ? null : (user?.avatar || null),
       type: postType,
@@ -414,6 +418,13 @@ export default function Feed() {
     
     try {
       await setDoc(doc(db, 'posts', newId), newPost);
+      if (user?.district) {
+        fetch('/api/stats/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ district: user.district, event: 'post_published' })
+        }).catch(e => console.error(e));
+      }
       setPostDraftContent('');
       setPostDraftImage(null);
       setPostAnonymously(false);

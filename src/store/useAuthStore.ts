@@ -1,3 +1,4 @@
+import { triggerGamification } from '../lib/gamification';
 import { create } from 'zustand';
 import { calculateNewTrustScores } from '../lib/trustScores';
 import { 
@@ -36,6 +37,15 @@ export interface TrustScores {
 
 export type TrustLevel = 0 | 1 | 2 | 3 | 4 | 5;
 export type LocationType = 'HOME' | 'WORK' | 'VACATION' | 'PARENTS' | 'OTHER';
+
+export interface SafetyCheckIn {
+  enabled: boolean;
+  deadlineTime: string; // e.g. "12:00"
+  contactUids: string[];
+  pendingContactUids: string[];
+  lastCheckInDate?: string;
+  escalatedDate?: string;
+}
 
 export interface UserLocation {
   id: string;
@@ -105,12 +115,20 @@ export interface User {
   allowBirthdayPublic?: boolean;
   cars?: { country: string; number: string }[];
   isAnonymous?: boolean;
+  points?: number;
+  reliabilityScore?: number;
+  badges?: string[];
+  safetyCheckIn?: SafetyCheckIn;
+  currentStreak?: number;
+  lastDailyLoginDate?: string;
+  fcmToken?: string;
   originalName?: string;
   originalAvatar?: string;
   nationality?: string;
   childrenCount?: number;
   childrenAges?: string;
   interests?: string[];
+  discoverableInterests?: string[];
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   business_details?: {
@@ -174,6 +192,80 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user: updatedUser });
     try {
       await updateDoc(doc(db, 'users', user.uid), updates);
+      
+      // If discoverableInterests was updated, trigger server-side matching
+      if (updates.discoverableInterests && user.district) {
+        fetch('/api/stats/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ district: user.district, event: 'interests_updated', data: { interests: updates.discoverableInterests } })
+        }).catch(console.error);
+        try {
+          const res = await fetch('/api/match-neighbors', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              uid: user.uid,
+              discoverableInterests: updates.discoverableInterests,
+              district: user.district,
+              name: user.name
+            })
+          });
+          const data = await res.json();
+          
+          if (data.mocked) {
+             // Fallback for AI Studio preview: perform matching client-side
+             // (Requires 'allow read: if isSignedIn()' on users collection)
+             console.log("Running client-side matching fallback for preview...");
+             const { collection, query, where, getDocs, setDoc, doc } = await import('firebase/firestore');
+             const usersRef = collection(db, 'users');
+             const queryInterests = updates.discoverableInterests.slice(0, 10);
+             if (queryInterests.length > 0) {
+               const q = query(
+                 usersRef, 
+                 where('district', '==', user.district),
+                 where('discoverableInterests', 'array-contains-any', queryInterests)
+               );
+               const snapshot = await getDocs(q);
+               
+               let matchFound = false;
+               snapshot.forEach((userDoc) => {
+                 if (userDoc.id === user.uid) return;
+                 const neighbor = userDoc.data();
+                 const matches = queryInterests.filter(i => (neighbor.discoverableInterests || []).includes(i));
+                 if (matches.length > 0) {
+                   matchFound = true;
+                   triggerGamification('match');
+                   // Create notif for neighbor
+                   setDoc(doc(collection(db, 'notifications')), {
+                     userId: userDoc.id,
+                     type: 'interest_match',
+                     title: 'New Neighbor Match!',
+                     message: `A new neighbor in ${user.district} shares your interests.`, interestIds: matches,
+                     matchedUserId: user.uid,
+                     read: false,
+                     timestamp: new Date().toISOString()
+                   });
+                   // Create notif for self
+                   setDoc(doc(collection(db, 'notifications')), {
+                     userId: user.uid,
+                     type: 'interest_match',
+                     title: 'Neighbor Match!',
+                     message: `We found a neighbor in ${user.district} who shares your interests.`, interestIds: matches,
+                     matchedUserId: userDoc.id,
+                     read: false,
+                     timestamp: new Date().toISOString()
+                   });
+                 }
+               });
+             }
+          }
+        } catch (matchErr) {
+          console.error("Failed to trigger neighbor matching:", matchErr);
+        }
+      }
     } catch (e) {
       console.error('Failed to sync user updates to Firestore:', e);
     }
@@ -297,6 +389,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       await setDoc(userDocRef, newUser);
       set({ user: newUser });
+
+      // Dispatch stats event
+      try {
+        fetch('/api/stats/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ district, event: 'user_joined', data: { verified: false, interests: newUser.discoverableInterests || [] } })
+        });
+      } catch (e) { console.error('Stats error:', e); }
     }
   },
   createGuestSession: () => set({ user: createGuestUser() }),
@@ -338,6 +439,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user: updatedUser });
     try {
       await setDoc(doc(db, 'users', user.uid), updatedUser);
+      
+      if (hasVerifiedLocation && !user.is_verified) {
+        fetch('/api/stats/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ district: updatedUser.district, event: 'user_verified' })
+        }).catch(e => console.error(e));
+      }
     } catch (e) {
       console.error('Failed to sync verified location to Firestore:', e);
     }
@@ -429,6 +538,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
           set({ user: userDocSnap.data() as User });
+          // Trigger daily login gamification
+          triggerGamification('daily_login');
         } else {
           set({
             user: {
