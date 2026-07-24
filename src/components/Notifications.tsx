@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { getDeterministicChatId } from '../lib/chatUtils';
+import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, where, onSnapshot, updateDoc, doc, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuthStore } from '../store/useAuthStore';
@@ -8,6 +9,7 @@ import { useInterestsStore } from '../store/useInterestsStore';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '../store/useChatStore';
+import { getDoc } from 'firebase/firestore';
 
 export default function Notifications() {
   const { user } = useAuthStore();
@@ -17,10 +19,23 @@ export default function Notifications() {
   const navigate = useNavigate();
   const { openOrCreateChat } = useChatStore();
   const [signaledIds, setSignaledIds] = useState<Set<string>>(new Set());
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const needsInterests = notifications.some(n => !n.read && n.interestIds && n.interestIds.length > 0);
-    if (needsInterests) {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDropdown]);
+
+  useEffect(() => {
+    if (interests.length === 0 && notifications.some(n => n.interestIds)) {
       fetchInterests();
     }
   }, [notifications, fetchInterests]);
@@ -43,7 +58,7 @@ export default function Notifications() {
       collection(db, 'notifications'),
       where('userId', '==', user.uid),
       orderBy('timestamp', 'desc'),
-      limit(10)
+      limit(20)
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
@@ -65,6 +80,10 @@ export default function Notifications() {
     }
   };
 
+  const markAllAsRead = () => {
+    notifications.filter(n => !n.read).forEach(n => markAsRead(n.id));
+  };
+
   const handleWave = async (notif: any) => {
     if (!user || !notif.matchedUserId) return;
     try {
@@ -81,7 +100,7 @@ export default function Notifications() {
       setSignaledIds(prev => new Set(prev).add(notif.id));
       
       if (data.matched) {
-        openOrCreateChat(`neighbor-${notif.matchedUserId}`, 'Neighbor', 'neighbor');
+        openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `neighbor-${notif.matchedUserId}`), 'Neighbor', 'neighbor');
         navigate('/chat');
         markAsRead(notif.id);
       }
@@ -92,78 +111,139 @@ export default function Notifications() {
 
   const handleOpenChat = (notif: any) => {
     if (!notif.matchedUserId) return;
-    openOrCreateChat(`neighbor-${notif.matchedUserId}`, 'Neighbor', 'neighbor');
+    openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `neighbor-${notif.matchedUserId}`), 'Neighbor', 'neighbor');
     navigate('/chat');
     markAsRead(notif.id);
   };
 
+  
+  const handleAcceptContact = async (notif: any) => {
+    if (!user || !notif.requesterUid) return;
+    try {
+      // Add requester to current user's contact list
+      const userRef = doc(db, 'users', user.uid);
+      const requesterRef = doc(db, 'users', notif.requesterUid);
+      
+      const userSnap = await getDoc(userRef);
+      const requesterSnap = await getDoc(requesterRef);
+      
+      if (requesterSnap.exists()) {
+        const requesterData = requesterSnap.data();
+        let safetyCheckIn = requesterData.safetyCheckIn || {};
+        let contactUids = safetyCheckIn.contactUids || [];
+        let pending = safetyCheckIn.pendingContactUids || [];
+        
+        if (!contactUids.includes(user.uid)) contactUids.push(user.uid);
+        pending = pending.filter((id: string) => id !== user.uid);
+        
+        safetyCheckIn.contactUids = contactUids;
+        safetyCheckIn.pendingContactUids = pending;
+        
+        await updateDoc(requesterRef, { safetyCheckIn });
+      }
+      
+      markAsRead(notif.id);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const unreadNotifs = notifications.filter(n => !n.read);
-  if (unreadNotifs.length === 0) return null;
 
   return (
-    <div className="fixed top-20 right-4 z-50 space-y-2 max-w-sm w-full">
-      <AnimatePresence>
-        {unreadNotifs.map(notif => (
-          <motion.div
-            key={notif.id}
-            initial={{ opacity: 0, x: 50, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-            className="bg-white dark:bg-slate-800 shadow-xl rounded-xl p-4 border border-indigo-100 dark:border-indigo-900/50 flex gap-3 relative"
-          >
-            <div className="bg-indigo-100 dark:bg-indigo-900/50 p-2 rounded-full h-fit text-indigo-600 dark:text-indigo-400">
-              <Bell className="w-5 h-5" />
-            </div>
-            
-            <div className="flex-1 pr-6">
-              <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{notif.title}</h4>
-              <p className="text-slate-600 dark:text-slate-300 text-sm mt-1">
-                {notif.message}
-                {notif.interestIds && notif.interestIds.length > 0 && (
-                  <span className="block font-medium mt-1 text-indigo-600 dark:text-indigo-400">
-                    {getInterestNames(notif.interestIds)}
-                  </span>
-                )}
-              </p>
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setShowDropdown(!showDropdown)}
+        className="relative p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none"
+      >
+        <Bell className="h-5 w-5 text-slate-700 dark:text-slate-300" />
+        {unreadNotifs.length > 0 && (
+          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+        )}
+      </button>
 
-              {notif.type === 'interest_match' && (
-                <div className="mt-3">
-                  {!signaledIds.has(notif.id) ? (
-                    <button
-                      onClick={() => handleWave(notif)}
-                      className="flex items-center text-sm bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
-                    >
-                      <span className="mr-2 text-base">👋</span> Send a silent wave
-                    </button>
-                  ) : (
-                    <span className="text-sm text-slate-500 italic">
-                      Wave sent! They'll be notified if they wave back.
-                    </span>
+      {showDropdown && (
+        <div className="absolute right-0 lg:left-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-black/15 dark:border-white/15 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/[0.02] dark:bg-white/[0.02]">
+            <h3 className="font-bold text-slate-900 dark:text-white">Notifications</h3>
+            {unreadNotifs.length > 0 && (
+              <button onClick={markAllAsRead} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold">Mark all as read</button>
+            )}
+          </div>
+          <div className="max-h-80 overflow-y-auto divide-y divide-black/5 dark:divide-white/5">
+            {notifications.length === 0 ? (
+              <div className="p-6 text-center text-sm text-slate-500">No notifications yet.</div>
+            ) : (
+              notifications.map(notif => (
+                <div key={notif.id} className={`p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${!notif.read ? 'bg-indigo-500/10 dark:bg-indigo-500/20' : ''}`}>
+                  <div className="flex justify-between items-start mb-1">
+                    <h4 className={`text-sm font-bold ${!notif.read ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-950 dark:text-white'}`}>{notif.title}</h4>
+                    {!notif.read && (
+                      <button onClick={() => markAsRead(notif.id)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                    {notif.message}
+                    {notif.interestIds && notif.interestIds.length > 0 && (
+                      <span className="block font-medium mt-1 text-indigo-600 dark:text-indigo-400">
+                        Shared interests: {getInterestNames(notif.interestIds)}
+                      </span>
+                    )}
+                  </p>
+                  
+                  {notif.type === 'interest_match' && (
+                    <div className="mt-3 flex space-x-2">
+                      <button
+                        onClick={() => handleWave(notif)}
+                        disabled={signaledIds.has(notif.id)}
+                        className="flex-1 flex justify-center items-center text-xs bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors disabled:opacity-50"
+                      >
+                        <Hand className="w-3 h-3 mr-1.5" /> {signaledIds.has(notif.id) ? 'Signaled' : 'Wave hello'}
+                      </button>
+                      <button
+                        onClick={() => handleOpenChat(notif)}
+                        className="flex-1 flex justify-center items-center text-xs border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                      >
+                        <MessageCircle className="w-3 h-3 mr-1.5" /> Message
+                      </button>
+                    </div>
+                  )}
+
+                  {notif.type === 'mutual_signal_match' && (
+                    <div className="mt-3">
+                      <button
+                        onClick={() => handleOpenChat(notif)}
+                        className="flex items-center justify-center w-full text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
+                      >
+                        <MessageCircle className="w-3 h-3 mr-1.5" /> Start Chat
+                      </button>
+                    </div>
+                  )}
+
+                  {notif.type === 'safety_contact_request' && (
+                    <div className="mt-3 flex space-x-2">
+                      <button
+                        onClick={() => handleAcceptContact(notif)}
+                        className="flex-1 flex justify-center items-center text-xs bg-rose-500 text-white px-3 py-1.5 rounded-lg hover:bg-rose-600 transition-colors"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => markAsRead(notif.id)}
+                        className="flex-1 flex justify-center items-center text-xs border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        Decline
+                      </button>
+                    </div>
                   )}
                 </div>
-              )}
-
-              {notif.type === 'mutual_signal_match' && (
-                <div className="mt-3">
-                  <button
-                    onClick={() => handleOpenChat(notif)}
-                    className="flex items-center text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" /> Start Chat
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => markAsRead(notif.id)}
-              className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

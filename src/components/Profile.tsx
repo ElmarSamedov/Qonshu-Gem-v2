@@ -18,6 +18,7 @@ import MyLocations from './profile/MyLocations';
 import WifiSharing from './profile/WifiSharing';
 import MyNeighbors from './profile/MyNeighbors';
 import SettingsSection from './profile/SettingsSection';
+import NeighborHelperCard from './profile/NeighborHelperCard';
 import LanguageSelector from './profile/LanguageSelector';
 import EmergencyContact from './profile/EmergencyContact';
 import SafetyCheckInSettings from './profile/SafetyCheckInSettings';
@@ -92,6 +93,7 @@ export default function Profile() {
           
           <MyNeighbors />
           <SettingsSection />
+            <NeighborHelperCard />
         </div>
       </div>
     </div>

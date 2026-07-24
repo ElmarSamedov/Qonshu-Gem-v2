@@ -1,5 +1,7 @@
 // @ts-nocheck
 import express from "express";
+import multer from "multer";
+import fs from "fs";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import multer from "multer";
@@ -46,6 +48,37 @@ const upload = multer({ storage: multer.memoryStorage() });
 async function startServer() {
   const app = express();
   const PORT = 3000;
+  
+  
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+  }
+
+  // Multer config
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname) || '.png';
+      cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + ext);
+    }
+  });
+  const upload = multer({ storage });
+
+  app.post('/api/upload', upload.single('file'), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    // Return the public URL
+    const url = `/uploads/${req.file.filename}`;
+    res.json({ url });
+  });
+
+  // Serve uploads statically
+  app.use('/uploads', express.static(uploadsDir));
+
+
 
   app.use(express.json());
 
@@ -439,12 +472,43 @@ async function startServer() {
 
   app.post("/api/safety/request-contact", async (req, res) => {
     try {
-      const { contactUid } = req.body;
-      if (!contactUid) return res.status(400).json({ error: "Missing contactUid" });
+      const { contactUid, requesterUid, requesterName } = req.body;
+      if (!contactUid || !requesterUid) return res.status(400).json({ error: "Missing contactUid or requesterUid" });
       
-      // In a real app, this would send a notification to contactUid to approve
-      // For now, we mock success
-      res.json({ success: true, mocked: true });
+      if (!adminInitialized) return res.json({ success: true, mocked: true });
+      
+      const db = admin.firestore();
+      
+      // Send notification to contact
+      await db.collection('notifications').add({
+        userId: contactUid,
+        type: 'safety_contact_request',
+        title: 'Safety Contact Request',
+        message: `${requesterName || 'A neighbor'} wants to add you as a safety emergency contact.`,
+        requesterUid: requesterUid,
+        requesterName: requesterName,
+        read: false,
+        timestamp: new Date().toISOString()
+      });
+
+      // Update pendingContactUids for requester
+      const userRef = db.collection('users').doc(requesterUid);
+      
+      // Since it's nested in safetyCheckIn, we update the specific field
+      // We will first get the user doc, then update it. It's safer.
+      const docSnap = await userRef.get();
+      if (docSnap.exists) {
+        const userData = docSnap.data();
+        let safetyCheckIn = userData.safetyCheckIn || {};
+        let pending = safetyCheckIn.pendingContactUids || [];
+        if (!pending.includes(contactUid)) {
+          pending.push(contactUid);
+        }
+        safetyCheckIn.pendingContactUids = pending;
+        await userRef.update({ safetyCheckIn });
+      }
+
+      res.json({ success: true });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -553,6 +617,116 @@ async function startServer() {
     } catch (error: any) {
       console.error("Gamification error:", error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+
+  
+  app.post("/api/verification/approve", async (req, res) => {
+    try {
+      const { requestId } = req.body;
+      if (!requestId) return res.status(400).json({ error: "Missing requestId" });
+      if (!adminInitialized) return res.status(503).json({ error: "Admin not initialized" });
+
+      const db = admin.firestore();
+      
+      const reqRef = db.collection('verification_requests').doc(requestId);
+      const reqSnap = await reqRef.get();
+      if (!reqSnap.exists) return res.status(404).json({ error: "Request not found" });
+      
+      const requestData = reqSnap.data();
+      if (requestData.status !== 'pending') return res.status(400).json({ error: "Request is not pending" });
+
+      const userRef = db.collection('users').doc(requestData.userId);
+      const userSnap = await userRef.get();
+      
+      if (userSnap.exists) {
+        const userData = userSnap.data();
+        let targetLocId = requestData.locationId;
+        const locations = userData.locations || [];
+        
+        if (!locations.some(loc => loc.id === requestData.locationId) && locations.length > 0) {
+          targetLocId = userData.activeLocationId || locations[0].id;
+        }
+        
+        const newLocations = locations.map(loc => {
+          if (loc.id === targetLocId) {
+            return { ...loc, verified: true, verification_method: 'docs' };
+          }
+          return loc;
+        });
+        
+        const hasVerifiedLocation = newLocations.some(l => l.verified);
+        const currentLevel = userData.trust_level || 0;
+        const currentScores = userData.trust_scores || { identity: 0, location: 0, community: 0, overall: 0 };
+        
+        let newLevel = currentLevel;
+        let locationScore = currentScores.location;
+        if (hasVerifiedLocation) {
+          newLevel = Math.max(newLevel, 2);
+          locationScore = 80;
+        }
+        const trust_scores = {
+          ...currentScores,
+          location: locationScore,
+          overall: currentScores.identity + locationScore + currentScores.community
+        };
+        const is_verified = hasVerifiedLocation || (trust_scores.identity > 30);
+        
+        await userRef.update({
+          locations: newLocations,
+          trust_level: newLevel,
+          trust_scores: trust_scores,
+          is_verified
+        });
+      }
+
+      await reqRef.update({ status: 'approved' });
+
+      // Add a notification for the user
+      await db.collection('notifications').add({
+        userId: requestData.userId,
+        type: 'system',
+        title: 'Verification Approved',
+        message: 'Your verification request has been approved. You now have access to verified neighborhood features!',
+        read: false,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Verification approve error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/verification/reject", async (req, res) => {
+    try {
+      const { requestId } = req.body;
+      if (!requestId) return res.status(400).json({ error: "Missing requestId" });
+      if (!adminInitialized) return res.status(503).json({ error: "Admin not initialized" });
+
+      const db = admin.firestore();
+      const reqRef = db.collection('verification_requests').doc(requestId);
+      const reqSnap = await reqRef.get();
+      if (!reqSnap.exists) return res.status(404).json({ error: "Request not found" });
+
+      const requestData = reqSnap.data();
+      await reqRef.update({ status: 'rejected' });
+
+      await db.collection('notifications').add({
+        userId: requestData.userId,
+        type: 'system',
+        title: 'Verification Rejected',
+        message: 'Your verification request was rejected. Please review our guidelines and try again.',
+        read: false,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Verification reject error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 

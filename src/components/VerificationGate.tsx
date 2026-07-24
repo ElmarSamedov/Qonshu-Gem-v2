@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
+import { storage } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -64,20 +66,38 @@ export default function VerificationGate({ children, compact = false }: { childr
     if (!file || !user) return;
     setUploadStatus('uploading');
     
-    setTimeout(() => {
-      addRequest({
+    try {
+      const requestId = 'req-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+      const storageRef = ref(storage, `verification_docs/${user.uid}/${requestId}.jpg`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadUrl = await getDownloadURL(snapshot.ref);
+      
+      await addRequest({
+        id: requestId,
         userId: user.uid,
         name: user.name,
         district: user.district || 'Sabail',
-        documentUrl: URL.createObjectURL(file),
+        documentUrl: downloadUrl,
         locationId: user.activeLocationId || 'loc-home'
       });
       setUploadStatus('pending');
-    }, 1500);
+    } catch (e) {
+      console.error('Failed to upload document:', e);
+      setUploadStatus('idle'); // Reset on error
+    }
   };
 
-  const handlePostcard = () => {
-    setUploadStatus('pending'); 
+  const handlePostcard = async () => {
+    if (!user) return;
+    setUploadStatus('uploading');
+    await addRequest({
+      userId: user.uid,
+      name: user.name,
+      district: user.district || 'Sabail',
+      documentUrl: 'https://via.placeholder.com/400x200?text=Postcard+Requested',
+      locationId: user.activeLocationId || 'loc-home'
+    });
+    setUploadStatus('pending');
   };
 
   const handleAddLocationSubmit = (e: React.FormEvent) => {

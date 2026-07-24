@@ -1,3 +1,4 @@
+import { getDeterministicChatId } from '../lib/chatUtils';
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useChatStore } from '../store/useChatStore';
@@ -192,9 +193,9 @@ export default function CarNumbers() {
               </div>
               <Button 
                 onClick={async () => {
-                  const chatId = `neighbor-${searchResult.id}`;
+                  const chatId = getDeterministicChatId(user?.uid || "guest", `neighbor-${searchResult.id}`);
                   await openOrCreateChat(chatId, `Neighbor (${searchResult.car.number})`, 'neighbor');
-                  await sendMessage(chatId, `A neighbor reports: your car ${searchResult.car.number} is blocking access`, undefined, 'system');
+                  await sendMessage(chatId, `A neighbor reports: your car ${searchResult.car.number} is blocking access`, undefined, user?.uid);
                   navigate('/chat');
                 }}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white"

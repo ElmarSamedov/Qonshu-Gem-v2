@@ -1,3 +1,4 @@
+import { getDeterministicChatId } from '../lib/chatUtils';
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -52,7 +53,7 @@ export default function LocalBusinesses() {
     },
     {
       id: 3,
-      name: 'Handcrafted by Leyla',
+      name: 'Handcrafted by Jane',
       category: 'Artisan',
       description: 'Handmade ceramic mugs and plates. Perfect for gifts.',
       address: 'Khagani St 42',
@@ -155,7 +156,7 @@ export default function LocalBusinesses() {
                     </Button>
                   ) : (
                     <VerificationGate compact={true}>
-                      <Button variant="outline" onClick={() => { openOrCreateChat(`business-${business.id}`, business.name, 'business'); navigate('/chat'); }} className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
+                      <Button variant="outline" onClick={() => { openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `business-${business.id}`), business.name, 'business'); navigate('/chat'); }} className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white">
                         {t('common.visit', language)}
                       </Button>
                     </VerificationGate>

@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { useAuthStore } from './useAuthStore';
 import { db } from '../lib/firebase';
-import { 
-  collection, 
-  onSnapshot, 
-  setDoc, 
-  doc, 
-  updateDoc 
+import {
+  collection,
+  onSnapshot,
+  setDoc,
+  doc,
+  updateDoc,
+  getDoc
 } from 'firebase/firestore';
 
 export interface VerificationRequest {
@@ -22,7 +23,7 @@ export interface VerificationRequest {
 
 interface VerificationStore {
   requests: VerificationRequest[];
-  addRequest: (request: Omit<VerificationRequest, 'id' | 'status' | 'date'>) => Promise<void>;
+  addRequest: (request: Omit<VerificationRequest, 'id' | 'status' | 'date'> & { id?: string }) => Promise<void>;
   approveRequest: (id: string) => Promise<void>;
   rejectRequest: (id: string) => Promise<void>;
   initListener: () => () => void;
@@ -31,7 +32,7 @@ interface VerificationStore {
 export const useVerificationStore = create<VerificationStore>((set, get) => ({
   requests: [],
   addRequest: async (req) => {
-    const newId = 'req-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    const newId = (req as any).id || 'req-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const newRequest: VerificationRequest = {
       ...req,
       id: newId,
@@ -45,22 +46,29 @@ export const useVerificationStore = create<VerificationStore>((set, get) => ({
     }
   },
   approveRequest: async (id) => {
-    const request = get().requests.find(r => r.id === id);
-    if (request) {
-      const auth = useAuthStore.getState();
-      if (auth.user && auth.user.uid === request.userId) {
-        await auth.verifyLocation(request.locationId, 'docs');
+    try {
+      const response = await fetch('/api/verification/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: id })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to approve request via API');
       }
-      try {
-        await updateDoc(doc(db, 'verification_requests', id), { status: 'approved' });
-      } catch (e) {
-        console.error('Failed to approve verification request:', e);
-      }
+    } catch (e) {
+      console.error('Failed to approve verification request:', e);
     }
   },
   rejectRequest: async (id) => {
     try {
-      await updateDoc(doc(db, 'verification_requests', id), { status: 'rejected' });
+      const response = await fetch('/api/verification/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: id })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to reject request via API');
+      }
     } catch (e) {
       console.error('Failed to reject verification request:', e);
     }

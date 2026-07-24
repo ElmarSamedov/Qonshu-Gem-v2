@@ -1,3 +1,4 @@
+import { getDeterministicChatId } from '../lib/chatUtils';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronLeft, ChevronRight, Pause, Play, BadgeCheck } from 'lucide-react';
@@ -194,7 +195,7 @@ export default function MomentViewer({ moments, initialIndex, onClose }: { momen
                 alert('Guests cannot send messages.');
                 return;
               }
-              openOrCreateChat(`neighbor-${activeMoment.author}`, activeMoment.author, 'neighbor');
+              openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `neighbor-${activeMoment.author}`), activeMoment.author, 'neighbor');
               navigate('/chat');
               setReplyText('');
               onClose();

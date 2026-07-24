@@ -1,3 +1,4 @@
+import { getDeterministicChatId } from '../lib/chatUtils';
 import React, { useState } from 'react';
 import { X, MessageCircle, RefreshCw, HandHeart, Tag, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
@@ -18,7 +19,7 @@ export default function MarketplaceProductModal({ item, onClose }: { item: any, 
   const images = item.images || [item.image];
 
   const handleContactSeller = () => {
-    openOrCreateChat(`neighbor-seller-${item.id}`, `Seller of ${item.title}`, 'neighbor');
+    openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `neighbor-seller-${item.id}`), `Seller of ${item.title}`, 'neighbor');
     navigate('/chat');
   };
 

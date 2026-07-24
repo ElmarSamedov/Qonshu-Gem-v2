@@ -1,3 +1,4 @@
+import { getDeterministicChatId } from '../lib/chatUtils';
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -5,6 +6,8 @@ import { Input } from './ui/input';
 import { HeartHandshake, MapPin, Clock, Plus, X, MessageCircle, BadgeCheck } from 'lucide-react';
 import VerificationGate from './VerificationGate';
 import { useLanguageStore } from '../store/useLanguageStore';
+import { useSpeechRecognition } from '../lib/useSpeechRecognition';
+import { Mic } from 'lucide-react';
 import { t } from '../lib/i18n';
 import { useChatStore } from '../store/useChatStore';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +20,17 @@ export default function MutualAid() {
   const { user } = useAuthStore();
   const isGuest = user?.role === 'guest';
   const [showForm, setShowForm] = useState(false);
+  const { isListening, transcript, startListening, stopListening, support, setTranscript } = useSpeechRecognition();
+  
+  React.useEffect(() => {
+    if (transcript) {
+      setNewRequest((prev) => {
+        const base = prev.description.replace(localStorage.getItem('aidTranscript') || '', '').trim();
+        localStorage.setItem('aidTranscript', transcript);
+        return { ...prev, description: base ? base + ' ' + transcript : transcript };
+      });
+    }
+  }, [transcript]);
   const [newRequest, setNewRequest] = useState<{title: string; description: string; type: 'borrow' | 'service'}>({ title: '', description: '', type: 'service' });
   const { language } = useLanguageStore();
   const { openOrCreateChat } = useChatStore();
@@ -77,6 +91,13 @@ export default function MutualAid() {
         })
       });
       if (res.ok) {
+        const data = await res.json();
+        if (data.mocked) {
+          alert('Server configured in preview mode (missing Service Account). Points and badges were not officially awarded, but the request will appear resolved.');
+          // We can at least resolve the request locally on the client for UX
+          const { doc, updateDoc } = await import('firebase/firestore');
+          await updateDoc(doc(db, 'mutual_aid_requests', resolveDialogReq.id), { status: 'resolved' });
+        }
         setResolveDialogReq(null);
       }
     } catch (e) {
@@ -91,7 +112,7 @@ export default function MutualAid() {
         responders: arrayUnion({ uid: user.uid, name: user.name })
       });
     } catch(e) {}
-    openOrCreateChat(`neighbor-${req.authorId}`, req.author, 'neighbor');
+    openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `neighbor-${req.authorId}`), req.author, 'neighbor');
     navigate('/chat');
   };
 
@@ -186,13 +207,27 @@ export default function MutualAid() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('aid.form_desc', language)}</label>
-                  <textarea 
-                    value={newRequest.description}
-                    onChange={(e) => setNewRequest({...newRequest, description: e.target.value})}
-                    placeholder="Provide details about what you need..."
-                    className="w-full h-24 rounded-md bg-white/40 dark:bg-black/20 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:text-slate-500 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/50"
-                    required
-                  />
+                  
+                  <div className="relative">
+                    <textarea 
+                      value={newRequest.description}
+                      onChange={(e) => setNewRequest({...newRequest, description: e.target.value})}
+                      placeholder="Provide details about what you need..."
+                      className="w-full h-24 rounded-md bg-white/40 dark:bg-black/20 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:text-slate-500 p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                      required
+                    />
+                    {support && (
+                      <button
+                        type="button"
+                        onClick={isListening ? stopListening : startListening}
+                        className={`absolute right-2 top-2 p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                        title="Voice Typing"
+                      >
+                        <Mic className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+
                 </div>
                 <Button type="submit" className="w-full bg-rose-600 hover:bg-rose-500 text-white">
                   {t('aid.post_req', language)}

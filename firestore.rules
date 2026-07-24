@@ -43,7 +43,7 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && isOwner(userId) && 
                       incoming().uid == request.auth.uid && 
-                      (incoming().role == 'user' || (request.auth.token.email == 'elmar.myspace@gmail.com' && incoming().role == 'moderator')) && // Force default role on signup to prevent privilege escalation
+                      incoming().role == 'user' && // Force default role on signup to prevent privilege escalation
                       incoming().trust_level == 1; // Start trust level at 1
       allow update: if isSignedIn() && (
                       isOwner(userId) && 
@@ -53,7 +53,7 @@ service cloud.firestore {
                         'name', 'phone', 'avatar', 'nationality', 'birthday', 
                         'allowBirthdayPublic', 'cars', 'interests', 'discoverableInterests', 'locations', 
                         'activeLocationId', 'district', 'address', 'is_verified', 
-                        'trust_scores', 'trust_level'
+                        'trust_scores', 'trust_level', 'safetyCheckIn', 'points', 'badges', 'currentStreak', 'lastDailyLoginDate', 'reliabilityScore'
                       ])
                     ) || isModerator() || isAdmin();
       allow delete: if isAdmin();
@@ -110,16 +110,17 @@ service cloud.firestore {
 
     // --- CHATS ---
     match /chats/{chatId} {
-      allow read, write: if isSignedIn(); // Broad access but restricted within individual participant lists if needed
+      allow create: if isSignedIn() && request.auth.uid in incoming().participants;
+      allow read, update, delete: if isSignedIn() && request.auth.uid in existing().participants;
       
       match /messages/{messageId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn() && incoming().senderId == request.auth.uid;
-        allow update: if isSignedIn() && (
+        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants && incoming().senderId == request.auth.uid;
+        allow update: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants && (
                         (incoming().senderId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['text', 'reactions'])) ||
                         incoming().diff(existing()).affectedKeys().hasOnly(['reactions'])
                       );
-        allow delete: if isSignedIn() && existing().senderId == request.auth.uid;
+        allow delete: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants && existing().senderId == request.auth.uid;
       }
     }
 
@@ -145,6 +146,30 @@ service cloud.firestore {
       allow create: if isSignedIn() && incoming().status == 'pending';
       allow update: if isSignedIn() && (isModerator() || isAdmin());
       allow delete: if isAdmin();
+    }
+    
+    // --- GOOD DEEDS ---
+    match /good_deeds/{deedId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+    }
+    
+    // --- PLAYGROUND CHECKINS ---
+    match /playground_checkins/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // --- DISTRICT STATS ---
+    match /district_stats/{districtId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    
+    // --- MUTUAL AID REQUESTS ---
+    match /mutual_aid_requests/{requestId} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
   }
 }

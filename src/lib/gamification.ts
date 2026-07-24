@@ -60,8 +60,16 @@ export const triggerGamification = async (action: 'daily_login' | 'post' | 'comm
         updates.lastDailyLoginDate = lastDailyLoginDate;
       }
       
-      // Update local zustand state ONLY (don't write to firestore to avoid rule failure)
+      // Update local zustand state AND firestore since we added rule allowances
       useAuthStore.getState().setUser({ ...user, ...updates });
+      
+      if (Object.keys(updates).length > 0) {
+        import('firebase/firestore').then(({ doc, updateDoc }) => {
+          import('./firebase').then(({ db }) => {
+            updateDoc(doc(db, 'users', user.uid), updates).catch(console.error);
+          });
+        });
+      }
     }
   } catch (error) {
     console.error("Failed to trigger gamification:", error);

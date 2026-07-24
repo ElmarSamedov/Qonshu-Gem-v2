@@ -50,7 +50,7 @@ export default function Polls() {
     {
       id: 2,
       question: 'Best time for the neighborhood weekend cleanup?',
-      author: 'Leyla M.',
+      author: 'Jane D.',
       verified: false,
       time: '1 day ago',
       totalVotes: 12,

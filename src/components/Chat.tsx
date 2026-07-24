@@ -1,3 +1,4 @@
+import { useAuthStore } from '../store/useAuthStore';
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
@@ -10,6 +11,8 @@ import { t } from '../lib/i18n';
 import { useChatStore, Message, ChatSession } from '../store/useChatStore';
 
 export default function Chat() {
+  const { user } = useAuthStore();
+  const isMe = (senderId: string) => senderId === user?.uid || senderId === 'me';
   const { language } = useLanguageStore();
   const { addReport } = useModerationStore();
   const [reportDialog, setReportDialog] = useState<string | null>(null);
@@ -200,8 +203,8 @@ export default function Chat() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
               {activeChat.messages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.senderId === 'me' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`group relative max-w-[75%] p-3 rounded-2xl ${msg.senderId === 'me' ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-black/10 dark:bg-white/10 text-slate-800 dark:text-slate-200 rounded-tl-sm'}`}>
+                <div key={idx} className={`flex ${isMe(msg.senderId) ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`group relative max-w-[75%] p-3 rounded-2xl ${isMe(msg.senderId) ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-black/10 dark:bg-white/10 text-slate-800 dark:text-slate-200 rounded-tl-sm'}`}>
                     {msg.text && <p className="text-sm">{msg.text}</p>}
                     {msg.audioUrl && (
                       <audio controls className="max-w-[200px] h-10 mt-1 mb-1">
@@ -222,7 +225,7 @@ export default function Chat() {
                     )}
                     
                     {/* Reaction & Reply buttons on hover */}
-                    <div className={`absolute top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ${msg.senderId === 'me' ? 'right-full mr-2' : 'left-full ml-2'}`}>
+                    <div className={`absolute top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe(msg.senderId) ? 'right-full mr-2' : 'left-full ml-2'}`}>
                       <button 
                         onClick={() => toggleReaction(activeChat.id, msg.id, '👍')}
                         className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 shadow flex items-center justify-center text-slate-500 hover:text-blue-500 transition-colors"

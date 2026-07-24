@@ -1,4 +1,5 @@
 import { triggerGamification } from '../lib/gamification';
+import { trackStatsEvent } from '../lib/stats';
 import { create } from 'zustand';
 import { calculateNewTrustScores } from '../lib/trustScores';
 import { 
@@ -140,6 +141,8 @@ export interface User {
 
 interface AuthState {
   user: User | null;
+  isAuthenticated: boolean;
+  isAuthLoaded: boolean;
   setUser: (user: User | null) => void;
   updateUser: (updates: Partial<User>) => Promise<void>;
   login: (
@@ -180,8 +183,10 @@ const createGuestUser = (): User => ({
 });
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: createGuestUser(), // Start as guest
-  setUser: (user) => set({ user }),
+  user: null,
+  isAuthenticated: false,
+  isAuthLoaded: false,
+  setUser: (user) => set({ user, isAuthenticated: user ? user.role !== 'guest' : false }),
   updateUser: async (updates) => {
     const { user } = get();
     if (!user || user.role === 'guest') {
@@ -189,17 +194,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
     const updatedUser = { ...user, ...updates };
-    set({ user: updatedUser });
+    set({ user: updatedUser, isAuthenticated: updatedUser.role !== 'guest' });
     try {
       await updateDoc(doc(db, 'users', user.uid), updates);
       
       // If discoverableInterests was updated, trigger server-side matching
       if (updates.discoverableInterests && user.district) {
-        fetch('/api/stats/event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ district: user.district, event: 'interests_updated', data: { interests: updates.discoverableInterests } })
-        }).catch(console.error);
+        trackStatsEvent(user.district, 'interests_updated', { interests: updates.discoverableInterests });
         try {
           const res = await fetch('/api/match-neighbors', {
             method: 'POST',
@@ -302,7 +303,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (userDocSnap.exists()) {
       const existingUser = userDocSnap.data() as User;
-      set({ user: existingUser });
+      set({ user: existingUser, isAuthenticated: existingUser.role !== 'guest' });
     } else {
       // Create new user in Firestore and state
       const isMilestone = true;
@@ -388,19 +389,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       };
 
       await setDoc(userDocRef, newUser);
-      set({ user: newUser });
+      set({ user: newUser, isAuthenticated: newUser.role !== 'guest' });
 
       // Dispatch stats event
       try {
-        fetch('/api/stats/event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ district, event: 'user_joined', data: { verified: false, interests: newUser.discoverableInterests || [] } })
-        });
+        trackStatsEvent(district, 'user_joined', { verified: false, interests: newUser.discoverableInterests || [] });
       } catch (e) { console.error('Stats error:', e); }
     }
   },
-  createGuestSession: () => set({ user: createGuestUser() }),
+  createGuestSession: () => set({ user: createGuestUser(), isAuthenticated: false }),
   verifyLocation: async (locationId, method) => {
     const { user } = get();
     if (!user || user.role === 'guest') return;
@@ -441,11 +438,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await setDoc(doc(db, 'users', user.uid), updatedUser);
       
       if (hasVerifiedLocation && !user.is_verified) {
-        fetch('/api/stats/event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ district: updatedUser.district, event: 'user_verified' })
-        }).catch(e => console.error(e));
+        if (updatedUser.district) trackStatsEvent(updatedUser.district, 'user_verified');
       }
     } catch (e) {
       console.error('Failed to sync verified location to Firestore:', e);
@@ -529,7 +522,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (e) {
       console.error('Sign out error:', e);
     }
-    set({ user: createGuestUser() });
+    set({ user: null, isAuthenticated: false, isAuthLoaded: true });
   },
   initAuthListener: () => {
     onAuthStateChanged(auth, async (firebaseUser) => {
@@ -537,11 +530,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
-          set({ user: userDocSnap.data() as User });
+          set({ user: userDocSnap.data() as User, isAuthenticated: true, isAuthLoaded: true });
           // Trigger daily login gamification
           triggerGamification('daily_login');
         } else {
           set({
+            isAuthenticated: true,
+            isAuthLoaded: true,
             user: {
               uid: firebaseUser.uid,
               email: firebaseUser.email || '',
@@ -556,7 +551,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           });
         }
       } else {
-        set({ user: createGuestUser() });
+        set({ user: createGuestUser(), isAuthenticated: false, isAuthLoaded: true });
       }
     });
   },
@@ -571,7 +566,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (userDocSnap.exists()) {
         const existingUser = userDocSnap.data() as User;
-        set({ user: existingUser });
+        set({ user: existingUser, isAuthenticated: existingUser.role !== 'guest' });
       } else {
         // Create new user in Firestore and state
         const primaryLocationId = 'loc-home';
@@ -633,7 +628,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         };
 
         await setDoc(userDocRef, newUser);
-        set({ user: newUser });
+        set({ user: newUser, isAuthenticated: newUser.role !== 'guest' });
       }
     } catch (error: any) {
       console.error("Google login failed", error);

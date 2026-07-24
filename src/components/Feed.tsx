@@ -1,21 +1,26 @@
+import { getDeterministicChatId } from '../lib/chatUtils';
 import { triggerGamification } from '../lib/gamification';
 import MomentViewer from "./MomentViewer";
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useModerationStore } from '../store/useModerationStore';
 import NeighborhoodPulse from './NeighborhoodPulse';
+import WhatsNearbyWidget from './WhatsNearbyWidget';
+import PlaygroundCheckIn from './PlaygroundCheckIn';
 import StreetMap from './StreetMap';
 import { Map as MapIcon, List as ListIcon } from 'lucide-react';
 import { useLanguageStore } from '../store/useLanguageStore';
+import { useSpeechRecognition } from '../lib/useSpeechRecognition';
 import { t } from '../lib/i18n';
 import VerificationGate from './VerificationGate';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Textarea, Input } from './ui/input';
-import { Send, MapPin, AlertTriangle, Package, Heart, MessageCircle, Flag, BadgeCheck, Plus, X, Crop, Type, Smile, Image as ImageIcon, Sticker, Check, Eye, EyeOff, Pin, Share2, BarChart2, Lock } from 'lucide-react';
+import { Send, MapPin, Mic, AlertTriangle, Package, Heart, MessageCircle, Flag, BadgeCheck, Plus, X, Crop, Type, Smile, Image as ImageIcon, Sticker, Check, Eye, EyeOff, Pin, Share2, BarChart2, Lock } from 'lucide-react';
 import { useChatStore } from '../store/useChatStore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
+import { trackStatsEvent } from '../lib/stats';
 import { 
   collection, 
   onSnapshot, 
@@ -165,8 +170,8 @@ export default function Feed() {
         const defaultPosts = [
           {
             id: 'post-1',
-            author: 'Leyla M.',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Leyla`,
+            author: 'Jane D.',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Jane`,
             type: 'alert',
             content: 'Suspicious caller pretending to be from Kapital Bank. They asked for card details. Please warn your elderly relatives!',
             time: '2 hours ago',
@@ -183,8 +188,8 @@ export default function Feed() {
           },
           {
             id: 'post-2',
-            author: 'Kamran B.',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Kamran`,
+            author: 'Mike R.',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Mike`,
             type: 'free_stuff',
             content: 'Leaving an old but working desk near block A. Anyone can pick it up today.',
             time: '4 hours ago',
@@ -201,8 +206,8 @@ export default function Feed() {
           },
           {
             id: 'post-3',
-            author: 'Aysel H.',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Aysel`,
+            author: 'Sarah T.',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah`,
             type: 'feed',
             content: 'Does anyone know when the hot water will be back in the second block?',
             time: '5 hours ago',
@@ -223,8 +228,8 @@ export default function Feed() {
           // Seed comments for post-1
           if (p.id === 'post-1') {
             const commentsRef = collection(db, 'posts', p.id, 'comments');
-            setDoc(doc(commentsRef, 'comment-1'), { author: 'Samir', content: 'Thanks for the warning!', timestamp: new Date(Date.now() - 3600000).toISOString(), reactions: ['👍', '❤️', '🙏', '💯'] });
-            setDoc(doc(commentsRef, 'comment-2'), { author: 'Aysel', content: 'Same happened to me yesterday.', timestamp: new Date(Date.now() - 1800000).toISOString(), reactions: ['😠', '👍'] });
+            setDoc(doc(commentsRef, 'comment-1'), { author: 'David', content: 'Thanks for the warning!', timestamp: new Date(Date.now() - 3600000).toISOString(), reactions: ['👍', '❤️', '🙏', '💯'] });
+            setDoc(doc(commentsRef, 'comment-2'), { author: 'Sarah', content: 'Same happened to me yesterday.', timestamp: new Date(Date.now() - 1800000).toISOString(), reactions: ['😠', '👍'] });
           }
         });
       } else {
@@ -241,9 +246,9 @@ export default function Feed() {
     const unsubMoments = onSnapshot(qMoments, (snapshot) => {
       if (snapshot.empty) {
         const defaultMoments = [
-          { id: 'moment-1', authorId: user?.uid, author: 'Tural S.', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=800&fit=crop', verified: true, reactions: ['👍', '❤️', '🔥'] },
-          { id: 'moment-2', authorId: user?.uid, author: 'Aysel H.', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=800&fit=crop', verified: false, reactions: ['🤩', '👍'] },
-          { id: 'moment-3', authorId: user?.uid, author: 'Kamran B.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=800&fit=crop', verified: false, reactions: [] },
+          { id: 'moment-1', authorId: user?.uid, author: 'Chris W.', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=800&fit=crop', verified: true, reactions: ['👍', '❤️', '🔥'] },
+          { id: 'moment-2', authorId: user?.uid, author: 'Sarah T.', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=800&fit=crop', verified: false, reactions: ['🤩', '👍'] },
+          { id: 'moment-3', authorId: user?.uid, author: 'Mike R.', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=800&fit=crop', verified: false, reactions: [] },
         ];
         defaultMoments.forEach(m => {
           setDoc(doc(db, 'moments', m.id), m);
@@ -279,6 +284,17 @@ export default function Feed() {
   
   // Feed Composer & 1:1 Crop
   const [postDraftContent, setPostDraftContent] = useState(() => localStorage.getItem('feedPostDraft') || '');
+  const { isListening, transcript, startListening, stopListening, support, setTranscript } = useSpeechRecognition();
+  
+  React.useEffect(() => {
+    if (transcript) {
+      setPostDraftContent((prev) => {
+        const base = prev.replace(localStorage.getItem('lastTranscript') || '', '').trim();
+        localStorage.setItem('lastTranscript', transcript);
+        return base ? base + ' ' + transcript : transcript;
+      });
+    }
+  }, [transcript]);
   const [postDraftImage, setPostDraftImage] = useState<string | null>(null);
   
   React.useEffect(() => {
@@ -435,12 +451,22 @@ export default function Feed() {
   };
 
   const handleLike = async (postId: string) => {
+    if (!user) return;
     const post = posts.find(p => p.id === postId);
     if (post) {
       try {
-        await updateDoc(doc(db, 'posts', postId), {
-          likes: (post.likes || 0) + 1
-        });
+        const likedBy = post.likedBy || [];
+        if (likedBy.includes(user.uid)) {
+          await updateDoc(doc(db, 'posts', postId), {
+            likes: Math.max(0, (post.likes || 1) - 1),
+            likedBy: likedBy.filter((id: string) => id !== user.uid)
+          });
+        } else {
+          await updateDoc(doc(db, 'posts', postId), {
+            likes: (post.likes || 0) + 1,
+            likedBy: [...likedBy, user.uid]
+          });
+        }
       } catch (e) {
         console.error('Failed to like post:', e);
       }
@@ -514,6 +540,8 @@ export default function Feed() {
         </span>
       </div>
 
+      {!isGuest && <WhatsNearbyWidget />}
+      {!isGuest && <PlaygroundCheckIn />}
       {!isGuest && <NeighborhoodPulse />}
 
       {/* Moments */}
@@ -561,12 +589,26 @@ export default function Feed() {
       <VerificationGate>
         <Card className="glass-panel border-black/10 dark:border-white/10 shadow-2xl">
           <CardContent className="pt-6">
-            <Textarea 
-              placeholder={t('feed.post_placeholder', language)} 
-              value={postDraftContent}
-              onChange={(e) => setPostDraftContent(e.target.value)}
-              className="mb-4 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:text-slate-500 resize-none" 
-            />
+            
+              <div className="relative">
+                <Textarea 
+                  placeholder={t('feed.post_placeholder', language)} 
+                  value={postDraftContent}
+                  onChange={(e) => setPostDraftContent(e.target.value)}
+                  className="mb-4 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:text-slate-500 resize-none pr-10" 
+                />
+                {support && (
+                  <button
+                    type="button"
+                    onClick={isListening ? stopListening : startListening}
+                    className={`absolute right-2 top-2 p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                    title="Voice Typing"
+                  >
+                    <Mic className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+
             
             {postDraftImage && (
               <div className="mb-4 relative w-32 h-32 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
@@ -741,8 +783,8 @@ export default function Feed() {
               
               <div className="mt-4 flex items-center justify-between border-t border-black/10 dark:border-white/10 pt-3 text-sm text-slate-600 dark:text-slate-400 font-medium">
                 <div className="flex items-center space-x-4">
-                  <button onClick={() => handleLike(post.id)} className="flex items-center space-x-1 hover:text-blue-400 transition-colors">
-                    <Heart className="h-4 w-4" />
+                  <button onClick={() => handleLike(post.id)} className={`flex items-center space-x-1 transition-colors ${post.likedBy?.includes(user?.uid || '') ? 'text-rose-500' : 'hover:text-rose-400'}`}>
+                    <Heart className={`h-4 w-4 ${post.likedBy?.includes(user?.uid || '') ? 'fill-current' : ''}`} />
                     <span>{post.likes || 0} {t('common.helpful', language)}</span>
                   </button>
                   <button 
@@ -948,7 +990,7 @@ export default function Feed() {
                 {!isGuest && (
                   <Button 
                     onClick={() => { 
-                      openOrCreateChat(`neighbor-${selectedNeighbor.author}`, selectedNeighbor.author, 'neighbor'); 
+                      openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `neighbor-${selectedNeighbor.author}`), selectedNeighbor.author, 'neighbor'); 
                       navigate('/chat'); 
                     }} 
                     className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-full px-6"

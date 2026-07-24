@@ -6,6 +6,7 @@ import { Input } from './ui/input';
 import { Camera, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LanguageSelector from './LanguageSelector';
+import { useSettingsStore } from '../store/useSettingsStore';
 
 export default function AuthScreen() {
   const [step, setStep] = useState(1);
@@ -14,15 +15,17 @@ export default function AuthScreen() {
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [birthYear, setBirthYear] = useState('');
   const [country, setCountry] = useState('Azerbaijan');
   const [city, setCity] = useState('Baku');
   const [town, setTown] = useState('Sabail');
   const [district, setDistrict] = useState('Sabail');
-  const [street, setStreet] = useState('Nizami St');
-  const [building, setBuilding] = useState('42');
-  const [entrance, setEntrance] = useState('2');
-  const [apartment, setApartment] = useState('15');
-  const [phone, setPhone] = useState('+994501234567');
+  const [street, setStreet] = useState('');
+  const [building, setBuilding] = useState('');
+  const [entrance, setEntrance] = useState('');
+  const [apartment, setApartment] = useState('');
+  const { seniorMode, toggleSeniorMode } = useSettingsStore();
+  const [phone, setPhone] = useState('');
   const [avatar, setAvatar] = useState('');
   
   const [error, setError] = useState('');
@@ -41,12 +44,20 @@ export default function AuthScreen() {
 
   const handleProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !country || !city || !street || !building || !apartment) {
+    if (!firstName || !lastName || !country || !city || !street || !building || !apartment || !birthYear) {
       setError('Please fill out all required fields'); alert('Please fill out all required fields marked with *');
       return;
     }
     setError('');
     const fullName = `${firstName} ${lastName}`;
+    // Auto-enable senior mode for age >= 60
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - parseInt(birthYear || '0', 10);
+    if (age >= 60) {
+      if (!useSettingsStore.getState().seniorMode) {
+        useSettingsStore.getState().toggleSeniorMode();
+      }
+    }
     await login(email, password, fullName, {
       country,
       city,
@@ -139,10 +150,9 @@ export default function AuthScreen() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3">
                     <Button type="button" variant="outline" onClick={() => handleSocialLogin('Google')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Google</Button>
-                    <Button type="button" variant="outline" onClick={() => handleSocialLogin('Apple')} className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">Apple</Button>
-                  </div>
+                    </div>
                 </form>
               )}
 
@@ -171,6 +181,16 @@ export default function AuthScreen() {
                     </div>
                   </div>
                   
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">* Birth Year</label>
+                    <Input
+                      type="number"
+                      placeholder="1980"
+                      value={birthYear}
+                      onChange={(e) => setBirthYear(e.target.value)} required
+                      className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
+                    />
+                  </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone Number</label>
                     <Input
@@ -228,6 +248,22 @@ export default function AuthScreen() {
                       onChange={(e) => setStreet(e.target.value)} required
                       className="bg-white dark:bg-slate-800 text-black dark:text-black placeholder:text-gray-400 dark:placeholder:text-gray-400"
                     />
+                  </div>
+
+                  <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Senior Mode</h4>
+                        <p className="text-xs text-slate-500">Larger text and simplified interface for better readability.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleSeniorMode()}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${seniorMode ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${seniorMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

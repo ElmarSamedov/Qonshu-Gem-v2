@@ -1,13 +1,15 @@
+import { useAuthStore } from './useAuthStore';
 import { create } from 'zustand';
 import { db } from '../lib/firebase';
-import { 
-  collection, 
-  onSnapshot, 
-  setDoc, 
-  doc, 
-  query, 
-  orderBy, 
-  updateDoc 
+import {
+  collection,
+  onSnapshot,
+  setDoc,
+  doc,
+  query,
+  orderBy,
+  updateDoc,
+  where
 } from 'firebase/firestore';
 
 export interface Message {
@@ -26,6 +28,7 @@ export interface ChatSession {
   lastMessage: string;
   unread: number;
   messages: Message[];
+  participants?: string[];
 }
 
 interface ChatState {
@@ -36,7 +39,7 @@ interface ChatState {
   openOrCreateChat: (id: string, name: string, type: ChatSession['type']) => Promise<void>;
   sendMessage: (chatId: string, text: string, audioUrl?: string, senderId?: string) => Promise<void>;
   toggleReaction: (chatId: string, messageId: string, emoji: string) => Promise<void>;
-  initListener: () => () => void;
+  initListener: (userId: string) => () => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -74,12 +77,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
   openOrCreateChat: async (id, name, type) => {
     const exists = get().chats.some(c => c.id === id);
     if (!exists) {
+      // Extract uids from the deterministic chatId, e.g. "uid1_uid2"
+      const parts = id.split('_');
+      // Some targets might have dashes, but the user UIDs generally don't contain underscores.
+      // Actually, since we generate the ID, we can safely just add the current user's UID to participants.
+      // Wait, what if the other participant's UID is not easily extracted?
+      // Since it's deterministic [user.uid, target.uid].sort().join('_'), parts will be [uid1, targetId].
+      const participants = parts.length >= 2 ? parts : [id];
       const newChat: Omit<ChatSession, 'messages'> = {
         id,
         name,
         type,
         lastMessage: '',
-        unread: 0
+        unread: 0,
+        participants
       };
       try {
         await setDoc(doc(db, 'chats', id), newChat);
@@ -90,7 +101,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     get().setActiveChatId(id);
   },
   sendMessage: async (chatId, text, audioUrl, senderId) => {
-    const resolvedSenderId = senderId || 'me';
+    const resolvedSenderId = senderId || useAuthStore.getState().user?.uid || 'guest';
     const messageData = {
       text,
       senderId: resolvedSenderId,
@@ -131,8 +142,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       console.error('Failed to toggle message reaction:', e);
     }
   },
-  initListener: () => {
-    const unsubscribeChats = onSnapshot(collection(db, 'chats'), (snapshot) => {
+  initListener: (userId: string) => {
+    const unsubscribeChats = onSnapshot(query(collection(db, 'chats'), where('participants', 'array-contains', userId)), (snapshot) => {
       const chatsList: ChatSession[] = [];
       snapshot.forEach((chatDoc) => {
         const chatData = chatDoc.data() as Omit<ChatSession, 'messages'>;

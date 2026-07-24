@@ -22,8 +22,8 @@ export default function OnboardingWizard() {
   const steps = [
     {
       id: 'account',
-      title: 'Create Account',
-      description: 'Set up your secure account. We just need your basic details to get started.',
+      title: (t('onboarding.step0.title' as any, language) as string) || 'Create Account',
+      description: (t('onboarding.step0.desc' as any, language) as string) || 'Set up your secure account. We just need your basic details to get started.',
       icon: <User className="w-8 h-8" />,
       color: 'text-blue-500',
       bgColor: 'bg-blue-100 dark:bg-blue-900/30',
@@ -31,8 +31,8 @@ export default function OnboardingWizard() {
     },
     {
       id: 'address',
-      title: 'Your Location',
-      description: 'Select your country, city, street, and building to join your local neighborhood.',
+      title: (t('onboarding.step1.title' as any, language) as string) || 'Your Location',
+      description: (t('onboarding.step1.desc' as any, language) as string) || 'Select your country, city, street, and building to join your local neighborhood.',
       icon: <MapPin className="w-8 h-8" />,
       color: 'text-indigo-500',
       bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
@@ -40,8 +40,8 @@ export default function OnboardingWizard() {
     },
     {
       id: 'verification',
-      title: 'Verification',
-      description: 'Verify your identity to unlock all community features and build trust.',
+      title: (t('onboarding.step2.title' as any, language) as string) || 'Verification',
+      description: (t('onboarding.step2.desc' as any, language) as string) || 'Verify your identity to unlock all community features and build trust.',
       icon: <ShieldCheck className="w-8 h-8" />,
       color: 'text-emerald-500',
       bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
@@ -49,8 +49,8 @@ export default function OnboardingWizard() {
     },
     {
       id: 'interests',
-      title: 'Interests',
-      description: 'Pick topics you care about to personalize your feed and discover local events.',
+      title: (t('onboarding.step3.title' as any, language) as string) || 'Interests',
+      description: (t('onboarding.step3.desc' as any, language) as string) || 'Pick topics you care about to personalize your feed and discover local events.',
       icon: <Star className="w-8 h-8" />,
       color: 'text-amber-500',
       bgColor: 'bg-amber-100 dark:bg-amber-900/30',

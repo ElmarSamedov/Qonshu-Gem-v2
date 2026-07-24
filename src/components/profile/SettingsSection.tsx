@@ -5,6 +5,8 @@ import { Bell, AlertTriangle, Store, MessageCircle, Calendar, Globe, Type, Moon,
 import { useLanguageStore } from '../../store/useLanguageStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { useThemeStore } from '../../store/useThemeStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { Ghost, Download } from 'lucide-react';
 import { t } from '../../lib/i18n';
 import { requestNotificationPermission } from '../../lib/messaging';
 
@@ -12,6 +14,17 @@ export default function SettingsSection() {
   const { language } = useLanguageStore();
   const { seniorMode, toggleSeniorMode } = useSettingsStore();
   const { theme, toggleTheme } = useThemeStore();
+  const { user, updateUser } = useAuthStore();
+  
+  const handleExportData = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(user, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "my_qonsu_data.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
 
   const [notifications, setNotifications] = useState({
     securityAlerts: true,

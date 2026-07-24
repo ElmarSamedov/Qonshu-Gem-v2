@@ -1,41 +1,20 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, Store, Calendar, Bell, MessageCircle, User, Shield, BarChart2, HeartHandshake, Briefcase, ShoppingBag, Users, Sun, Moon, PieChart, Heart } from 'lucide-react';
+import { Home, Store, Calendar, Bell, MessageCircle, User, Shield, BarChart2, HeartHandshake, Briefcase, ShoppingBag, Users, Sun, Moon, PieChart, Heart, Menu, X } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { t } from '../lib/i18n';
 import LanguageSelector from './LanguageSelector';
+import Notifications from './Notifications';
 import LocationSwitcher from './LocationSwitcher';
 
 export default function Layout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, updateUser } = useAuthStore();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const userNationality = user?.nationality || 'Azerbaijani';
   
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'New Neighbor Alert',
-      message: `A person of your nationality (${userNationality}) just joined the neighborhood. They are 45 meters away from you.`,
-      time: '2 mins ago',
-      unread: true
-    },
-    {
-      id: 2,
-      title: 'Marketplace Update',
-      message: 'Someone is interested in your listing.',
-      time: '1 hour ago',
-      unread: false
-    }
-  ]);
-
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, unread: false })));
-  };
-
   const { language } = useLanguageStore();
   const { seniorMode } = useSettingsStore();
   const { theme, toggleTheme } = useThemeStore();
@@ -163,37 +142,7 @@ export default function Layout() {
                 <span>{user?.safetyCheckIn?.lastCheckInDate === new Date().toISOString().split('T')[0] ? "Checked In" : "I'm OK"}</span>
               </button>
             )}
-            <div className="relative">
-              <button 
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none"
-              >
-                <Bell className="h-5 w-5 text-slate-700 dark:text-slate-300" />
-                {notifications.some(n => n.unread) && (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                )}
-              </button>
-              
-              {showNotifications && (
-                <div className="absolute left-0 mt-2 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-black/15 dark:border-white/15 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="p-4 border-b border-black/10 dark:border-white/10 flex justify-between items-center bg-black/[0.02] dark:bg-white/[0.02]">
-                    <h3 className="font-bold text-slate-900 dark:text-white">Notifications</h3>
-                    <button onClick={markAllAsRead} className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold">Mark all as read</button>
-                  </div>
-                  <div className="max-h-80 overflow-y-auto divide-y divide-black/5 dark:divide-white/5">
-                    {notifications.map(notif => (
-                      <div key={notif.id} className={`p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${notif.unread ? 'bg-indigo-500/10 dark:bg-indigo-500/20' : ''}`}>
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className={`text-sm font-bold ${notif.unread ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-950 dark:text-white'}`}>{notif.title}</h4>
-                          <span className="text-[10px] text-slate-500 font-semibold">{notif.time}</span>
-                        </div>
-                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{notif.message}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <Notifications />
           </div>
 
           {/* {t('common.night_mode', language)} switcher */}
@@ -215,8 +164,8 @@ export default function Layout() {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="glass-panel fixed bottom-0 left-0 right-0 z-20 flex h-16 items-center justify-around border-t border-black/10 dark:border-white/10 sm:hidden overflow-x-auto no-scrollbar">
-        {navItems.map((item) => (
+      <nav className="glass-panel fixed bottom-0 left-0 right-0 z-20 flex h-16 items-center justify-around border-t border-black/10 dark:border-white/10 sm:hidden">
+        {navItems.slice(0, 4).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -230,7 +179,57 @@ export default function Layout() {
             <span className="text-[10px] font-medium truncate w-full text-center">{item.label}</span>
           </NavLink>
         ))}
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="flex flex-col items-center justify-center space-y-1 w-full h-full min-w-[4rem] transition-colors text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:text-slate-300 focus:outline-none"
+        >
+          <Menu className="h-6 w-6" />
+          <span className="text-[10px] font-medium truncate w-full text-center">More</span>
+        </button>
       </nav>
+
+      {/* Mobile Slide-up Menu */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end sm:hidden">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+          <div className="relative bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl overflow-y-auto max-h-[80vh] pb-8 pt-4 px-4 border-t border-black/10 dark:border-white/10">
+            <div className="flex justify-between items-center mb-6 px-2">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Menu</h2>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5">
+                <X className="h-6 w-6 text-slate-500" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-4 gap-4 mb-8">
+              {navItems.slice(4).map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex flex-col items-center justify-center space-y-2 p-3 rounded-xl transition-colors ${
+                      isActive ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    }`
+                  }
+                >
+                  <item.icon className="h-6 w-6" />
+                  <span className="text-xs font-medium text-center">{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+
+            <div className="space-y-4 px-2 border-t border-black/10 dark:border-white/10 pt-6">
+              <LocationSwitcher />
+              {isGuest && (
+                <NavLink to="/auth" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-3 font-semibold transition-colors">
+                  Sign In / Register
+                </NavLink>
+              )}
+              <LanguageSelector />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

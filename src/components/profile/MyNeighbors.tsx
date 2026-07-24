@@ -33,6 +33,11 @@ export default function MyNeighbors() {
       if (!querySnapshot.empty) {
         const docSnap = querySnapshot.docs[0];
         const data = docSnap.data();
+        if (data.quietMode) {
+          alert('Neighbor not found or has quiet mode enabled.');
+          setIsSearching(false);
+          return;
+        }
         setSearchResult({ id: docSnap.id, name: data.name || 'Neighbor', phone: data.phone, distance: data.apartment || 'Neighbor' });
       } else {
         alert(t('profile.neighbor_not_found', language) || 'Neighbor not found.');

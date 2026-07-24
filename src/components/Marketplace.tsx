@@ -1,3 +1,4 @@
+import { getDeterministicChatId } from '../lib/chatUtils';
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -71,12 +72,32 @@ export default function Marketplace() {
   const handleItemClick = (id: number) => {
     const item = items.find(i => i.id === id);
     if (item) setSelectedItem(item);
-    setItems(items.map(item => item.id === id ? { ...item, views: item.views + 1 } : item));
+    if (!user) return;
+    setItems(items.map(item => {
+      if (item.id === id) {
+        const viewedBy = (item as any).viewedBy || [];
+        if (!viewedBy.includes(user.uid)) {
+          return { ...item, views: item.views + 1, viewedBy: [...viewedBy, user.uid] };
+        }
+      }
+      return item;
+    }));
   };
 
   const handleHelpfulClick = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
-    setItems(items.map(item => item.id === id ? { ...item, helpful: item.helpful + 1 } : item));
+    if (!user) return;
+    setItems(items.map(item => {
+      if (item.id === id) {
+        const likedBy = (item as any).likedBy || [];
+        if (likedBy.includes(user.uid)) {
+          return { ...item, helpful: Math.max(0, item.helpful - 1), likedBy: likedBy.filter((uid: string) => uid !== user.uid) };
+        } else {
+          return { ...item, helpful: item.helpful + 1, likedBy: [...likedBy, user.uid] };
+        }
+      }
+      return item;
+    }));
   };
 
   const sortedItems = [...items].sort((a, b) => {
@@ -262,8 +283,8 @@ export default function Marketplace() {
                   {!isGuest && (
                     <div className="flex items-center space-x-2 text-slate-500">
                       <span className="flex items-center"><Eye className="h-3 w-3 mr-1"/> {item.views}</span>
-                      <button onClick={(e) => handleHelpfulClick(e, item.id)} className="flex items-center hover:text-blue-500 transition-colors">
-                        <ThumbsUp className="h-3 w-3 mr-1"/> {item.helpful}
+                      <button onClick={(e) => handleHelpfulClick(e, item.id)} className={`flex items-center transition-colors ${(item as any).likedBy?.includes(user?.uid) ? 'text-blue-500' : 'hover:text-blue-500'}`}>
+                        <ThumbsUp className={`h-3 w-3 mr-1 ${(item as any).likedBy?.includes(user?.uid) ? 'fill-current' : ''}`}/> {item.helpful}
                       </button>
                     </div>
                   )}
@@ -282,7 +303,7 @@ export default function Marketplace() {
                     <Button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        openOrCreateChat(`seller-${item.id}`, 'Seller', 'neighbor');
+                        openOrCreateChat(getDeterministicChatId(user?.uid || 'guest', `seller-${item.id}`), 'Seller', 'neighbor');
                         navigate('/chat');
                       }}
                       className="w-full mt-2 h-8 text-xs bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 text-slate-900 dark:text-white border-0"

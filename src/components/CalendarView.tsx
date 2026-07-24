@@ -21,7 +21,7 @@ interface Event {
 
 const INITIAL_EVENTS: Event[] = [
   { id: '1', date: new Date(2026, 6, 15), title: 'Novruz Holiday', type: 'holiday', attendees: ['user-1'], maybe: ['user-2'], notGoing: [] },
-  { id: '2', date: new Date(2026, 6, 20), title: 'Apt 4B Renovation', type: 'renovation', author: 'Elmar' },
+  { id: '2', date: new Date(2026, 6, 20), title: 'Apt 4B Renovation', type: 'renovation', author: 'John' },
   { id: '3', date: new Date(2026, 6, 25), title: 'Courtyard Meeting', type: 'community' }
 ];
 

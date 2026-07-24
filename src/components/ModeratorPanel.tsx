@@ -49,7 +49,7 @@ export default function ModeratorPanel() {
           </div>
         </div>
         <div className="flex flex-wrap bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/10 dark:border-white/10 gap-1 mt-4 sm:mt-0">
-          {(['dashboard', 'verifications', 'reports', 'users'] as const).map(tab => (
+          {(['dashboard', 'verifications', 'reports'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}

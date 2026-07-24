@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguageStore } from '../store/useLanguageStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { t } from '../lib/i18n';
 import { Button } from './ui/button';
 import { MapPin, Search, Calendar, ShoppingBag } from 'lucide-react';
@@ -9,6 +10,7 @@ import LanguageSelector from './LanguageSelector';
 export default function GuestWelcome() {
   const { language } = useLanguageStore();
   const navigate = useNavigate();
+  const { createGuestSession } = useAuthStore();
 
   return (
     <div className="min-h-screen w-full relative flex flex-col">
@@ -59,7 +61,7 @@ export default function GuestWelcome() {
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
           <Button 
             className="flex-1 bg-white hover:bg-slate-100 text-slate-900 text-lg h-14 rounded-xl font-semibold shadow-xl"
-            onClick={() => navigate('/feed')}
+            onClick={() => { createGuestSession(); navigate('/feed'); }}
           >
             {t('guest.explore', language)}
           </Button>

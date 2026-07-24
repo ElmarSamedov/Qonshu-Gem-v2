@@ -28,8 +28,8 @@ export default function Groups() {
   const [groups, setGroups] = useState(MOCK_GROUPS);
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState<{text: string, sender: string, time: Date}[]>([
-    { text: 'Hello everyone!', sender: 'Elmar', time: new Date(Date.now() - 3600000) },
-    { text: 'Hi! Ready for the meeting tomorrow?', sender: 'Leyla', time: new Date(Date.now() - 1800000) }
+    { text: 'Hello everyone!', sender: 'John', time: new Date(Date.now() - 3600000) },
+    { text: 'Hi! Ready for the meeting tomorrow?', sender: 'Jane', time: new Date(Date.now() - 1800000) }
   ]);
   const [tab, setTab] = useState<'my_groups' | 'discover'>('my_groups');
   const [showCreateForm, setShowCreateForm] = useState(false);
